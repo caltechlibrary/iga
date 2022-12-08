@@ -1,6 +1,6 @@
-# Change log for %PROJECT_NAME%
+# Change log for iga
 
-## Version 0.0.0 (%CREATION_DATE%)
+## Version 0.0.0 (2022-12-08)
 
-Project repository created at https://github.com/caltechlibrary/%PROJECT_URLNAME%
-by %AUTHOR_NAME%.
+Project repository created at https://github.com/caltechlibrary/iga
+by Mike Hucka.

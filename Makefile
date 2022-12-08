@@ -1,9 +1,9 @@
 # =============================================================================
 # @file    Makefile
 # @brief   Makefile for some steps in creating new releases on GitHub
-# @date    %CREATION_DATE%
+# @date    2022-12-08
 # @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/%PROJECT_URLNAME%
+# @website https://github.com/caltechlibrary/iga
 # =============================================================================
 
 .ONESHELL:                              # Run all commands in the same shell.
@@ -146,10 +146,10 @@ report: vars
 # make lint & make test ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 lint:
-	flake8 %PROJECT_NAME%
+	flake8 iga
 
 test tests:;
-	pytest -v --cov=%PROJECT_NAME% -l tests/
+	pytest -v --cov=iga -l tests/
 
 
 # make install ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

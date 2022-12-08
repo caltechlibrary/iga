@@ -1,10 +1,10 @@
 '''
-__init__.py for %PROJECT_NAME%
+__init__.py for iga
 
 Copyright
 ---------
 
-Copyright (c) %CREATION_YEAR% by the California Institute of Technology.  This code
+Copyright (c) 2022 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
@@ -18,9 +18,9 @@ file "LICENSE" for more information.
 #  ╰────────────────────── Notice ── Notice ── Notice ─────────────────────╯
 
 __version__     = '0.0.0'
-__description__ = '%PROJECT_DESCRIPTION%'
-__url__         = 'https://github.com/caltechlibrary/%PROJECT_URLNAME%'
-__author__      = '%AUTHOR_NAME%'
+__description__ = 'InvenioRDM GitHub Archiver'
+__url__         = 'https://github.com/caltechlibrary/iga'
+__author__      = 'Mike Hucka'
 __email__       = 'helpdesk@library.caltech.edu'
 __license__     = 'https://data.caltech.edu/license'
 

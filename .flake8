@@ -1,9 +1,9 @@
 # =========================================================== -*- conf-toml -*-
 # @file    .flake8
 # @brief   Project-wide Flake8 configuration
-# @created %CREATION_DATE%
+# @created 2022-12-08
 # @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/%PROJECT_URLNAME%
+# @website https://github.com/caltechlibrary/iga
 #
 # Note: as of version 4.0, flake8 does NOT read global configuration files
 # from ~/.flake8 or ~/.config/flake8.  If you had such a config file of your
@@ -47,4 +47,4 @@ per-file-ignores =
     # keyword/parameter equals"). It would be better to disable E251 just for
     # that block in the file, BUT flake8 only recognizes per-line annotations,
     # so there's no way to tell it to ignore a rule only for a block of code.
-    %PROJECT_NAME%/__main__.py: E251
+    iga/__main__.py: E251

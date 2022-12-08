@@ -1,17 +1,17 @@
 '''
-__main__.py: main function for %PROJECT_NAME%.
+__main__.py: main function for iga.
 
 Copyright
 ---------
 
-Copyright (c) %CREATION_YEAR% by the California Institute of Technology.  This code
+Copyright (c) 2022 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
 import sys
 if sys.version_info <= (3, 8):
-    print('%PROJECT_NAME% requires Python version 3.8 or higher,')
+    print('iga requires Python version 3.8 or higher,')
     print('but the current version of Python is ' + str(sys.version_info.major)
           + '.' + str(sys.version_info.minor) + '.')
     sys.exit(1)
@@ -30,7 +30,7 @@ from   sidetrack import set_debug, log
     args       = 'arguments'
 )
 def main(version=False, debug='OUT', *args):
-    '''%PROJECT_DESCRIPTION%'''
+    '''InvenioRDM GitHub Archiver'''
 
     # Set up debug logging as soon as possible, if requested ------------------
 

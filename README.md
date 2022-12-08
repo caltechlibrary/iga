@@ -1,9 +1,9 @@
-# %PROJECT_NAME%
+# iga
 
-%PROJECT_DESCRIPTION%
+InvenioRDM GitHub Archiver
 
-[![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg)](https://github.com/caltechlibrary/%PROJECT_URLNAME%/LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/%PROJECT_URLNAME%.svg?color=b44e88)](https://github.com/caltechlibrary/%PROJECT_URLNAME%/releases)
+[![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg)](https://github.com/caltechlibrary/iga/LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?color=b44e88)](https://github.com/caltechlibrary/iga/releases)
 
 
 ## Table of contents
@@ -67,7 +67,7 @@ This section is optional; if your repository is for a project that accepts open-
 
 ## License
 
-Software produced by the Caltech Library is Copyright © %CREATION_YEAR% California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
+Software produced by the Caltech Library is Copyright © 2022 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
 
 
 ## Authors and history
@@ -82,6 +82,6 @@ This work was funded by the California Institute of Technology Library.
 <div align="center">
   <br>
   <a href="https://www.caltech.edu">
-    <img width="100" height="100" src="https://github.com/caltechlibrary/%PROJECT_URLNAME%/blob/main/.graphics/caltech-round.png">
+    <img width="100" height="100" src="https://github.com/caltechlibrary/iga/blob/main/.graphics/caltech-round.png">
   </a>
 </div>

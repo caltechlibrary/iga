@@ -1,19 +1,19 @@
 # =============================================================================
 # @file    test_init.py
 # @brief   Py.test cases for module __init__.py file
-# @created %CREATION_DATE%
+# @created 2022-12-08
 # @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/%PROJECT_NAME%
+# @website https://github.com/caltechlibrary/iga
 # =============================================================================
 
 def test_version():
     """Test version import."""
-    from %PROJECT_NAME% import __version__
+    from iga import __version__
     assert __version__
 
 
 def test_print_version(capsys):
-    from %PROJECT_NAME% import print_version
+    from iga import print_version
     print_version()
     captured = capsys.readouterr()
     assert 'URL' in captured.out

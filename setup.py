@@ -2,9 +2,9 @@
 # =============================================================================
 # @file    setup.py
 # @brief   Installation setup file
-# @created %CREATION_DATE%
+# @created 2022-12-08
 # @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/%PROJECT_URLNAME%
+# @website https://github.com/caltechlibrary/iga
 #
 # Note: the full configuration metadata is maintained in setup.cfg, not here.
 # This file exists to hook in setup.cfg and requirements.txt, so that the
