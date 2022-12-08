@@ -1,0 +1,16 @@
+cff-version: 1.2
+message: "If you use this software, please cite it using these metadata."
+title: "%PROJECT_NAME%"
+authors: 
+  - family-names: %AUTHOR_FAMILY_NAME%
+    given-names: %AUTHOR_FIRST_NAME%
+    affiliation: "Caltech Library"
+    orcid: "https://orid.org/YOUR-ORCID-NUMBER"
+version: "0.0.0"
+abstract: "%PROJECT_DESCRIPTION%"
+repository-code: "https://github.com/caltechlibrary/%PROJECT_URLNAME%"
+type: software
+license-url: "https://github.com/caltechlibrary/%PROJECT_URLNAME%/blob/main/LICENSE"
+keywords: 
+  - "KEYWORDS"
+date-released: "RELEASE-DATE"

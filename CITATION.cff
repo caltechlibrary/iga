@@ -1,0 +1,32 @@
+cff-version: 1.2
+message: "If you use this software, please cite it using these metadata."
+title: "py-cli-template"
+authors: 
+  -
+    affiliation: "Caltech Library"
+    given-names: Michael
+    family-names: Hucka
+    orcid: "https://orcid.org/0000-0001-9105-5960"
+  -
+    affiliation: "Caltech Library"
+    given-names: Robert
+    family-names: Doiel
+    orcid: "https://orcid.org/0000-0003-0900-6903"
+  -
+    affiliation: "Caltech Library"
+    given-names: "Thomas E."
+    family-names: Morrell
+    orcid: "https://orcid.org/0000-0001-9266-5146"
+  -
+    affiliation: "Caltech Library"
+    given-names: Tommy
+    family-names: Keswick
+    orcid: "https://orcid.org/0000-0001-5644-440X"
+version: "1.8.1"
+abstract: "GitHub template project for non-web Python application projects"
+repository-code: "https://github.com/caltechlibrary/py-cli-template"
+type: software
+license-url: "https://github.com/caltechlibrary/py-cli-template/blob/main/LICENSE"
+keywords: 
+  - template
+date-released: "2022-12-06"
