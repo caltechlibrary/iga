@@ -15,7 +15,7 @@ if sys.version_info <= (3, 8):
           + '.' + str(sys.version_info.minor) + '.')
     sys.exit(1)
 
-from .cli import cli
+from iga.cli import cli
 
 
 # The following entry point definition is for the console_scripts keyword
