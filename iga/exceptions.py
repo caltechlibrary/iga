@@ -25,8 +25,8 @@ class GitHubError(IGAException):
     '''GitHub returned an error.'''
 
 
-class ReleaseError(IGAException):
-    '''Malformed or unrecognized GitHub release URL.'''
+class InvenioRDMError(IGAException):
+    '''InvenioRDM returned an error.'''
 
 
 class InternalError(IGAException):
