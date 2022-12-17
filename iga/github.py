@@ -15,7 +15,7 @@ import sys
 from   types import SimpleNamespace
 
 from iga.exit_codes import ExitCode
-from iga.exceptions import ReleaseError, GitHubError, InternalError
+from iga.exceptions import GitHubError, InternalError
 
 
 class GitHubRelease(SimpleNamespace):
@@ -39,8 +39,27 @@ class GitHubAsset(SimpleNamespace):
 
 
 def github_release(release_url):
+    log('getting GitHub data for release at ' + release_url)
     (response, error) = net('get', release_url)
     if error:
-        log('error from GitHub: ' + str(error))
-        raise GitHubError(str(error))
-    return GitHubRelease(json.loads(response.text))
+        import commonpy
+        if isinstance(error, commonpy.exceptions.AuthenticationFailure):
+            # GitHub returns 403 when you hit the rate limit.
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
+            if 'API rate limit exceeded' in response.text:
+                raise GitHubError('Exceeded rate limit -- try again later')
+            else:
+                raise GitHubError('Permissions problem accessing ' + release_url)
+        elif isinstance(error, commonpy.exceptions.RateLimitExceeded):
+            raise GitHubError('Exceeded rate limit -- try again later')
+        elif isinstance(error, commonpy.exceptions.CommonPyException):
+            raise GitHubError(error.args[0])
+        else:
+            raise error
+    log('unpacking JSON into object structure')
+    try:
+        return GitHubRelease(json.loads(response.text))
+    except json.decoder.JSONDecodeError as ex:
+        # GitHub returned an unexpected value. We need to fix our handling.
+        log('unexpected problem decode json from GitHub: ' + str(ex))
+        raise InternalError('GitHub returned an unexpected value.')

@@ -15,6 +15,7 @@ import sys
 from   sidetrack import set_debug, log
 
 from iga.exit_codes import ExitCode
+from iga.exceptions import GitHubError, InvenioRDMError, InternalError
 from iga.github import github_release
 from iga.invenio import invenio_write
 
@@ -30,7 +31,7 @@ click.rich_click.STYLE_ERRORS_SUGGESTION = "bold italic"
 click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help."
 
 
-# Functions used in click interface definition ................................
+# Callback functions used in click interface ..................................
 
 def _config_debug(ctx, param, debug_dest):
     '''Handle the --debug option and configure debug settings as needed.'''
@@ -215,8 +216,11 @@ possible values:
   0 = success – program completed normally  
   1 = the user interrupted the program's execution  
   2 = encountered a bad or missing value for an option  
-  3 = file error – encountered a problem with a file  
-  4 = an exception or fatal error occurred  
+  3 = no network detected – cannot proceed  
+  4 = encountered a problem with a file or directory  
+  5 = encountered a problem interacting with GitHub  
+  6 = encountered a problem interacting with InvenioRDM  
+  7 = a miscellaneous exception or fatal error occurred  
 '''
     # Process arguments & handle early exits ..................................
 
@@ -233,26 +237,36 @@ possible values:
             alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
         else:
-            release_url = url_or_tag
+            account, repo, tag = account_repo_tag(url_or_tag)
     elif not all([account, repo, url_or_tag]):
         alert(ctx, 'When not using a release URL, the options `--account` and'
               ' `--repo` and a tag name must all be provided.')
         sys.exit(int(ExitCode.bad_arg))
     else:
-        release_url = github_release_url(account, repo, url_or_tag)
-        log('constructed release URL: ' + release_url)
+        tag = url_or_tag
+
+    from commonpy.network_utils import network_available
+    if not network_available():
+        alert(ctx, 'No network – cannot proceed.')
+        sys.exit(int(ExitCode.no_network))
 
     # Do the main work ........................................................
 
-    breakpoint()
     exit_code = ExitCode.success
     try:
-        x = github_release(release_url)
-        breakpoint()
+        release_url = github_release_url(account, repo, tag)
+        log('constructed release URL: ' + release_url)
+        release = github_release(release_url)
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt
+    except GitHubError as ex:
+        log('quitting due to GitHub error: ' + str(ex))
+        exit_code = ExitCode.github_error
+    except InvenioRDMError as ex:
+        log('quitting due to InvenioRDM error: ' + str(ex))
+        exit_code = ExitCode.inveniordm_error
     except Exception as ex:             # noqa: PIE786
         exit_code = ExitCode.exception
         import traceback
@@ -260,10 +274,10 @@ possible values:
         details = ''.join(traceback.format_exception(*exception))
         log('exception: ' + str(ex) + '\n\n' + details)
         import iga
-        alert(ctx, 'Oh no! IGA encountered an error. Please consider reporting'
-              f' this to the developer. Your version of {iga.__name__} is'
-              f' {iga.__version__}. For information about reporting errors,'
-              f' please see the project page at {iga.__url__}/.', False)
+        alert(ctx, 'IGA experienced an unrecoverable error. Please report this'
+              f' to the developer. Your version of IGA is {iga.__version__}.'
+              f' For information about how to report errors, please see the'
+              f' project page at {iga.__url__}/.\n\nError text: {str(ex)}', False)
 
     # Exit with status code ...................................................
 
@@ -321,9 +335,15 @@ def alert(ctx, msg, print_usage = True):
     )
 
 
-def well_formed(release_url):
-    return (release_url.startswith('https://github.com')
-            and '/releases/tag/' in release_url)
+def well_formed(release_web_url):
+    return (release_web_url.startswith('https://github.com')
+            and '/releases/tag/' in release_web_url)
+
+
+def account_repo_tag(release_web_url):
+    # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
+    _, _, _, account, repo, _, _, tag = release_web_url.split('/')
+    return (account, repo, tag)
 
 
 def github_release_url(account, repo, tag):
