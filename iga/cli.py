@@ -16,8 +16,8 @@ from   sidetrack import set_debug, log
 
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, InternalError
-from iga.github import github_release
 from iga.invenio import invenio_write
+from iga.record import valid_record, record_from_release
 
 
 # Main command-line interface.
@@ -105,30 +105,41 @@ def _print_version_and_exit(ctx, param, value):
 @click.command(add_help_option=False)
 @click.help_option('--help', '-h', help='Show this message and exit')
 #
-@click.option('--account', '-a', metavar='STRING',
+@click.option('--account', '-a', metavar='TEXT',
               help='GitHub account name (if not using a release URL)')
+#
 @click.option('--community', '-c', metavar='ID',
               help='ID of RDM community to update with item')
-@click.option('--file', '-f', metavar='FILE', multiple=True,
+#
+@click.option('--dry-run', '-n', is_flag=True,
+              help='Print what would be created but do not create it')
+#
+@click.option('--file', '-f', 'given_files', metavar='FILE', multiple=True,
               help='File to upload (repeat for multiple files)')
-@click.option('--record', '-r', metavar='FILE',
+#
+@click.option('--record', '-r', 'given_record', metavar='FILE', type=File('r'),
               help='Record to use for the entry in InvenioRDM')
-@click.option('--repo', '-p', metavar='STRING',
+#
+@click.option('--repo', '-p', metavar='TEXT',
               help='GitHub repository name (if not using a release URL)')
+#
 @click.option('--server', '-s', metavar='URL', callback=_read_server,
               help='Address of InvenioRDM server')
+#
 @click.option('--token', '-t', metavar='FILE', type=File('r'), callback=_read_token,
               help="File ('-' for stdin) containing a PAT for InvenioRDM")
+#
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
               help='Print version info and exit', expose_value=False)
+#
 @click.option('--debug'  , '-@', metavar='OUT', type=File('w', lazy=False),
               callback=_config_debug, help='Write debug output to destination "OUT"')
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, account=None, community=None, file=None,
-        record=None, repo=None, server=None, token=None,
-        help=False, version=False, debug=False):  # noqa A002
+def cli(ctx, url_or_tag, account=None, community=None, dry_run=False,
+        given_files=None, given_record=None, repo=None, server=None,
+        token=None, help=False, version=False, debug=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 IGA retrieves a GitHub software release and archives it in an InvenioRDM
@@ -224,11 +235,9 @@ possible values:
 '''
     # Process arguments & handle early exits ..................................
 
-    # Detect if the user types "help" without dashes, and be helpful.
-    if record == 'help':
+    if url_or_tag == 'help':  # Detect if the user typed "help" without dashes.
         print_help_and_exit(ctx)
-
-    if url_or_tag.startswith('http'):
+    elif url_or_tag.startswith('http'):
         if any([account, repo]):
             alert(ctx, 'The use of a URL and the use of options `--account`'
                   " and `--repo` are mutually exclusive; can't use both.")
@@ -245,6 +254,14 @@ possible values:
     else:
         tag = url_or_tag
 
+    if given_record:
+        path = given_record.name
+        log('reading user-provided record from ' + path)
+        given_record = given_record.read().strip()
+        if not valid_record(given_record):
+            alert(ctx, 'File is not in valid DataCite 4.3 JSON format: ' + path)
+            sys.exit(int(ExitCode.file_error))
+
     from commonpy.network_utils import network_available
     if not network_available():
         alert(ctx, 'No network – cannot proceed.')
@@ -254,9 +271,8 @@ possible values:
 
     exit_code = ExitCode.success
     try:
-        release_url = github_release_url(account, repo, tag)
-        log('constructed release URL: ' + release_url)
-        release = github_release(release_url)
+        record = given_record or record_from_release(account, repo, tag)
+        breakpoint()
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
@@ -344,7 +360,3 @@ def account_repo_tag(release_web_url):
     # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
     _, _, _, account, repo, _, _, tag = release_web_url.split('/')
     return (account, repo, tag)
-
-
-def github_release_url(account, repo, tag):
-    return 'https://api.github.com/repos/'+account+'/'+repo+'/releases/tags/'+tag
