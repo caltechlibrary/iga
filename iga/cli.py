@@ -16,6 +16,7 @@ from   sidetrack import set_debug, log
 
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, InternalError
+from iga.github import valid_github_release_url, github_account_repo_tag
 from iga.invenio import invenio_write
 from iga.record import valid_record, record_from_release
 
@@ -242,11 +243,11 @@ possible values:
             alert(ctx, 'The use of a URL and the use of options `--account`'
                   " and `--repo` are mutually exclusive; can't use both.")
             sys.exit(int(ExitCode.bad_arg))
-        elif not well_formed(url_or_tag):
+        elif not valid_github_release_url(url_or_tag):
             alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
         else:
-            account, repo, tag = account_repo_tag(url_or_tag)
+            account, repo, tag = github_account_repo_tag(url_or_tag)
     elif not all([account, repo, url_or_tag]):
         alert(ctx, 'When not using a release URL, the options `--account` and'
               ' `--repo` and a tag name must all be provided.')
@@ -272,7 +273,7 @@ possible values:
     exit_code = ExitCode.success
     try:
         record = given_record or record_from_release(account, repo, tag)
-        breakpoint()
+        invenio_write(record, server, token)
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
@@ -349,14 +350,3 @@ def alert(ctx, msg, print_usage = True):
             title_align=ALIGN_ERRORS_PANEL,
         )
     )
-
-
-def well_formed(release_web_url):
-    return (release_web_url.startswith('https://github.com')
-            and '/releases/tag/' in release_web_url)
-
-
-def account_repo_tag(release_web_url):
-    # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
-    _, _, _, account, repo, _, _, tag = release_web_url.split('/')
-    return (account, repo, tag)

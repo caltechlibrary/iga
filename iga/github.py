@@ -93,6 +93,22 @@ def github_repo_files(repo):
     log(f'found {len(json_dict["tree"])} files in repo')
     return [GitHubFile(**f) for f in json_dict['tree']]
 
+
+def valid_github_release_url(release_web_url):
+    '''Return True if the given URL appears to be a valid GitHub release URL.'''
+    split_url = release_web_url.split('/')
+    return (release_web_url.startswith('https://github.com')
+            and len(split_url) == 8
+            and split_url[5] == 'releases'
+            and split_url[6] == 'tag')
+
+
+def github_account_repo_tag(release_web_url):
+    '''Return tuple (account, repo name, tag) based on the given release URL.'''
+    # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
+    _, _, _, account, repo, _, _, tag = release_web_url.split('/')
+    return (account, repo, tag)
+
 
 # Helper functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
