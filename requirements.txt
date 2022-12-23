@@ -6,6 +6,11 @@
 # @website https://github.com/caltechlibrary/iga
 # =============================================================================
 
+aenum
+arrow
 boltons
-plac
+cffconvert
+commonpy
+rich_click
 sidetrack
+
