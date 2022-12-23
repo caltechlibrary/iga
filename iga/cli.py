@@ -184,16 +184,18 @@ iga --server https://data.caltech.edu --token token.txt \\
 _**Construction of an InvenioRDM record**_
 \r
 The record created in InvenioRDM is constructed using information extracted
-from the software release and repository using GitHub's API. The information
-includes:
+from the software release and its source repository using GitHub's API. The
+information includes the following:
  * the data available from GitHub for the release
  * the data available from GitHub for the repository
- * (if one exists) a `CITATION.cff` file in the repository
+ * (if one exists) a `codemeta.json` file in the repository
+ * (if one exists) a `CITATION.cff` file
  * the file assets associated with the release
 \r
-To override the auto-created record, you can use the option `--record` followed
-by a path to a JSON file in DataCite 4.3 format. If `--record` is provided, IGA
-does not extract the data above, but still obtains the file assets from GitHub.
+To override the auto-created record, use the option `--record` followed by the
+path to a JSON file structured according to the InvenioRDM schema used by
+the destination server. When `--record` is provided, IGA does _not_ extract
+the data above, but still obtains the file assets from GitHub.
 \r
 _**Specification of GitHub file assets**_
 \r
@@ -260,7 +262,7 @@ possible values:
         log('reading user-provided record from ' + path)
         given_record = given_record.read().strip()
         if not valid_record(given_record):
-            alert(ctx, 'File is not in valid DataCite 4.3 JSON format: ' + path)
+            alert(ctx, 'File is not in valid JSON format for InvenioRDM: ' + path)
             sys.exit(int(ExitCode.file_error))
 
     from commonpy.network_utils import network_available
