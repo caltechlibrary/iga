@@ -49,6 +49,14 @@ class GitHubRepo(SimpleNamespace):
         self._json_dict = repo_dict
 
 
+class GitHubUser(SimpleNamespace):
+    '''Simple data structure corresponding to a user in GitHub.'''
+    def __init__(self, user_dict):
+        super().__init__(**user_dict)
+        # Save the original data for debugging purposes.
+        self._json_dict = user_dict
+
+
 class GitHubAccount(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub account JSON object.'''
 
@@ -63,10 +71,6 @@ class GitHubLicense(SimpleNamespace):
 
 class GitHubFile(SimpleNamespace):
     '''Simple data structure corresponding to a file in a repo.'''
-
-
-class GitHubUser(SimpleNamespace):
-    '''Simple data structure corresponding to a user in GitHub.'''
 
 
 # Principal exported functions.
