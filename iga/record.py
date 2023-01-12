@@ -42,14 +42,15 @@ from   os import path
 from   sidetrack import log
 import sys
 
-from iga.exceptions import InternalError
+from iga.exceptions import InternalError, MissingData
 from iga.github import (
     github_release,
     github_release_url,
     github_repo,
     github_repo_file,
     github_repo_filenames,
-    github_file_url
+    github_file_url,
+    github_user
 )
 
 
@@ -189,18 +190,19 @@ def record_from_release(account, repo, tag):
 
 def additional_descriptions(repo, release):
     descriptions = []
-    # The codemeta and CFF descriptions tend to be better and longer than
-    # what people write in GitHub repo descriptions, so use that if possible.
-    # It doesn't seem useful to put both one of these *and* the GitHub repo
-    # description; that's why the conditional below is an if-else.
-    text = repo.codemeta.get('description', None) or repo.cff.get('description', None)
+    # The codemeta and CITATION.cff descriptions tend to be better than what
+    # people put in GitHub repo descriptions, so try them 1st. An argument
+    # could be made to use both one of the codemeta/cff descriptions *and* the
+    # github repo description, as two additional descriptions, but the repo
+    # descriptions rarely seem to add anything beyond the codemeta/cff ones.
+    text = (repo.codemeta.get('description', None)
+            or repo.cff.get('description', None)
+            or repo.description)
     if text:
-        descriptions.append({'description': text,
-                             'type': {'id': 'other', 'title': {'en': 'Other'}}})
-    elif repo.description:
-        descriptions.append({'description': repo.description,
-                             'type': {'id': 'other', 'title': {'en': 'Other'}}})
-    return descriptions
+        return [{'description': text,
+                 'type': {'id': 'other', 'title': {'en': 'Other'}}}]
+    else:
+        return []
 
 
 def additional_titles(repo, release):
@@ -208,25 +210,25 @@ def additional_titles(repo, release):
 
 
 def contributors(repo, release):
-    if repo.codemeta.get('contributor', []):
-        return [_person(x) for x in repo.codemeta.get('contributor', [])]
-    if repo.cff.get('contributors', []):
-        return [_person(x) for x in repo.cff.get('contributors', [])]
-    return []
+    clist = repo.codemeta.get('contributor', []) or repo.cff.get('contributors', [])
+    return [_person(x) for x in clist]
 
 
 def creators(repo, release):
     # Codemeta & CITATION.cff files contain more complete author info than the
     # GitHub release data, so try them 1st.
-    if repo.codemeta:
-        return [_person(x) for x in repo.codemeta.get('author', [])]
-    elif repo.cff:
-        return [_person(x) for x in repo.cff.get('author', [])]
-    else:
-        # We can call GitHub's user data API, but it returns very little info
-        # about a user (e.g.,, it gives a name but that name is not broken out
-        # into family & given name.
-        breakpoint()
+    authors = repo.codemeta.get('author', []) or repo.cff.get('author', [])
+    if authors:
+        return [_person(x) for x in authors]
+
+    # Couldn't get authors from codemeta.json or CITATION.cff. Try the release
+    # user first and not the repo owner, because the latter may be an org.
+    account = _release_author(release) or _repo_owner(repo)
+    if account:
+        return [account]
+
+    # A release in InvenioRDM can't be made without author data.
+    raise MissingData('Unable to extract author info from GitHub release or repo.')
 
 
 def dates(repo, release):
@@ -350,8 +352,10 @@ def version(repo, release):
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+# See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n for
+# info about the fields for authors in InvenioRDM.
+
 def _person(person_dict):
-    # See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     # Although people sometimes put more things in the CITATION.cff authors
     # info (e.g., email addr), there's no provision in InvenioRDM for that.
     person = {'family_name': person_dict['familyName'],
@@ -368,3 +372,57 @@ def _person(person_dict):
             affiliation = person_dict['affiliation']
         person.update({'affiliations': [{'name': affiliation}]})
     return person
+
+
+def _person_from_github(github_user):
+    name = _cleaned_name(github_user.name)
+    if len(name.split(' ')) == 1:
+        # Only one word in the name. Either it's really a single name (e.g., in
+        # cultures where people have single names) or someone is being cute.
+        person = {'family_name': name,
+                  'given_name': '',
+                  'type': 'personal'}
+    else:
+        from nameparser import HumanName
+        parsed_name = HumanName(name)
+        person = {'family_name': parsed_name.last,
+                  'given_name': parsed_name.first + parsed_name.middle,
+                  'type': 'personal'}
+    if github_user.company:
+        person.update({'affiliations': [{'name': github_user.company}]})
+    return person
+
+
+def _release_author(release):
+    # We can call GitHub's user data API, but it returns very little info
+    # about a user (e.g.,, it gives a name but that name is not broken out
+    # into family & given name), plus sometimes fields are empty.
+    user = github_user(release.author.login)
+    return None if not user.name else _person_from_github(user)
+
+
+def _repo_owner(repo):
+    owner = github_user(repo.owner.login)
+    if owner.type == 'Organization':
+        return {'name': owner.name,
+                'type': 'organizational'}
+    elif owner.name:
+        return _person_from_github(owner)
+    else:
+        return {}
+
+
+def _cleaned_name(name):
+    import re
+    import demoji
+    # Remove parenthetical text like "Somedude [somedomain.io]".
+    name = re.sub(r"\(.*?\)|\[.*?\]", "", name)
+    # Remove CJK characters because the name parsers can't handle them.
+    # This regex is from https://stackoverflow.com/a/2718268/743730
+    name = re.sub(u'[⺀-⺙⺛-⻳⼀-⿕々〇〡-〩〸-〺〻㐀-䶵一-鿃豈-鶴侮-頻並-龎]', '', name)
+    # Remove miscellaneous weird characters if there are any.
+    name = demoji.replace(name)
+    name = re.sub(r'[~`!@#$%^&*_+=?<>(){}|[\]]', '', name)
+    # Normalize spaces.
+    name = re.sub(r' +', ' ', name)
+    return name.strip()                 # noqa PIE781
