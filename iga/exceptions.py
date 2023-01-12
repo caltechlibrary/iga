@@ -29,5 +29,9 @@ class InvenioRDMError(IGAException):
     '''InvenioRDM returned an error.'''
 
 
+class MissingData(IGAException):
+    '''Could not obtain all the required data to create an InvenioRDM record.'''
+
+
 class InternalError(IGAException):
     '''An internal error occurred in IGA.'''
