@@ -53,7 +53,7 @@ def _config_debug(ctx, param, debug_dest):
 
 def _read_token(ctx, param, file_):
     '''Read the file and set the environment variable RDM_TOKEN.'''
-    if ctx.params.get('record', None) == 'help':
+    if ctx.params.get('url_or_tag', None) == 'help':
         print_help_and_exit(ctx)
     elif file_:
         log('reading token from file')
@@ -69,7 +69,7 @@ def _read_token(ctx, param, file_):
 
 def _read_server(ctx, param, value):
     '''Read the server address and set the environment variable RDM_SERVER.'''
-    if ctx.params.get('record', None) == 'help':
+    if ctx.params.get('url_or_tag', None) == 'help':
         print_help_and_exit(ctx)
     elif value:
         log('server address given on command line: ' + value)
