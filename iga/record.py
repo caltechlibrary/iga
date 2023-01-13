@@ -189,7 +189,6 @@ def record_from_release(account, repo, tag):
 # calling the function of that name to get the value for that field.
 
 def additional_descriptions(repo, release):
-    descriptions = []
     # The codemeta and CITATION.cff descriptions tend to be better than what
     # people put in GitHub repo descriptions, so try them 1st. An argument
     # could be made to use both one of the codemeta/cff descriptions *and* the
@@ -256,7 +255,7 @@ def identifiers(repo, release):
 
 def languages(repo, release):
     # GitHub doesn't provide a way to deal with any other human language.
-    return [{"id": "eng"}]
+    return [{"id": "eng", 'title': {'en': 'English'}}]
 
 
 def locations(repo, release):
@@ -281,6 +280,7 @@ def related_identifiers(repo, release):
     return [{'identifier': release.html_url,
              'relation_type': {'id': 'isidenticalto',
                                'title': {'en': 'Is identical to'}},
+             'resource_type': {'id': 'software', 'title': {'en': 'Software'}},
              'scheme': 'url'}]
 
 
@@ -346,7 +346,15 @@ def title(repo, release):
 
 
 def version(repo, release):
-    return release.tag_name
+    # Note: this is not really the same as a version number. However, there is
+    # no version number in the GitHub release data -- there is only the tag.
+    # The following does a weak heuristic to try to guess at a version number
+    # from certain common tag name patterns, but that's the best we can do.
+    tag = release.tag_name
+    if tag.startswith('v'):
+        import re
+        tag = re.sub(r'v(er|version)?\.?', '', tag)
+    return tag.strip()
 
 
 # Miscellaneous helper functions.
@@ -365,13 +373,15 @@ def _person(person_dict):
         orcid = person_dict['@id'].split('/')[-1]
         person.update({'identifiers': [{'scheme': 'orcid',
                                         'identifier': orcid}]})
+
+    structure = {'person_or_org': person}
     if 'affiliation' in person_dict:
         if isinstance(person_dict['affiliation'], dict):
             affiliation = person_dict['affiliation']['legalName']
         else:
             affiliation = person_dict['affiliation']
-        person.update({'affiliations': [{'name': affiliation}]})
-    return person
+        structure.update({'affiliations': [{'name': affiliation}]})
+    return structure
 
 
 def _person_from_github(github_user):
