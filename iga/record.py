@@ -353,7 +353,7 @@ def version(repo, release):
     tag = release.tag_name
     if tag.startswith('v'):
         import re
-        tag = re.sub(r'v(er|version)?\.?', '', tag)
+        tag = re.sub(r'v(er|version)?[ .]?', '', tag)
     return tag.strip()
 
 
