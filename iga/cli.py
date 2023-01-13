@@ -275,7 +275,10 @@ possible values:
     exit_code = ExitCode.success
     try:
         record = given_record or record_from_release(account, repo, tag)
-        invenio_write(record, server, token)
+        if dry_run:
+            report_actions(ctx, record)
+        else:
+            invenio_write(record, server, token)
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
@@ -311,6 +314,27 @@ def print_help_and_exit(ctx):
     '''Print the help text and exit with a success code.'''
     click.echo(ctx.get_help())
     sys.exit(int(ExitCode.success))
+
+
+def report_actions(ctx, record):
+    from rich.console import Console
+    from rich.markdown import Markdown
+    from rich.panel import Panel
+    from rich import print_json
+
+    comment = (f'Option --dry-run is in effect. Here is the record that would'
+               f' be sent to the InvenioRDM server {os.environ["RDM_SERVER"]}'
+               f' if --dry-run were **not** in effect.')
+    console = Console()
+    console.print(
+        Panel(
+            Markdown(comment),
+            style='yellow',
+            border_style='yellow',
+            title='Note'
+        )
+    )
+    print_json(data = record)
 
 
 def alert(ctx, msg, print_usage = True):
