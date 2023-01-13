@@ -65,7 +65,9 @@ def test_version(capsys):
 def test_server(capsys):
     from iga.cli import cli
     runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--server', 'foo', '--token', '-', 'fakerecord'])
+    args = ['--dry-run', '--server', 'foo', '--token', '-',
+            'https://github.com/caltechlibrary/dibs/releases/tag/v0.7.0']
+    result = runner.invoke(cli, args, input='faketoken')
     assert result.exit_code == int(ExitCode.success)
     assert 'RDM_SERVER' in os.environ
     assert os.environ['RDM_SERVER'] == 'foo'
@@ -74,7 +76,8 @@ def test_server(capsys):
 def test_token(capsys):
     from iga.cli import cli
     runner = click.testing.CliRunner()
-    args = ['--server', 'foo', '--token', '-', 'fakerecord']
+    args = ['--dry-run', '--server', 'foo', '--token', '-',
+            'https://github.com/caltechlibrary/dibs/releases/tag/v0.7.0']
     result = runner.invoke(cli, args, input='faketoken')
     assert result.exit_code == int(ExitCode.success)
     assert 'RDM_TOKEN' in os.environ
