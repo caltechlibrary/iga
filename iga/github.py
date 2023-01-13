@@ -23,6 +23,7 @@ class GitHubRelease(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub release JSON object.'''
     def __init__(self, release_dict):
         super().__init__(**release_dict)
+        log('GitHub release data: ' + json5.dumps(release_dict, indent=2))
         self.author = GitHubAccount(**release_dict['author'])
         # First, do in-place conversion of the 'uploader' field (a dict) ...
         for asset in self.assets:
@@ -41,6 +42,7 @@ class GitHubRepo(SimpleNamespace):
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
         self.owner = GitHubAccount(**repo_dict['owner'])
+        log('GitHub repo data: ' + json5.dumps(repo_dict, indent=2))
         if repo_dict.get('organization', None):
             self.organization = GitHubAccount(**repo_dict['organization'])
         if repo_dict.get('license', None):
@@ -53,6 +55,7 @@ class GitHubUser(SimpleNamespace):
     '''Simple data structure corresponding to a user in GitHub.'''
     def __init__(self, user_dict):
         super().__init__(**user_dict)
+        log('GitHub user data: ' + json5.dumps(user_dict, indent=2))
         # Save the original data for debugging purposes.
         self._json_dict = user_dict
 
