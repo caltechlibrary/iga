@@ -7,7 +7,9 @@ licenses.py: license descriptions.
  ╰────────────────── Notice ── Notice ── Notice ──────────────────╯
 '''
 
-LICENSE_DESCRIPTIONS = {
+from commonpy.data_structures import CaseFoldDict
+
+LICENSE_DESCRIPTIONS = CaseFoldDict({
   "0bsd": "The BSD Zero Clause license goes further than the BSD 2-Clause license to allow you unlimited freedom with the software without requirements to include the copyright notice, license text, or disclaimer in either source or binary forms.",
   "afl-3.0": "The Academic Free License is a variant of the Open Software License that does not require that the source code of derivative works be disclosed. It contains explicit copyright and patent grants and reserves trademark rights in the author.",
   "agpl-3.0": "Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.",
@@ -53,4 +55,4 @@ LICENSE_DESCRIPTIONS = {
   "vim": "There are no restrictions on using or distributing an unmodified copy of the software. Parts of the software may also be distributed, but the license text must always be included. For modified versions a few restrictions apply. The license is GPL compatible, you may compile the software with GPL libraries and distribute it.",
   "wtfpl": "The easiest license out there. It gives the user permissions to do whatever they want with your code.",
   "zlib": "A short permissive license, compatible with GPL. Requires altered source versions to be documented as such.",
-}
+})
