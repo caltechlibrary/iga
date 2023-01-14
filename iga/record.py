@@ -237,7 +237,7 @@ def dates(repo, release):
 
 
 def description(repo, release):
-    return release.body.strip()
+    return release.body.strip() if release.body else ''
 
 
 def formats(repo, release):
@@ -342,7 +342,7 @@ def subjects(repo, release):
 
 
 def title(repo, release):
-    return repo.full_name + ': ' + release.name
+    return repo.full_name + ': ' + (release.name or release.tag_name)
 
 
 def version(repo, release):
@@ -385,19 +385,10 @@ def _person(person_dict):
 
 
 def _person_from_github(github_user):
-    name = _cleaned_name(github_user.name)
-    if len(name.split(' ')) == 1:
-        # Only one word in the name. Either it's really a single name (e.g., in
-        # cultures where people have single names) or someone is being cute.
-        person = {'family_name': name,
-                  'given_name': '',
-                  'type': 'personal'}
-    else:
-        from nameparser import HumanName
-        parsed_name = HumanName(name)
-        person = {'family_name': parsed_name.last,
-                  'given_name': parsed_name.first + parsed_name.middle,
-                  'type': 'personal'}
+    (given, surname) = _split_name(github_user.name)
+    person = {'given_name': given,
+              'family_name': surname,
+              'type': 'personal'}
     if github_user.company:
         person.update({'affiliations': [{'name': github_user.company}]})
     return person
@@ -422,6 +413,65 @@ def _repo_owner(repo):
         return {}
 
 
+def _split_name(name):
+    # Trying to split names automatically into parts is not only impossible
+    # in general, but also undesirable: not all cultures use names with only
+    # first and/or last name components, or just one last name, or in the
+    # same order as Western names, etc. However, we have no choice in this
+    # program, because the InvenioRDM record format wants first & last names.
+    #
+    # The approach taken here is roughly:
+    #  1) strip non-Latin characters and non-alpha characters from the string
+    #  2) if the result is only a single word, treat it as a surname only
+    #  3) invoke a machine learning-based name parser (ProbablePeople) to do
+    #     a best-effort attempt at splitting the name into given + surname
+    #  4) PP is prone to failures on some names, so if it fails, fall back to
+    #     using a different name parser (nameparser) that doesn't split names
+    #     quite as correctly as PP, but is better than nothing.
+
+    log('splitting name ' + name)
+    name = _cleaned_name(name)
+    if len(name.split(' ')) == 1:
+        # Only one word in the name. Either it is really a single name (e.g.,
+        # in cultures where people have single names) or someone is being cute.
+        log('treating single name as the family name')
+        return ('', name)
+    try:
+        log('trying to split name using probablepeople')
+        import probablepeople as pp
+        from_pp = pp.tag(name)
+        # PP gets better results if you DON'T supply the 'type' parameter. (I
+        # don't know why.) So, we use that 1st, unless it guesses wrong about
+        # the type, in which case, we run it again using type=person.
+        if from_pp[1] != 'Person':
+            from_pp = pp.tag(_cleaned_name(name), type='person')
+        parsed = from_pp[0]
+        # If it found initials instead of full names, use those.
+        if parsed.get('FirstInitial', ''):
+            given = parsed.get('FirstInitial')
+        else:
+            given = parsed.get('GivenName', '')
+
+        # For some reason, it seems the InvenioRDM records include the middle
+        # names as part of the first/given names.
+        if parsed.get('MiddleInitial', ''):
+            given += (' ' + parsed.get('MiddleInitial'))
+        elif parsed.get('MiddleName', ''):
+            given += (' ' + parsed.get('MiddleName'))
+
+        if parsed.get('LastInitial', '') and not parsed.get('Surname', ''):
+            surname = parsed.get('LastInitial')
+        else:
+            surname = parsed.get('Surname', '')
+
+        return (given, surname)
+    except Exception:                   # noqa: PIE786
+        log(f'switching to nameparser after probablepeople faulted on "{name}"')
+        from nameparser import HumanName
+        parsed = HumanName(name)
+        return (parsed.first + ' ' + parsed.middle, parsed.last)
+
+
 def _cleaned_name(name):
     import re
     import demoji
@@ -436,3 +486,4 @@ def _cleaned_name(name):
     # Normalize spaces.
     name = re.sub(r' +', ' ', name)
     return name.strip()                 # noqa PIE781
+
