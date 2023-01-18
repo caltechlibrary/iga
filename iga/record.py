@@ -435,41 +435,53 @@ def _split_name(name):
         # Only one word in the name. Either it is really a single name (e.g.,
         # in cultures where people have single names) or someone is being cute.
         log('treating single name as the family name')
-        return ('', name)
-    try:
-        log('trying to split name using probablepeople')
-        import probablepeople as pp
-        from_pp = pp.tag(name)
-        # PP gets better results if you DON'T supply the 'type' parameter. (I
-        # don't know why.) So, we use that 1st, unless it guesses wrong about
-        # the type, in which case, we run it again using type=person.
-        if from_pp[1] != 'Person':
-            from_pp = pp.tag(_cleaned_name(name), type='person')
-        parsed = from_pp[0]
-        # If it found initials instead of full names, use those.
-        if parsed.get('FirstInitial', ''):
-            given = parsed.get('FirstInitial')
-        else:
-            given = parsed.get('GivenName', '')
+        given = ''
+        surname = name
+    else:
+        try:
+            log('trying to split name using probablepeople')
+            import probablepeople as pp
+            from_pp = pp.tag(name)
+            # PP gets better results if you DON'T supply the 'type' parameter.
+            # (I don't know why.) Use that 1st, unless it guesses wrong about
+            # the type, in which case, we run it again using type=person.
+            if from_pp[1] != 'Person':
+                from_pp = pp.tag(_cleaned_name(name), type='person')
+            parsed = from_pp[0]
+            # If it found initials instead of full names, use those.
+            if parsed.get('FirstInitial', ''):
+                given = parsed.get('FirstInitial')
+            else:
+                # Get rid of periods at the end, in case someone got cute.
+                given = parsed.get('GivenName', '').rstrip('.')
 
-        # For some reason, it seems the InvenioRDM records include the middle
-        # names as part of the first/given names.
-        if parsed.get('MiddleInitial', ''):
-            given += (' ' + parsed.get('MiddleInitial'))
-        elif parsed.get('MiddleName', ''):
-            given += (' ' + parsed.get('MiddleName'))
+            # For some reason, it seems the InvenioRDM records include the
+            # middle names as part of the first/given names, so:
+            if parsed.get('MiddleInitial', ''):
+                given += (' ' + parsed.get('MiddleInitial'))
+            elif parsed.get('MiddleName', ''):
+                given += (' ' + parsed.get('MiddleName'))
 
-        if parsed.get('LastInitial', '') and not parsed.get('Surname', ''):
-            surname = parsed.get('LastInitial')
-        else:
-            surname = parsed.get('Surname', '')
+            if parsed.get('LastInitial', '') and not parsed.get('Surname', ''):
+                surname = parsed.get('LastInitial').title()
+            else:
+                surname = parsed.get('Surname', '')
+        except Exception:                   # noqa: PIE786
+            log(f'switching to nameparser b/c probablepeople failed on "{name}"')
+            from nameparser import HumanName
+            parsed = HumanName(name)
+            # (Noted above) InvenioRDM includes middle name as part of 1st name:
+            given = parsed.first + ' ' + parsed.middle
+            surname = parsed.last
 
-        return (given, surname)
-    except Exception:                   # noqa: PIE786
-        log(f'switching to nameparser after probablepeople faulted on "{name}"')
-        from nameparser import HumanName
-        parsed = HumanName(name)
-        return (parsed.first + ' ' + parsed.middle, parsed.last)
+    # Carefully upper-case the first letters.
+    given = _upcase_first_letters(given)
+    if _plain_word(surname):
+        surname = surname.title()
+    given = given.strip()
+    surname = surname.strip()
+
+    return (given, surname)
 
 
 def _cleaned_name(name):
@@ -483,7 +495,21 @@ def _cleaned_name(name):
     # Remove miscellaneous weird characters if there are any.
     name = demoji.replace(name)
     name = re.sub(r'[~`!@#$%^&*_+=?<>(){}|[\]]', '', name)
-    # Normalize spaces.
+    # Replace typographical quotes with regular quotes, for PP's benefit.
+    name = re.sub(r'[“”‘’]', '"', name)
+    # Make sure periods are followed by spaces.
+    name = name.replace('.', '. ')
+    # Normalize runs of multiple spaces to one.
     name = re.sub(r' +', ' ', name)
     return name.strip()                 # noqa PIE781
 
+
+def _plain_word(name):
+    return (not ' ' in name
+            and not any(str.isdigit(c) for c in name)
+            and (all(str.isupper(c) for c in name[1:])
+                 or not any(str.isupper(c) for c in name[1:])))
+
+
+def _upcase_first_letters(name):
+    return ' '.join(word[0].upper() + word[1:] for word in name.split())
