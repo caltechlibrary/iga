@@ -505,9 +505,9 @@ def _cleaned_name(name):
 
 
 def _plain_word(name):
-    return (not ' ' in name
+    return (' ' not in name
             and not any(str.isdigit(c) for c in name)
-            and (all(str.isupper(c) for c in name[1:])
+            and (all(str.isupper(c) for c in name)
                  or not any(str.isupper(c) for c in name[1:])))
 
 
