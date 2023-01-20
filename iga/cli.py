@@ -262,7 +262,7 @@ possible values:
         log('reading user-provided record from ' + path)
         given_record = given_record.read().strip()
         if not valid_record(given_record):
-            alert(ctx, 'File is not in valid JSON format for InvenioRDM: ' + path)
+            alert(ctx, 'File not in valid JSON format for InvenioRDM: ' + path)
             sys.exit(int(ExitCode.file_error))
 
     from commonpy.network_utils import network_available
@@ -297,7 +297,7 @@ possible values:
         log('exception: ' + str(ex) + '\n\n' + details)
         import iga
         alert(ctx, 'IGA experienced an unrecoverable error. Please report this'
-              f' to the developer. Your version of IGA is {iga.__version__}.'
+              f' to the developers. Your version of IGA is {iga.__version__}.'
               f' For information about how to report errors, please see the'
               f' project page at {iga.__url__}/.\n\nError text: {str(ex)}', False)
 
@@ -323,8 +323,7 @@ def report_actions(ctx, record):
     from rich import print_json
 
     comment = (f'Option `--dry-run` is in effect. The following is the record'
-               f' that _would_ have been sent to the InvenioRDM server'
-               f' **{os.environ["RDM_SERVER"]}**'
+               f' that _would_ have been sent to **{os.environ["RDM_SERVER"]}**'
                f' if `--dry-run` were _not_ in effect.')
     console = Console()
     console.print(
@@ -335,10 +334,10 @@ def report_actions(ctx, record):
             title='Note'
         )
     )
-    print_json(data = record)
+    print_json(data=record)
 
 
-def alert(ctx, msg, print_usage = True):
+def alert(ctx, msg, print_usage=True):
     '''Print an error message in the style of rich_click.
     This is meant to be used when reporting errors involving UI options, in
     situations where rich_click's own error reporting can't be used directly.'''
