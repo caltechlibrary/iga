@@ -82,21 +82,21 @@ class GitHubFile(SimpleNamespace):
 def github_release(release_url):
     '''Return a Release object corresponding to the tagged release in GitHub.'''
     log('getting GitHub data for release at ' + release_url)
-    return object_for_github(release_url, GitHubRelease)
+    return _object_for_github(release_url, GitHubRelease)
 
 
 def github_user(account):
     '''Return a User object corresponding to the GitHub user account.'''
     user_url = 'https://api.github.com/users/' + account
     log('getting GitHub data for user at ' + user_url)
-    return object_for_github(user_url, GitHubUser)
+    return _object_for_github(user_url, GitHubUser)
 
 
 def github_repo(account, repo):
     '''Return a Repo object corresponding to the repo in GitHub.'''
     repo_url = 'https://api.github.com/repos/' + account + '/' + repo
     log('getting GitHub data for repo at ' + repo_url)
-    return object_for_github(repo_url, GitHubRepo)
+    return _object_for_github(repo_url, GitHubRepo)
 
 
 def github_repo_filenames(repo):
@@ -139,7 +139,7 @@ def github_repo_file(repo, filename):
     # Cache the file contents, so we don't have to get it from GitHub again.
     repo._file_contents[filename] = contents
     return contents
- 
+
 
 def github_account_repo_tag(release_web_url):
     '''Return tuple (account, repo name, tag) based on the given web URL.'''
@@ -150,10 +150,12 @@ def github_account_repo_tag(release_web_url):
 
 
 def github_release_url(account, repo, tag):
+    '''Return an API release URL for the combo of account, repo and tag.'''
     return 'https://api.github.com/repos/'+account+'/'+repo+'/releases/tags/'+tag
 
 
 def github_file_url(repo, filename):
+    '''Return a URL that can be used to download the given file from the repo.'''
     return repo.html_url + '/blob/' + repo.default_branch + '/' + filename
 
 
@@ -169,7 +171,8 @@ def valid_github_release_url(release_web_url):
 # Helper functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def object_for_github(api_url, cls):
+def _object_for_github(api_url, cls):
+    '''Return object of class cls made from the data obtained from the API url.'''
     (response, error) = net('get', api_url)
     if error:
         import commonpy.exceptions
@@ -193,7 +196,6 @@ def object_for_github(api_url, cls):
         obj.api_url = api_url
         return obj
     except Exception as ex:
-        breakpoint()
         # GitHub returned an unexpected value. We need to fix our handling.
         log('unexpected problem decode json from GitHub: ' + str(ex))
         raise InternalError('GitHub returned an unexpected value.')
