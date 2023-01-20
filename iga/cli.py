@@ -322,9 +322,10 @@ def report_actions(ctx, record):
     from rich.panel import Panel
     from rich import print_json
 
-    comment = (f'Option --dry-run is in effect. Here is the record that would'
-               f' be sent to the InvenioRDM server {os.environ["RDM_SERVER"]}'
-               f' if --dry-run were **not** in effect.')
+    comment = (f'Option `--dry-run` is in effect. The following is the record'
+               f' that _would_ have been sent to the InvenioRDM server'
+               f' **{os.environ["RDM_SERVER"]}**'
+               f' if `--dry-run` were _not_ in effect.')
     console = Console()
     console.print(
         Panel(
