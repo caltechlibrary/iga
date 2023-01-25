@@ -1,0 +1,67 @@
+{
+	"@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+	"@type": "SoftwareSourceCode",
+	"@id": "https://doi.org/10.14454/qgk4-zs88",
+	"agents": [{
+		"@id": "https://orcid.org/0000-0003-1419-2405",
+		"@type": "person",
+		"name": "Martin Fenner",
+		"affiliation": "DataCite",
+		"mustBeCited": true,
+		"isMaintainer": true,
+		"isRightsHolder": true
+  },
+  {
+		"@id": "https://orcid.org/0000-0002-8599-0773",
+		"@type": "person",
+		"name": "Richard Hallett",
+		"affiliation": "DataCite",
+		"mustBeCited": true,
+		"isMaintainer": true,
+		"isRightsHolder": true
+  },
+  {
+		"@id": "https://orcid.org/0000-0003-3484-6875",
+		"@type": "person",
+		"name": "Kristian Garza",
+		"affiliation": "DataCite",
+		"mustBeCited": true,
+		"isMaintainer": true,
+		"isRightsHolder": true
+  },
+  {
+		"@id": "https://orcid.org/0000-0002-5355-2576",
+		"@type": "person",
+		"name": "Sarala Wimalaratne",
+		"affiliation": "DataCite",
+		"mustBeCited": true,
+		"isMaintainer": true,
+		"isRightsHolder": true
+  }],
+	"identifier": "https://doi.org/10.14454/qgk4-zs88",
+	"codeRepository": "https://github.com/datacite/akita",
+	"controlledTem": "software",
+	"dateCreated": "2020-05-04",
+	"datePublished": "2020-10-18",
+	"dateModified": "2020-10-18",
+	"description": "The web frontend for the DataCite Commons discovery service.",
+	"isAutomatedBuild": true,
+	"licenseId": "MIT",
+  "publisher": "DataCite",
+  "version": "1.0.4",
+	"tags": [
+		"PID Graph",
+    "GraphQL",
+    "React",
+    "DOI",
+    "ORCID",
+    "ROR",
+    "PID"
+	],
+	"title": "Frontend for the DataCite Commons service",
+	"programmingLanguage": {
+		"name": "Javascript",
+		"URL": "https://www.javascript.com/"
+	},
+	"readme": "https://github.com/datacite/akita/blob/master/README.md"
+}

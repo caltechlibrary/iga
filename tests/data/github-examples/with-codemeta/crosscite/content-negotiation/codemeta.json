@@ -1,0 +1,40 @@
+{
+    "@context": "https://raw.githubusercontent.com/codemeta/codemeta/master/codemeta.jsonld",
+    "@type": "SoftwareSourceCode",
+    "@id": "https://doi.org/10.5438/T1JG-HVHN",
+    "agents": {
+        "@id": "http://orcid.org/0000-0003-1419-2405",
+        "@type": "person",
+        "name": "Martin Fenner",
+        "affiliation": "DataCite",
+        "mustBeCited": true,
+        "isMaintainer": true,
+        "isRightsHolder": true
+    },
+    "identifier": "https://doi.org/10.5438/T1JG-HVHN",
+    "codeRepository": "https://github.com/crosscite/content-negotiation",
+    "dateCreated": "2017-04-08",
+    "datePublished": "2017-04-28",
+    "dateModified": "2017-04-28",
+    "description": "An API for DOI content negotiation. Also available as Docker container.",
+    "isAutomatedBuild": true,
+    "licenseId": "MIT",
+    "publisher": "DataCite",
+    "tags": [
+        "doi",
+        "metadata",
+        "crossref",
+        "datacite",
+        "schema.org",
+        "bibtex",
+        "codemeta",
+        "content negotiation"
+    ],
+    "title": "Content-Negotation: an API for DOI content negotiation",
+    "programmingLanguage": {
+        "name": "Ruby",
+        "version": "≥ 2.3.3",
+        "URL": "https://www.ruby-lang.org"
+    },
+    "readme": "https://github.com/crosscite/content-negotiation/blob/master/README.md"
+}
