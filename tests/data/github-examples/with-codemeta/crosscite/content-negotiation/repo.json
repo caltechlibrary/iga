@@ -27,7 +27,7 @@
   html_url: "https://github.com/crosscite/content-negotiation",
   description: "DOI content negotiation",
   fork: false,
-  url: "https://api.github.com/repos/crosscite/content-negotiation",
+  api_url: "https://api.github.com/repos/crosscite/content-negotiation",
   forks_url: "https://api.github.com/repos/crosscite/content-negotiation/forks",
   keys_url: "https://api.github.com/repos/crosscite/content-negotiation/keys{/key_id}",
   collaborators_url: "https://api.github.com/repos/crosscite/content-negotiation/collaborators{/collaborator}",

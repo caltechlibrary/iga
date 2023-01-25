@@ -27,7 +27,7 @@
   html_url: "https://github.com/sbmlteam/libsbml",
   description: "LibSBML is a native library for reading, writing and manipulating files and data streams containing the Systems Biology Markup Language (SBML). It offers language bindings for C, C++, C#, Java, JavaScript, MATLAB, Perl, PHP, Python, R and Ruby.",
   fork: false,
-  url: "https://api.github.com/repos/sbmlteam/libsbml",
+  api_url: "https://api.github.com/repos/sbmlteam/libsbml",
   forks_url: "https://api.github.com/repos/sbmlteam/libsbml/forks",
   keys_url: "https://api.github.com/repos/sbmlteam/libsbml/keys{/key_id}",
   collaborators_url: "https://api.github.com/repos/sbmlteam/libsbml/collaborators{/collaborator}",

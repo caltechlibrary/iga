@@ -27,7 +27,7 @@
   html_url: "https://github.com/cds-astro/tutorials",
   description: "Jupyter Notebook tutorials using astronomical databases and virtual observatory tools",
   fork: false,
-  url: "https://api.github.com/repos/cds-astro/tutorials",
+  api_url: "https://api.github.com/repos/cds-astro/tutorials",
   forks_url: "https://api.github.com/repos/cds-astro/tutorials/forks",
   keys_url: "https://api.github.com/repos/cds-astro/tutorials/keys{/key_id}",
   collaborators_url: "https://api.github.com/repos/cds-astro/tutorials/collaborators{/collaborator}",

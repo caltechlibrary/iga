@@ -27,7 +27,7 @@
   html_url: "https://github.com/charlie86/spotifyr",
   description: "R wrapper for Spotify's Web API",
   fork: false,
-  url: "https://api.github.com/repos/charlie86/spotifyr",
+  api_url: "https://api.github.com/repos/charlie86/spotifyr",
   forks_url: "https://api.github.com/repos/charlie86/spotifyr/forks",
   keys_url: "https://api.github.com/repos/charlie86/spotifyr/keys{/key_id}",
   collaborators_url: "https://api.github.com/repos/charlie86/spotifyr/collaborators{/collaborator}",
