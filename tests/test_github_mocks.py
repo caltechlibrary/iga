@@ -2,6 +2,7 @@ import iga.github
 from iga.github import GitHubRelease, GitHubRepo, GitHubUser
 from os import path
 import json5
+from unittest.mock import patch
 
 HERE = path.dirname(path.abspath(__file__))
 
@@ -59,3 +60,20 @@ def test_mocking_repo_file(mocker):
     value = mocked_function('foo/repo', 'codemeta.json')
     assert isinstance(value, dict)
     assert value['codeRepository'] == 'git+https://github.com/cds-astro/tutorials'
+
+
+@patch('iga.github.github_release', autospec=True, return_value = 'biff')
+def test_patch_github_release(*args):
+    assert iga.github.github_release('a', 'b', 'c') == 'biff'
+
+
+@patch('iga.github.github_repo', autospec=True, return_value = 'bar')
+def test_patch_github_repo(*args):
+    assert iga.github.github_repo('a', 'b') == 'bar'
+
+
+@patch('iga.github.github_release', autospec=True, return_value = 'biff')
+@patch('iga.github.github_repo', autospec=True, return_value = 'bar')
+def test_patch_all(*args):
+    assert iga.github.github_repo('a', 'b') == 'bar'
+    assert iga.github.github_release('a', 'b', 'c') == 'biff'
