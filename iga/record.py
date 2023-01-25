@@ -365,8 +365,8 @@ def version(repo, release):
 def _person(person_dict):
     # Although people sometimes put more things in the CITATION.cff authors
     # info (e.g., email addr), there's no provision in InvenioRDM for that.
-    person = {'family_name': person_dict['familyName'],
-              'given_name': person_dict['givenName'],
+    person = {'family_name': _flattened_name(person_dict['familyName']),
+              'given_name': _flattened_name(person_dict['givenName']),
               'type': 'personal'}
     if 'orcid' in person_dict.get('@id', ''):
         orcid = person_dict['@id'].split('/')[-1]
@@ -512,3 +512,11 @@ def _plain_word(name):
 
 def _upcase_first_letters(name):
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
+
+
+def _flattened_name(name):
+    '''Return name as a string even if it's a list and not a simple string.'''
+    if isinstance(name, list):
+        return ' '.join(part for part in name)
+    else:
+        return name
