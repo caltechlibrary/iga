@@ -79,24 +79,25 @@ class GitHubFile(SimpleNamespace):
 # Principal exported functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def github_release(release_url):
+def github_release(account, repo, tag):
     '''Return a Release object corresponding to the tagged release in GitHub.'''
-    log('getting GitHub data for release at ' + release_url)
-    return _object_for_github(release_url, GitHubRelease)
+    endpoint = 'https://api.github.com/repos/'+account+'/'+repo+'/releases/tags/'+tag
+    log('getting GitHub data for release at ' + endpoint)
+    return _object_for_github(endpoint, GitHubRelease)
 
 
 def github_user(account):
     '''Return a User object corresponding to the GitHub user account.'''
-    user_url = 'https://api.github.com/users/' + account
-    log('getting GitHub data for user at ' + user_url)
-    return _object_for_github(user_url, GitHubUser)
+    endpoint = 'https://api.github.com/users/' + account
+    log('getting GitHub data for user at ' + endpoint)
+    return _object_for_github(endpoint, GitHubUser)
 
 
 def github_repo(account, repo):
     '''Return a Repo object corresponding to the repo in GitHub.'''
-    repo_url = 'https://api.github.com/repos/' + account + '/' + repo
-    log('getting GitHub data for repo at ' + repo_url)
-    return _object_for_github(repo_url, GitHubRepo)
+    endpoint = 'https://api.github.com/repos/' + account + '/' + repo
+    log('getting GitHub data for repo at ' + endpoint)
+    return _object_for_github(endpoint, GitHubRepo)
 
 
 def github_repo_filenames(repo):
@@ -141,17 +142,12 @@ def github_repo_file(repo, filename):
     return contents
 
 
-def github_account_repo_tag(release_web_url):
+def github_account_repo_tag(release_url):
     '''Return tuple (account, repo name, tag) based on the given web URL.'''
     # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
     # Note this is not the same as the "release url" below.
-    _, _, _, account, repo, _, _, tag = release_web_url.split('/')
+    _, _, _, account, repo, _, _, tag = release_url.split('/')
     return (account, repo, tag)
-
-
-def github_release_url(account, repo, tag):
-    '''Return an API release URL for the combo of account, repo and tag.'''
-    return 'https://api.github.com/repos/'+account+'/'+repo+'/releases/tags/'+tag
 
 
 def github_file_url(repo, filename):
@@ -159,10 +155,10 @@ def github_file_url(repo, filename):
     return repo.html_url + '/blob/' + repo.default_branch + '/' + filename
 
 
-def valid_github_release_url(release_web_url):
+def valid_github_release_url(release_url):
     '''Return True if the given URL appears to be a valid GitHub release URL.'''
-    split_url = release_web_url.split('/')
-    return (release_web_url.startswith('https://github.com')
+    split_url = release_url.split('/')
+    return (release_url.startswith('https://github.com')
             and len(split_url) == 8
             and split_url[5] == 'releases'
             and split_url[6] == 'tag')

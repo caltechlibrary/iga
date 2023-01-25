@@ -45,7 +45,6 @@ import sys
 from iga.exceptions import InternalError, MissingData
 from iga.github import (
     github_release,
-    github_release_url,
     github_repo,
     github_repo_file,
     github_repo_filenames,
@@ -152,11 +151,11 @@ def valid_record(json_dict):
 
 def record_from_release(account, repo, tag):
     '''Return InvenioRDM record created from the account/repo/tag release.'''
-    release_url = github_release_url(account, repo, tag)
-    release = github_release(release_url)
+    release = github_release(account, repo, tag)
     repo = github_repo(account, repo)
 
-    # We use codemeta.json & CITATION.cff often. Get them now & add as property.
+    # We use codemeta.json & CITATION.cff often. Get them now & augment the
+    # repo object with them so that field extraction functions can access them.
     repo.codemeta = {}
     repo.cff = {}
     filenames = github_repo_filenames(repo)
