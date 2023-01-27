@@ -1,0 +1,33 @@
+abstract: Documentation for the FAIRshare application
+authors:
+  - affiliation: FAIR Data Innovations Hub
+    email: ssoundarajan@calmi2.org
+    family-names: Soundarajan
+    given-names: Sanjay
+  - affiliation: California Medical Innovations Institute
+    email: bpatel@calmi2.org
+    family-names: Patel
+    given-names: Bhavesh
+cff-version: 1.2.0
+date-released: '2022-10-31'
+identifiers:
+  - description: DOI for this software's record on Zenodo
+    type: doi
+    value: https://doi.org/10.5281/zenodo.7268365
+keywords:
+  - FAIR
+  - data
+  - curation
+  - documentation
+  - electron
+  - macos
+  - ubuntu
+  - windows
+license: MIT
+message: If you use this software, please cite it as below.
+repository-artifact: https://github.com/fairdataihub/FAIRshare-Docs
+repository-code: https://github.com/fairdataihub/FAIRshare-Docs
+title: FAIRshare docs
+type: software
+url: https://fairdataihub.org/
+version: 4.2.18
