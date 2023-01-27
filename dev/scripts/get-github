@@ -1,0 +1,32 @@
+#!/bin/bash
+
+arg=$1
+release=$2
+
+user=$(echo $arg | cut -d/ -f1)
+repo=$(echo $arg | cut -d/ -f2)
+
+mkdir -p $arg
+
+API=https://api.github.com
+
+echo "Downloading files for $user/$repo ..."
+
+curl -s $API/repos/$user/$repo > $user/$repo/repo.json
+curl -s $API/repos/$arg/releases/tags/$release > $user/$repo/release.json
+curl -s $API/users/$user > $user/$repo/user.json
+
+default=$(jq -r .default_branch $user/$repo/repo.json)
+
+echo '[' > $user/$repo/filenames.json
+curl -s $API/repos/$arg/git/trees/$default | jq '.tree[].path' | sed 's/$/,/g' >> $user/$repo/filenames.json
+echo ']' >> $user/$repo/filenames.json
+
+license=$(grep -i license $user/$repo/filenames.json | tr -d ',"')
+
+for file in codemeta.json CITATION.cff $license; do
+    curl -s $API/repos/$user/$repo/contents/$file |\
+        jq -r .content | base64 -D > $user/$repo/$file
+done
+
+echo "Downloading files for $user/$repo ... Done."
