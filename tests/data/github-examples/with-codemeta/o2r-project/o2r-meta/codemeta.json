@@ -1,0 +1,80 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "license": "https://spdx.org/licenses/Apache-2.0",
+    "codeRepository": "git+https://github.com/o2r-project/o2r-meta.git",
+    "contIntegration": "https://travis-ci.org/o2r-project/o2r-meta",
+    "dateCreated": "2019-08-16",
+    "datePublished": "2020-07-02",
+    "dateModified": "2020-07-02",
+    "issueTracker": "https://github.com/o2r-project/o2r-meta/issues",
+    "name": "geoextent",
+    "version": "0.1.0",
+    "identifier": "https://doi.org/10.5281/zenodo.3925693",
+    "description": "Python library for extracting, mapping, and validating metadata for reproducible workflows in scholarly communication; part of the DFG-funded research project Opening Reproducible Research (o2r, https://o2r.info).",
+    "applicationCategory": "Geoinformatics",
+    "funding": "PE 1632/10-1, KR 3930/3-1, TR 864/6-1, PE 1632/17-1, KR 3930/8-1, TR 864/12-1",
+    "developmentStatus": "active",
+    "isPartOf": "https://o2r.info/",
+    "funder": {
+        "@type": "Organization",
+        "name": "DFG"
+    },
+    "keywords": [
+        "spatial data",
+        "metadata",
+        "discovery",
+        "scholarly communiation",
+        "scientific publishing"
+    ],
+    "programmingLanguage": [
+        "Python 3"
+    ],
+    "operatingSystem": [
+        "OS independent"
+    ],
+    "relatedLink": [
+        "https://o2r.info/"
+    ],
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "Marc",
+            "familyName": "Schutzeichel",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "University of Münster, Münster, Germany"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0002-0024-5046",
+            "givenName": "Daniel",
+            "familyName": "Nüst",
+            "email": "daniel.nuest@uni-muenster.de",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Opening Reproducible Research, University of Münster, Münster, Germany"
+            }
+        },
+        {
+            "@type": "Person",
+            "@id": "https://orcid.org/0000-0001-6651-0976",
+            "givenName": "Markus",
+            "familyName": "Konkol",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Opening Reproducible Research, University of Münster, Münster, Germany"
+            }
+        },
+        {
+            "@type": "Person",
+            "givenName": "Jan",
+            "familyName": "Suleiman",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Opening Reproducible Research, University of Münster, Münster, Germany"
+            }
+        }
+    ]
+}

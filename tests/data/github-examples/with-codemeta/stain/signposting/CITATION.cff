@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+abstract: "This library helps client to discover links that follow the  FAIR Signposting conventions."
+authors:
+  - family-names: Soiland-Reyes
+    given-names: Stian
+    orcid: https://orcid.org/0000-0001-9842-9718
+  - family-names: Kinoshita
+    given-names: Bruno P. 
+    orcid: https://orcid.org/0000-0001-8250-4074"
+title: "Signposting link parser library"
+doi: 10.5281/zenodo.6815412
+version: 0.9.0
+license: Apache-2.0
+repository-code: "https://github.com/stain/signposting/"
+keywords:
+ - "FAIR"
+ - "signposting"
+ - "linkset"
+ - "http"
+ - "links"
+ - "RFC8288"
+ - "RFC9264"

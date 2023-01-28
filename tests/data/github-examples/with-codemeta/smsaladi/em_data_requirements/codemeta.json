@@ -1,0 +1,36 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "description": "Big microscopes are on the rise, and with them comes a deluge of data! How will to deal with it? Try this customizable 'back of the envelope' calculation to estimate where your hardware bottlenecks might be!",
+  "name": "em_data_requirements",
+  "codeRepository": "https://github.com/smsaladi/em_data_requirements",
+  "issueTracker": "https://github.com/smsaladi/em_data_requirements/issues",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "version": "1.0",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Shyam M.",
+      "familyName": "Saladi",
+      "affiliation": "Caltech",
+      "email": "saladi@caltech.edu",
+      "@id": "https://orcid.org/0000-0001-9701-3059"
+    }],
+  "developmentStatus": "active",
+  "downloadUrl":
+  "https://github.com/smsaladi/em_data_requirements/archive/1.0.zip",
+  "keywords": [
+    "GitHub",
+    "EM",
+    "computer-hardware",
+    "big-data"
+  ],
+  "maintainer": "https://orcid.org/0000-0001-9701-3059",
+  "programmingLanguage": "R",
+  "funder": { 
+          "@id": "https://doi.org/10.13039/100000001",
+          "@type": "Organization",
+          "name": "National Science Foundation"
+   },
+  "funding": "1144469"
+}

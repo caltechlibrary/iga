@@ -1,0 +1,13 @@
+[
+".gitignore",
+".travis.yml",
+"DESCRIPTION",
+"LICENSE",
+"README.md",
+"app.R",
+"build.R",
+"codemeta.json",
+"em_data_requirements.Rproj",
+"github_corner.html",
+"google_analytics.js",
+]

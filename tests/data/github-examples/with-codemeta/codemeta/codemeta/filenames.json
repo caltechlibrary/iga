@@ -1,0 +1,16 @@
+[
+".gitignore",
+".travis.yml",
+"CONTRIBUTING.md",
+"CONTRIBUTORS.MD",
+"LICENSE",
+"README.md",
+"codemeta.json",
+"codemeta.jsonld",
+"crosswalk.csv",
+"crosswalks",
+"examples",
+"properties_description.csv",
+"scripts",
+"tests",
+]

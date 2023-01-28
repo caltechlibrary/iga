@@ -1,0 +1,37 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as 'Nüst, Daniel, 2018. Reproducibility Service for Executable Research Compendia: Technical Specifications and Reference Implementation. Zenodo. https://doi.org/10.5281/zenodo.2203843'."
+authors:
+  - family-names: Schutzeichel
+    given-names: Marc
+    affiliation: University of Münster, Münster, Germany
+  - family-names: Nüst
+    given-names: Daniel
+    orcid: https://orcid.org/0000-0002-0024-5046
+    affiliation: Opening Reproducible Research, University of Münster, Münster, Germany
+    email: daniel.nuest@uni-muenster.de
+    website: https://nuest.staff.ifgi.de/
+  - family-names: Konkol
+    given-names: Markus
+    affiliation: Opening Reproducible Research, University of Münster, Münster, Germany
+    website: https://github.com/Timmimim
+  - family-names: Suleiman
+    given-names: Jan
+    affiliation: Opening Reproducible Research, University of Münster, Münster, Germany
+    website: https://github.com/jansule
+  - family-names: Garzon
+    given-names: Sebastian
+    orcid: https://orcid.org/0000-0002-8335-9312
+    affiliation: Opening Reproducible Research, University of Münster, Münster, Germany
+    website: https://github.com/sbastiangarzon
+
+title: "o2r-meta"
+version: 0.1.0
+date-released: 2020-07-02
+license: Apache-2.0
+url: https://github.com/o2r-project/o2r-meta/
+commit: 1447d43a660e1a38add5736d0b0dc52e6860c0e0
+abstract: "Python library for extracting, mapping, and validating metadata for reproducible workflows in scholarly communication."
+repository-code: https://github.com/o2r-project/o2r-meta/releases/tag/v0.1.0
+identifiers:
+  - type: "swh"
+    value: "swh:1:rev:fb1a32f9819aef9ff37af4984048ab5b0a85e81f"

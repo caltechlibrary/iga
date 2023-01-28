@@ -1,0 +1,17 @@
+[
+".github",
+".gitignore",
+".pre-commit-config.yaml",
+"LICENCE",
+"Notebooks",
+"Past_Conferences_and_Schools",
+"README.md",
+"codemeta.json",
+"justfile",
+"postBuild",
+"pyproject.toml",
+"requirements-dev.txt",
+"requirements-docs.txt",
+"requirements.txt",
+"runtime.txt",
+]

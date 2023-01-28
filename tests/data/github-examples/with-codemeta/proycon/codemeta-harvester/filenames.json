@@ -1,0 +1,16 @@
+[
+".gitignore",
+"Dockerfile",
+"LICENSE",
+"Makefile",
+"README.md",
+"codemeta-harvester",
+"codemeta.json",
+"detect-ci.sh",
+"detect-documentation.sh",
+"detect-license.sh",
+"detect-repostatus-from-git.sh",
+"detect-repostatus.sh",
+"detect-trl.sh",
+"example",
+]
