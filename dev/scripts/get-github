@@ -22,7 +22,7 @@ echo '[' > $user/$repo/filenames.json
 curl -s $API/repos/$arg/git/trees/$default | jq '.tree[].path' | sed 's/$/,/g' >> $user/$repo/filenames.json
 echo ']' >> $user/$repo/filenames.json
 
-license=$(grep -i license $user/$repo/filenames.json | tr -d ',"')
+license=$(egrep -i licen.e $user/$repo/filenames.json | tr -d ',"')
 
 for file in codemeta.json CITATION.cff $license; do
     curl -s $API/repos/$user/$repo/contents/$file |\
