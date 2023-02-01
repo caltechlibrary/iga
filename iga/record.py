@@ -56,8 +56,8 @@ from iga.github import (
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# InvenioRDM schema info: https://inveniordm.docs.cern.ch/reference/metadata/.
-# A record can have these top-level fields (but might not contain all):
+# It's useful to understand the context of what's going on. A record stored
+# in InvenioRDM may have these top-level fields (but might not contain all):
 #
 # {
 #    "$schema": "local://records/record-vX.Y.Z.json",
@@ -73,8 +73,13 @@ from iga.github import (
 #    "updated": "...",
 # }
 #
-# The minimum for a record sent to InvenioRDM is the "metadata" field. The
-# following is the full set of subfields in "metadata".
+# However, what is uploaded to an InvenioRDM server should only contain the
+# 'metadata' field, because of the other fields above are added by the system.
+# Consequently, IGA only needs to construct the 'metadata' field value. I.e.,
+# referring to https://inveniordm.docs.cern.ch/reference/metadata, we are only
+# concerned with https://inveniordm.docs.cern.ch/reference/metadata/#metadata
+#
+# The following is the full set of possible subfields in "metadata".
 
 FIELDS = [
     "additional_descriptions",
@@ -100,9 +105,9 @@ FIELDS = [
     "version",
 ]
 
-# A number of these fields are created by InvenioRDM itself; a user doesn't
-# put them in a record sent to InvenioRDM.  Based on the test cases in the repo
-# https://github.com/inveniosoftware/invenio-rdm-records, the min fields are:
+# Not all of these need to be provided.  Based on the test cases in
+# https://github.com/inveniosoftware/invenio-rdm-records, the minimum set of
+# fields that needs to be provided seems to be this:
 #
 # {
 #    "metadata": {
@@ -127,9 +132,53 @@ REQUIRED_FIELDS = [
     "title"
 ]
 
+# Controlled vocabularies get loaded only if record_for_release(...) is called.
+# The name mapping is to map the values from caltechdata_api's get_vocabularies
+# to something more self-explanatory, for use in the code that follows.
+
+CV = {}
+CV_NAMES = {'crr'   : 'creator-roles',
+            'cor'   : 'contributor-roles',
+            'rsrct' : 'resource-types',
+            'dty'   : 'description-types',
+            'dat'   : 'data-types',
+            'rlt'   : 'relation-types',
+            'ttyp'  : 'title-types;',
+            'idt'   : 'identifier-types'}
+
 
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def record_for_release(account, repo, tag):
+    '''Return InvenioRDM record created from the account/repo/tag release.'''
+    release = github_release(account, repo, tag)
+    repo = github_repo(account, repo)
+
+    # We use codemeta.json & CITATION.cff often. Get them now & augment the
+    # repo object with them so that field extraction functions can access them.
+    repo.codemeta = {}
+    repo.cff = {}
+    filenames = github_repo_filenames(repo)
+    if 'codemeta.json' in filenames:
+        repo.codemeta = json5.loads(github_repo_file(repo, 'codemeta.json'))
+    cff_filename = None
+    if 'CITATION.cff' in filenames:
+        cff_filename = 'CITATION.cff'
+    elif 'CITATION.CFF' in filenames:
+        cff_filename = 'CITATION.CFF'
+    if cff_filename:
+        import yaml
+        repo.cff = yaml.safe_load(github_repo_file(repo, cff_filename))
+
+    load_vocabularies()
+
+    # Make the metadata dict by iterating over the names in FIELDS and calling
+    # the function of that name defined in this (module) file.
+    module = sys.modules[__name__]
+    metadata = dict((f, getattr(module, f)(repo, release)) for f in FIELDS)
+    return {"metadata": metadata}
+
 
 def valid_record(json_dict):
     '''Perform basic validation on the given JSON record for InvenioRDM.'''
@@ -148,37 +197,6 @@ def valid_record(json_dict):
     log('record metadata has the required minimum set of fields')
     return True
 
-
-def record_from_release(account, repo, tag):
-    '''Return InvenioRDM record created from the account/repo/tag release.'''
-    release = github_release(account, repo, tag)
-    repo = github_repo(account, repo)
-
-    # We use codemeta.json & CITATION.cff often. Get them now & augment the
-    # repo object with them so that field extraction functions can access them.
-    repo.codemeta = {}
-    repo.cff = {}
-    filenames = github_repo_filenames(repo)
-    if 'codemeta.json' in filenames:
-        repo.codemeta = json5.loads(github_repo_file(repo, 'codemeta.json'))
-    cff_filename = None
-    if 'CITATION.cff' in filenames:
-        cff_filename = 'CITATION.cff'
-    elif 'CITATION.CFF' in filenames:
-        cff_filename = 'CITATION.CFF'
-    if cff_filename:
-        from cffconvert.citation import Citation
-        file_url = github_file_url(repo, cff_filename)
-        contents = github_repo_file(repo, cff_filename)
-        cff_object = Citation(contents, src=file_url)
-        repo.cff = json5.loads(cff_object.as_schemaorg())
-
-    # Make the metadata dict by iterating over the names in FIELDS and calling
-    # the function of that name defined in this (module) file.
-    module = sys.modules[__name__]
-    metadata = dict((f, getattr(module, f)(repo, release)) for f in FIELDS)
-    return {"metadata": metadata}
-
 
 # Field value functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -188,13 +206,20 @@ def record_from_release(account, repo, tag):
 # calling the function of that name to get the value for that field.
 
 def additional_descriptions(repo, release):
-    # The codemeta and CITATION.cff descriptions tend to be better than what
-    # people put in GitHub repo descriptions, so try them 1st. An argument
-    # could be made to use both one of the codemeta/cff descriptions *and* the
-    # github repo description, as two additional descriptions, but the repo
-    # descriptions rarely seem to add anything beyond the codemeta/cff ones.
+    # First try to use "description" from codemeta.json, then "abstract" from
+    # citation.cff. If neither are available, default to the repo description,
+    # but since the repo descriptions rarely seem to add anything beyond the
+    # codemeta/cff ones, don't add both.
+    #
+    # Note: InvenioRDM's metadata schema offers a type value "abstract" as
+    # one of the possible type values for an additional_description, but I
+    # think it's better to use the type "other" here even if we do extract
+    # the "abstract" from the CITATION.cff file. My reasoning is that the
+    # abstract in the CITATION.cff file refers to the whole repository, not
+    # the release, so in the way it's being used here (as part of a description
+    # of a software release), it's not being used as an abstract.
     text = (repo.codemeta.get('description', None)
-            or repo.cff.get('description', None)
+            or repo.cff.get('abstract', None)
             or repo.description)
     if text:
         return [{'description': text,
@@ -206,6 +231,8 @@ def additional_descriptions(repo, release):
 def additional_titles(repo, release):
     return []
 
+
+# fixme: role must be set for contributors, and it uses a CV
 
 def contributors(repo, release):
     clist = repo.codemeta.get('contributor', []) or repo.cff.get('contributors', [])
@@ -244,12 +271,124 @@ def formats(repo, release):
     return []
 
 
+    # Funding references in InvenioRDM must have both funder and award info.
+    # If the codemeta.json file lacks one of those, we can't go on.
+    # if not (funder and funding):
+    #     return []
+
+
+# FIXME: funding function currently doesn't try to get id's at all, and only
+# works with names, to avoid having to match up CVs. This could be improved.
+
 def funding(repo, release):
+    # codemeta.json has "funding" & "funder": https://codemeta.github.io/terms/.
+    # CITATION.cff doesn't have anything for funding currently.
+    funding = repo.codemeta.get('funding', '')
+    funder  = repo.codemeta.get('funder', '')
+
+    # Funding references in InvenioRDM must have both funder & award info. We
+    # need to extract both, or we give up. But sometimes people put funder info
+    # into the funding field, so here we only test for non-empty "funding".
+    if not funding:
+        return []
+
+    # Some people don't actually provide funding info but also don't leave the
+    # fields blank. Don't bother putting these in the InvenioRDM record.
+    na = ['n/a', 'not available']
+    if isinstance(funding, str) and any(text in funding.lower() for text in na):
+        return []
+
+    # OK, we're diving in. Things get messy because codemeta.json files often
+    # have user errors and don't adhere to the codemeta spec. Officially,
+    # funding is supposed to be a text string, and funder is supposed to be a
+    # person or org (=> dict). But we can't count on it. Need to be flexible.
+
+    funder_name = ''
+    if isinstance(funder, dict):
+        # Correct data type. People seem unsure what to use as the name key.
+        funder_name = funder.get('name', '') or funder.get('@name', '')
+    elif isinstance(funder, str) and funder:
+        # Incorrect data type, but let's take it anyway. Use the whole string.
+        funder_name = funder
+
+    if isinstance(funding, str):
+        # Correct data type. If there's only one token, it's probably an award
+        # identifier or number. If there's more than one token, then we can't
+        # reliably parse out the grant id, so give up and use the whole string.
+        if len(funding) == 1:
+            if funder_name:
+                return [funding_item(funder_name, award_id=funding)]
+            else:
+                # Got a funding id of some kind, but no funder => incomplete.
+                return []
+        else:
+            # String has more than one token. Assume it's NOT an award id.
+            return [funding_item(funder_name, award_name=funding)]
+    elif isinstance(funding, list):
+        # Not the intended data type, but a lot of codemeta.json files use it.
+        if all(isinstance(item, str) for item in funding):
+            # List of strings => treat each as separate grant name or desc.
+            return [funding_item(funder_name, award_name=item) for item in funding]
+        elif all(isinstance(item, dict) for item in funding):
+            # List of dicts is really not the correct data type, but we can try
+            # our best based on examples seen in the wild.
+            results = []
+            for item in funding:
+                item_name = item.get('name', '') or item.get('@name', '')
+                if not item_name:
+                    continue
+                item_type = item.get('@type', '').lower()
+                if item_type in ['award', 'grant']:
+                    results.append(funding_item(funder_name, award_name=item_name))
+                else:
+                    continue
+            return results
+        else:
+            # It's not a list of strings or dicts, so this is beyond us.
+            return []
+    elif isinstance(funding, dict):
+        # Wrong data type, but we might be able to handle a simple case.
+        award_id = ''
+        if 'funder' in funding:
+            if funder_name:
+                # We've already found a funder in the codemeta file, and now
+                # this has another value. This is beyond what we can handle.
+                return []
+            fun = funding['funder']
+            if isinstance(fun, str):
+                funder_name = fun
+            elif isinstance(fun, dict):
+                funder_name = fun.get('name', '') or fun.get('@name', '')
+        award_id = funding.get('identifier', '')
+        if funder_name and award_id:
+            return [funding_item(funder_name, award_name=award_id)]
+
+    # Fall-through for when nothing else works.
     return []
 
 
 def identifiers(repo, release):
-    return []
+    # This is "alternate identifiers" in the InvenioRDM docs; see
+    # https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
+
+    # Codemeta has 'identifier', which can be a URL, text or dict. If it's a
+    # URL or string, we currently don't handle it b/c it requires intelligently
+    # figuring out a corresponding InvenioRDM id scheme. (FIXME: should be able
+    # to handle some cases like PURLs.)  CITATION.cff has 'identifiers'.
+
+    identifiers = []
+    items = [repo.codemeta.get('identifier', '')] + repo.cff.get('identifiers', [])
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        kind = item.get('propertyID', '') or item.get('type', '')
+        kind = kind.lower()
+        value = item.get('value', '')
+        # We skip DOI and OAI id's in this particular context.
+        if value and kind in CV['identifier-types'] and kind not in ['doi', 'oai']:
+            identifiers.append({'identifier': value,
+                                'scheme': kind})
+    return identifiers
 
 
 def languages(repo, release):
@@ -276,6 +415,12 @@ def references(repo, release):
 
 
 def related_identifiers(repo, release):
+    # persistent identifiers for the resource
+    # OTHER than the ones registered as system-managed internal or external
+    # persistent identifiers. We skip DOI and OAI identifiers.
+
+    # FIXME this could be a list
+
     return [{'identifier': release.html_url,
              'relation_type': {'id': 'isidenticalto',
                                'title': {'en': 'Is identical to'}},
@@ -292,42 +437,58 @@ def resource_type(repo, release):
 
 
 def rights(repo, release):
+    if value := repo.codemeta.get('license', '') or repo.cff.get('license', ''):
+        license_id = None
+        from iga.licenses import LICENSES
+        # People tend to put either a URL or the name of a license here.
+        if value.startswith('http'):
+            # Is it a link to an spdx license?
+            license_urls = [lic.url.lower() for lic in LICENSES.values()]
+            url = value.lower()
+            if url in license_urls or url.rstrip('html') in license_urls:
+                license_id = value.rstrip('.html').split('/')[-1]
+        elif value in LICENSES:
+            # Not a URL but a name, and we recognize it.
+            license_id = value
+        else:
+            log('found a license value but did not recognize it: ' + value)
+
+        if license_id:
+            log('license value is a recognized kind: ' + license_id)
+            return [{'id'         : license_id,
+                     'title'      : {'en': LICENSES[license_id].title},
+                     'description': {'en': LICENSES[license_id].description},
+                     'link'       : LICENSES[license_id].url}]
+
+    # We don't have a codemeta or cff file, or else found no license in them.
+    # Look into the GitHub repo data to see if GitHub identified a license.
     if repo.license and repo.license.name != 'Other':
+        log('using license info assigned by GitHub')
         spdx_id = repo.license.spdx_id
-        rights = [{'id': spdx_id,
-                   'link': repo.license.url,
-                   'title': {'en': repo.license.name}}]
-        from iga.licenses import LICENSE_DESCRIPTIONS
-        if spdx_id in LICENSE_DESCRIPTIONS:
-            rights[0].update({'description': {'en': LICENSE_DESCRIPTIONS[spdx_id]}})
-        return rights
+        rights = {'id': spdx_id,
+                  'link': repo.license.url,
+                  'title': {'en': repo.license.name}}
+        from iga.licenses import LICENSES
+        if spdx_id in LICENSES:
+            rights['description'] = {'en': LICENSES[spdx_id]}
+        return [rights]
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
     filenames = github_repo_filenames(repo)
     base_url = 'https://github.com/' + repo.owner.login + '/' + repo.name
-    # The FSF guide on how to use the GPL suggests COPYING. The Producing
-    # Open Source Software book suggests either COPYING or LICENSE.
-    for basename in ['LICENSE', 'License', 'license', 'COPYING',
-                     'COPYRIGHT', 'Copyright', 'copyright']:
+    for basename in ['LICENSE', 'License', 'license',
+                     'LICENCE', 'Licence', 'licence',
+                     'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
         for ext in ['', '.txt', '.md', '.html']:
             if basename + ext in filenames:
-                # There's no safe way to summarize arbitrary license
-                # text, so we can't provide 'description' field value.
+                log('found a license file in the repo: ' + basename + ext)
+                # There's no safe way to summarize arbitrary license text,
+                # so we can't provide a 'description' field value.
                 return [{'title': {'en': 'License'},
                          'link': base_url + '/' + basename + ext}]
 
-    # We didn't find a license file. Try codemeta.json & CITATION.cff.
-    value = repo.codemeta.get('license', None) or repo.cff.get('license', None)
-    if value:
-        if 'http' in value:
-            return [{'title': {'en': 'License'},
-                     'link': value}]
-        else:
-            # Not a URL. Assume it's a license name.
-            return [{'title': {'en': value}}],
-
-    # We didn't find anything usable.
+    log('could not find a license')
     return []
 
 
@@ -362,11 +523,13 @@ def version(repo, release):
 # See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n for
 # info about the fields for authors in InvenioRDM.
 
+# fixme ROR
+
 def _person(person_dict):
     # Although people sometimes put more things in the CITATION.cff authors
     # info (e.g., email addr), there's no provision in InvenioRDM for that.
-    person = {'family_name': _flattened_name(person_dict['familyName']),
-              'given_name': _flattened_name(person_dict['givenName']),
+    person = {'family_name': _flattened_name(person_dict.get('familyName', '')),
+              'given_name': _flattened_name(person_dict.get('givenName', '')),
               'type': 'personal'}
     if 'orcid' in person_dict.get('@id', ''):
         orcid = person_dict['@id'].split('/')[-1]
@@ -375,11 +538,14 @@ def _person(person_dict):
 
     structure = {'person_or_org': person}
     if 'affiliation' in person_dict:
-        if isinstance(person_dict['affiliation'], dict):
-            affiliation = person_dict['affiliation']['legalName']
+        affiliation = person_dict['affiliation']
+        if isinstance(affiliation, dict):
+            # In CITATION.cff, the field name is 'legalName'.
+            # In codemeta.json, it's 'name'.
+            name = affiliation.get('legalName', '') or affiliation.get('name', '')
         else:
-            affiliation = person_dict['affiliation']
-        structure.update({'affiliations': [{'name': affiliation}]})
+            name = affiliation
+        structure.update({'affiliations': [{'name': name}]})
     return structure
 
 
@@ -520,3 +686,22 @@ def _flattened_name(name):
         return ' '.join(part for part in name)
     else:
         return name
+
+
+def funding_item(funder_name, award_id=None, award_name=None):
+    # InvenioRDM says funder subfield must have id OR name, and award subfield
+    # must have either id or both title and number.
+    if award_id:
+        return {'funder': {'name': funder_name},
+                'award': {'id': award_id}}
+    elif award_name:
+        return {'funder': {'name': funder_name},
+                'award': {'title': {'en': award_name}}}
+    else:
+        {}
+
+
+def load_vocabularies():
+    from caltechdata_api.customize_schema import get_vocabularies
+    for name, vocab in get_vocabularies().items():
+        CV.update({CV_NAMES[name]: vocab})
