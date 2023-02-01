@@ -132,9 +132,9 @@ REQUIRED_FIELDS = [
     "title"
 ]
 
-# Controlled vocabularies get loaded only if record_for_release(...) is called.
-# The name mapping is to map the values from caltechdata_api's get_vocabularies
-# to something more self-explanatory, for use in the code that follows.
+# Vocabularies variable CV gets loaded only if record_for_release(...) is
+# called. The name mapping is to map the values from caltechdata_api's
+# get_vocabularies to something more self-explanatory when used in this file.
 
 CV = {}
 CV_NAMES = {'crr'   : 'creator-roles',
@@ -151,7 +151,11 @@ CV_NAMES = {'crr'   : 'creator-roles',
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def record_for_release(account, repo, tag):
-    '''Return InvenioRDM record created from the account/repo/tag release.'''
+    '''Return the "metadata" part of an InvenioRDM record.
+
+    Data is gathered from the GitHub release identified by "tag" in the
+    repository "repo" of the given GitHub "account".
+    '''
     release = github_release(account, repo, tag)
     repo = github_repo(account, repo)
 
@@ -176,15 +180,20 @@ def record_for_release(account, repo, tag):
     # Make the metadata dict by iterating over the names in FIELDS and calling
     # the function of that name defined in this (module) file.
     module = sys.modules[__name__]
-    metadata = dict((f, getattr(module, f)(repo, release)) for f in FIELDS)
+
+    def field_function(field):
+        return getattr(module, field)(repo, release)
+
+    metadata = {field: field_function(field) for field in FIELDS}
     return {"metadata": metadata}
 
 
 def valid_record(json_dict):
-    '''Perform basic validation on the given JSON record for InvenioRDM.'''
+    '''Perform basic validation on the "metadata" part of the given record.
 
-    # The validation process currently on tests that the record has the
-    # minimum fields; it does not check the field values.
+    The validation process currently on tests that the record has the
+    minimum fields; it does not currently check the field values or types.
+    '''
     if 'metadata' not in json_dict:
         log('record lacks a "metadata" field')
         return False
@@ -206,6 +215,9 @@ def valid_record(json_dict):
 # calling the function of that name to get the value for that field.
 
 def additional_descriptions(repo, release):
+    '''Return InvenioRDM "additional descriptions".
+    https://inveniordm.docs.cern.ch/reference/metadata/#additional-descriptions-0-n
+    '''
     # First try to use "description" from codemeta.json, then "abstract" from
     # citation.cff. If neither are available, default to the repo description,
     # but since the repo descriptions rarely seem to add anything beyond the
@@ -229,17 +241,37 @@ def additional_descriptions(repo, release):
 
 
 def additional_titles(repo, release):
-    return []
+    '''Return InvenioRDM "additional titles".
+    https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
+    '''
+    # If we can't get a name or title from the codemeta or cff files, give up.
+    # The GitHub data doesn't offer anything we can use in this regard.
+    if name := repo.codemeta.get('name', '') or repo.cff.get('title', ''):
+        version = repo.codemeta.get('version', '') or repo.cff.get('version', '')
+        title = name + (f' (version {version})' if version else '')
+        return [{'title': title,
+                 'type': {'id': 'alternative-title',
+                          'title': {'en': 'Alternative Title'}},
+                 'lang': {'id': 'eng'},
+                 }]
+    else:
+        return []
 
 
 # fixme: role must be set for contributors, and it uses a CV
 
 def contributors(repo, release):
+    '''Return InvenioRDM "contributors".
+    https://inveniordm.docs.cern.ch/reference/metadata/#contributors-0-n
+    '''
     clist = repo.codemeta.get('contributor', []) or repo.cff.get('contributors', [])
     return [_person(x) for x in clist]
 
 
 def creators(repo, release):
+    '''Return InvenioRDM "creators".
+    https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
+    '''
     # Codemeta & CITATION.cff files contain more complete author info than the
     # GitHub release data, so try them 1st.
     authors = repo.codemeta.get('author', []) or repo.cff.get('author', [])
@@ -257,30 +289,36 @@ def creators(repo, release):
 
 
 def dates(repo, release):
+    '''Return InvenioRDM "dates".
+    https://inveniordm.docs.cern.ch/reference/metadata/#dates-0-n
+    '''
     created_date = arrow.get(release.created_at)
     return [{'date': created_date.format('YYYY-MM-DD'),
              'type': {'id': 'created', 'title': {'en': 'Created'}}}]
 
 
 def description(repo, release):
+    '''Return InvenioRDM "description".
+    https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
+    '''
     return release.body.strip() if release.body else ''
 
 
 def formats(repo, release):
+    '''Return InvenioRDM "formats".
+    https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
+    '''
     # fixme
     return []
-
-
-    # Funding references in InvenioRDM must have both funder and award info.
-    # If the codemeta.json file lacks one of those, we can't go on.
-    # if not (funder and funding):
-    #     return []
 
 
 # FIXME: funding function currently doesn't try to get id's at all, and only
 # works with names, to avoid having to match up CVs. This could be improved.
 
 def funding(repo, release):
+    '''Return InvenioRDM "funding references".
+    https://inveniordm.docs.cern.ch/reference/metadata/#funding-references-0-n
+    '''
     # codemeta.json has "funding" & "funder": https://codemeta.github.io/terms/.
     # CITATION.cff doesn't have anything for funding currently.
     funding = repo.codemeta.get('funding', '')
@@ -368,9 +406,9 @@ def funding(repo, release):
 
 
 def identifiers(repo, release):
-    # This is "alternate identifiers" in the InvenioRDM docs; see
-    # https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
-
+    '''Return InvenioRDM "alternate identifiers".
+    https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
+    '''
     # Codemeta has 'identifier', which can be a URL, text or dict. If it's a
     # URL or string, we currently don't handle it b/c it requires intelligently
     # figuring out a corresponding InvenioRDM id scheme. (FIXME: should be able
@@ -392,59 +430,126 @@ def identifiers(repo, release):
 
 
 def languages(repo, release):
+    '''Return InvenioRDM "languages".
+    https://inveniordm.docs.cern.ch/reference/metadata/#languages-0-n
+    '''
     # GitHub doesn't provide a way to deal with any other human language.
     return [{"id": "eng", 'title': {'en': 'English'}}]
 
 
 def locations(repo, release):
+    '''Return InvenioRDM "locations".
+    https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
+    '''
     return []
 
 
 def publication_date(repo, release):
+    '''Return InvenioRDM "publication date".
+    https://inveniordm.docs.cern.ch/reference/metadata/#publication-date-1
+    '''
     return arrow.get(release.published_at).format('YYYY-MM-DD')
 
 
 def publisher(repo, release):
+    '''Return InvenioRDM "publisher".
+    https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
+    '''
     return 'CaltechDATA'
 
 
 def references(repo, release):
+    '''Return InvenioRDM "references".
+    https://inveniordm.docs.cern.ch/reference/metadata/#references-0-n
+    '''
     # FIXME some people put paper citation info in CITATION.cff
     # See eg https://github.com/plasma-umass/scalene
     return []
 
 
 def related_identifiers(repo, release):
-    # persistent identifiers for the resource
-    # OTHER than the ones registered as system-managed internal or external
-    # persistent identifiers. We skip DOI and OAI identifiers.
+    '''Return InvenioRDM "related identifiers/works".
+    https://inveniordm.docs.cern.ch/reference/metadata/#related-identifiersworks-0-n
+    '''
+    from url_normalize import url_normalize
 
-    # FIXME this could be a list
+    identifiers = [{'identifier': release.html_url,
+                    'relation_type': {'id': 'isidenticalto',
+                                      'title': {'en': 'Is identical to'}},
+                    'resource_type': {'id': 'software',
+                                      'title': {'en': 'Software'}},
+                    'scheme': 'url'}]
+    if repo.homepage:
+        identifiers.append({'identifier': url_normalize(repo.homepage),
+                            'relation_type': {'id': 'isdescribedby',
+                                              'title': {'en': 'Is described by'}},
+                            'resource_type': {'id': 'other',
+                                              'title': {'en': 'Other'}},
+                            'scheme': 'url'})
+    if repo.has_pages:
+        pages_url = f'https://{repo.owner.login}.github.io/{repo.name}'
+        identifiers.append({'identifier': pages_url,
+                            'relation_type': {'id': 'isdocumentedby',
+                                              'title': {'en': 'Is documented by'}},
+                            'resource_type': {'id': 'publication-softwaredocumentation',
+                                              'title': {'en': 'Software documentation'}},
+                            'scheme': 'url'})
 
-    return [{'identifier': release.html_url,
-             'relation_type': {'id': 'isidenticalto',
-                               'title': {'en': 'Is identical to'}},
-             'resource_type': {'id': 'software', 'title': {'en': 'Software'}},
-             'scheme': 'url'}]
+    if ispartof := repo.codemeta.get('isPartOf', ''):
+        identifiers.append({'identifier': ispartof,
+                            'relation_type': {'id': 'ispartof',
+                                              'title': {'en': 'Is part of'}},
+                            'resource_type': {'id': 'collection',
+                                              'title': {'en': 'Collection'}},
+                            'scheme': 'url'})
+
+    # The codemeta spec says "relatedLink" value is supposed to be a URL, but
+    # lots of codemeta.json files use a list. The nature of the relation is
+    # more problematic.  We don't really know what the links are meant to be,
+    # nor the direction of the relationships. The codemeta spec says this is
+    # "A link related to this object, e.g., related web pages", and examples
+    # of codemeta.json files in the wild suggest that people put links to
+    # pages that describe or reference this repo and/or this release; for
+    # these reasons, this code uses IsReferencedBy, but it's only a guess.
+    if related_links := repo.codemeta.get('relatedLink', None):
+        if isinstance(related_links, str):
+            related_links = [related_links]
+        for url in filter(lambda x: x.startswith('http'), related_links):
+            url = url_normalize(url)
+            # Don't add URLs we've already added (possibly as another type).
+            if url in [item['identifier'] for item in identifiers]:
+                continue
+            identifiers.append({'identifier': url,
+                                'relation_type': {'id': 'isreferencedby',
+                                                  'title': {'en': 'Is referenced by'}},
+                                'resource_type': {'id': 'other',
+                                                  'title': {'en': 'Other'}},
+                                'scheme': 'url'})
+
+    return identifiers
 
 
 def resource_type(repo, release):
-    # InvenioRDM requires that the resource_type id comes from a CV. We only
-    # recognize specific types, so we hardwire the values here.
-
+    '''Return InvenioRDM "resource type".
+    https://inveniordm.docs.cern.ch/reference/metadata/#resource-type-1
+    '''
     # FIXME handle other types like datasets
     return {'id': 'software', 'title': {'en': 'Software'}}
 
 
 def rights(repo, release):
+    '''Return InvenioRDM "rights (licenses)".
+    https://inveniordm.docs.cern.ch/reference/metadata/#rights-licenses-0-n
+    '''
     if value := repo.codemeta.get('license', '') or repo.cff.get('license', ''):
         license_id = None
         from iga.licenses import LICENSES
+        from url_normalize import url_normalize
         # People tend to put either a URL or the name of a license here.
         if value.startswith('http'):
             # Is it a link to an spdx license?
             license_urls = [lic.url.lower() for lic in LICENSES.values()]
-            url = value.lower()
+            url =  url_normalize(value.lower())
             if url in license_urls or url.rstrip('html') in license_urls:
                 license_id = value.rstrip('.html').split('/')[-1]
         elif value in LICENSES:
@@ -493,19 +598,31 @@ def rights(repo, release):
 
 
 def sizes(repo, release):
+    '''Return InvenioRDM "sizes".
+    https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
+    '''
     # fixme
     return []
 
 
 def subjects(repo, release):
+    '''Return InvenioRDM "subjects".
+    https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
+    '''
     return [{'subject': x} for x in repo.topics if x.lower() != 'github']
 
 
 def title(repo, release):
+    '''Return InvenioRDM "title".
+    https://inveniordm.docs.cern.ch/reference/metadata/#title-1
+    '''
     return repo.full_name + ': ' + (release.name or release.tag_name)
 
 
 def version(repo, release):
+    '''Return InvenioRDM "version".
+    https://inveniordm.docs.cern.ch/reference/metadata/#version-0-1
+    '''
     # Note: this is not really the same as a version number. However, there is
     # no version number in the GitHub release data -- there is only the tag.
     # The following does a weak heuristic to try to guess at a version number
