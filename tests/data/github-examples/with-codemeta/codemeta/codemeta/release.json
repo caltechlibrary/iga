@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/codemeta/codemeta/releases/31910665",
+  "assets_url": "https://api.github.com/repos/codemeta/codemeta/releases/31910665/assets",
+  "upload_url": "https://uploads.github.com/repos/codemeta/codemeta/releases/31910665/assets{?name,label}",
+  "html_url": "https://github.com/codemeta/codemeta/releases/tag/2.0",
+  "id": 31910665,
+  "author": {
+    "login": "mbjones",
+    "id": 766407,
+    "node_id": "MDQ6VXNlcjc2NjQwNw==",
+    "avatar_url": "https://avatars.githubusercontent.com/u/766407?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mbjones",
+    "html_url": "https://github.com/mbjones",
+    "followers_url": "https://api.github.com/users/mbjones/followers",
+    "following_url": "https://api.github.com/users/mbjones/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mbjones/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mbjones/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mbjones/subscriptions",
+    "organizations_url": "https://api.github.com/users/mbjones/orgs",
+    "repos_url": "https://api.github.com/users/mbjones/repos",
+    "events_url": "https://api.github.com/users/mbjones/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mbjones/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "MDc6UmVsZWFzZTMxOTEwNjY1",
+  "tag_name": "2.0",
+  "target_commitish": "master",
+  "name": "CodeMeta v2.0",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2017-06-05T21:18:55Z",
+  "published_at": "2020-09-28T23:53:35Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/codemeta/codemeta/tarball/2.0",
+  "zipball_url": "https://api.github.com/repos/codemeta/codemeta/zipball/2.0",
+  "body": ""
 }

@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/smsaladi/em_data_requirements/releases/13429281",
+  "assets_url": "https://api.github.com/repos/smsaladi/em_data_requirements/releases/13429281/assets",
+  "upload_url": "https://uploads.github.com/repos/smsaladi/em_data_requirements/releases/13429281/assets{?name,label}",
+  "html_url": "https://github.com/smsaladi/em_data_requirements/releases/tag/v1.0",
+  "id": 13429281,
+  "author": {
+    "login": "smsaladi",
+    "id": 2942215,
+    "node_id": "MDQ6VXNlcjI5NDIyMTU=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/2942215?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/smsaladi",
+    "html_url": "https://github.com/smsaladi",
+    "followers_url": "https://api.github.com/users/smsaladi/followers",
+    "following_url": "https://api.github.com/users/smsaladi/following{/other_user}",
+    "gists_url": "https://api.github.com/users/smsaladi/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/smsaladi/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/smsaladi/subscriptions",
+    "organizations_url": "https://api.github.com/users/smsaladi/orgs",
+    "repos_url": "https://api.github.com/users/smsaladi/repos",
+    "events_url": "https://api.github.com/users/smsaladi/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/smsaladi/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "MDc6UmVsZWFzZTEzNDI5Mjgx",
+  "tag_name": "v1.0",
+  "target_commitish": "master",
+  "name": "Estimating hardware/data requirements",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2018-10-15T14:54:52Z",
+  "published_at": "2018-10-15T15:02:29Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/smsaladi/em_data_requirements/tarball/v1.0",
+  "zipball_url": "https://api.github.com/repos/smsaladi/em_data_requirements/zipball/v1.0",
+  "body": "A first (and probably the only) release of this one-off, Shiny app that estimates hardware requirements"
 }

@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/charlie86/spotifyr/releases/86080899",
+  "assets_url": "https://api.github.com/repos/charlie86/spotifyr/releases/86080899/assets",
+  "upload_url": "https://uploads.github.com/repos/charlie86/spotifyr/releases/86080899/assets{?name,label}",
+  "html_url": "https://github.com/charlie86/spotifyr/releases/tag/2.2.4",
+  "id": 86080899,
+  "author": {
+    "login": "antaldaniel",
+    "id": 11824944,
+    "node_id": "MDQ6VXNlcjExODI0OTQ0",
+    "avatar_url": "https://avatars.githubusercontent.com/u/11824944?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/antaldaniel",
+    "html_url": "https://github.com/antaldaniel",
+    "followers_url": "https://api.github.com/users/antaldaniel/followers",
+    "following_url": "https://api.github.com/users/antaldaniel/following{/other_user}",
+    "gists_url": "https://api.github.com/users/antaldaniel/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/antaldaniel/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/antaldaniel/subscriptions",
+    "organizations_url": "https://api.github.com/users/antaldaniel/orgs",
+    "repos_url": "https://api.github.com/users/antaldaniel/repos",
+    "events_url": "https://api.github.com/users/antaldaniel/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/antaldaniel/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOBh7i9c4FIX2D",
+  "tag_name": "2.2.4",
+  "target_commitish": "master",
+  "name": "Removing the genius library link",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-12-14T20:22:02Z",
+  "published_at": "2022-12-14T20:36:45Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/charlie86/spotifyr/tarball/2.2.4",
+  "zipball_url": "https://api.github.com/repos/charlie86/spotifyr/zipball/2.2.4",
+  "body": "- Removing the `genius` dependency as it is archived now.\r\n- Small bug fixes by [\\@yogat3ch](https://github.com/yogat3ch) (thanks!)"
 }

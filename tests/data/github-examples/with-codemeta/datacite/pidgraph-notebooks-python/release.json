@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/datacite/pidgraph-notebooks-python/releases/48631724",
+  "assets_url": "https://api.github.com/repos/datacite/pidgraph-notebooks-python/releases/48631724/assets",
+  "upload_url": "https://uploads.github.com/repos/datacite/pidgraph-notebooks-python/releases/48631724/assets{?name,label}",
+  "html_url": "https://github.com/datacite/pidgraph-notebooks-python/releases/tag/v0.0.1",
+  "id": 48631724,
+  "author": {
+    "login": "kjgarza",
+    "id": 1092861,
+    "node_id": "MDQ6VXNlcjEwOTI4NjE=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1092861?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/kjgarza",
+    "html_url": "https://github.com/kjgarza",
+    "followers_url": "https://api.github.com/users/kjgarza/followers",
+    "following_url": "https://api.github.com/users/kjgarza/following{/other_user}",
+    "gists_url": "https://api.github.com/users/kjgarza/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/kjgarza/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/kjgarza/subscriptions",
+    "organizations_url": "https://api.github.com/users/kjgarza/orgs",
+    "repos_url": "https://api.github.com/users/kjgarza/repos",
+    "events_url": "https://api.github.com/users/kjgarza/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/kjgarza/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "MDc6UmVsZWFzZTQ4NjMxNzI0",
+  "tag_name": "v0.0.1",
+  "target_commitish": "master",
+  "name": "first release",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2021-08-29T12:52:10Z",
+  "published_at": "2021-08-29T12:52:58Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/datacite/pidgraph-notebooks-python/tarball/v0.0.1",
+  "zipball_url": "https://api.github.com/repos/datacite/pidgraph-notebooks-python/zipball/v0.0.1",
+  "body": ""
 }

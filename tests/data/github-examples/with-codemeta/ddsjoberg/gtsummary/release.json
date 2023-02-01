@@ -1,4 +1,53 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/ddsjoberg/gtsummary/releases/88837173",
+  "assets_url": "https://api.github.com/repos/ddsjoberg/gtsummary/releases/88837173/assets",
+  "upload_url": "https://uploads.github.com/repos/ddsjoberg/gtsummary/releases/88837173/assets{?name,label}",
+  "html_url": "https://github.com/ddsjoberg/gtsummary/releases/tag/v1.7.0",
+  "id": 88837173,
+  "author": {
+    "login": "ddsjoberg",
+    "id": 26774684,
+    "node_id": "MDQ6VXNlcjI2Nzc0Njg0",
+    "avatar_url": "https://avatars.githubusercontent.com/u/26774684?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/ddsjoberg",
+    "html_url": "https://github.com/ddsjoberg",
+    "followers_url": "https://api.github.com/users/ddsjoberg/followers",
+    "following_url": "https://api.github.com/users/ddsjoberg/following{/other_user}",
+    "gists_url": "https://api.github.com/users/ddsjoberg/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/ddsjoberg/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/ddsjoberg/subscriptions",
+    "organizations_url": "https://api.github.com/users/ddsjoberg/orgs",
+    "repos_url": "https://api.github.com/users/ddsjoberg/repos",
+    "events_url": "https://api.github.com/users/ddsjoberg/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/ddsjoberg/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOCk0tLM4FS4w1",
+  "tag_name": "v1.7.0",
+  "target_commitish": "fa4395db5a1b194e00f809b1db0cf7a20118827a",
+  "name": "gtsummary 1.7.0",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2023-01-13T03:02:35Z",
+  "published_at": "2023-01-13T11:19:39Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/ddsjoberg/gtsummary/tarball/v1.7.0",
+  "zipball_url": "https://api.github.com/repos/ddsjoberg/gtsummary/zipball/v1.7.0",
+  "body": "### Breaking Changes\r\n\r\n* Updated the default argument values in `tidy_robust(vcov=NULL, vcov_args=NULL)`. Users must specify the type of robust standard errors using these arguments.\r\n\r\n* Fully removed deprecated items that were originally deprecated in v1.2.5 (released 3 years ago).\r\n  - `add_p(exclude=)`, `as_gt(exclude=)`, `as_kable(exclude=)`, `as_tibble.gtsummary(exclude=)`, `tbl_regression(exclude=)`,  `tbl_uvregression(exclude=)` \r\n  - `tbl_summary_()`,`add_p_()`\r\n  - `add_global_p(terms=)`\r\n\r\n### New Functions\r\n\r\n* New function `add_ci.tbl_svysummary()` for adding confidence intervals to `tbl_svysummary()` summary statistics. (#965)\r\n\r\n### New Functionality\r\n\r\n* Arguments pass via the dots in `tbl_uvregression(...)` are now passed to `broom.helpers::tidy_plus_plus(...)`. (#1396)\r\n\r\n* Added new theme elements to control the default headers in `tbl_summary()`. (#1401)\r\n\r\n* All examples that previously used `<br>` for line breaks in gt tables have been updated to use `  \\n`. Additionally, the `\"qjecon\"` journal theme has been updated to use the updated line breaker as well. (#1311)\r\n\r\n* Now allowing for mixed-class numeric types in `tbl_summary()`, such that `inline_text()` will not throw an error when the pattern argument is specified.\r\n\r\n* Added `stats::mood.test()` to `add_p.tbl_summary()`. (#1397)\r\n\r\n### New Documentation\r\n\r\n* Added a new article illustrating how to place gtsummary tables into Shiny applications. (#1335)\r\n\r\n### Bug Fixes\r\n\r\n* Updated Lancet journal theme to report p-values with more precision, per the journal's reporting guidelines. (#1442)\r\n\r\n* Fix for `as_flex_table()` when the header is blank. (#1406)\r\n\r\n* Fix in `tbl_summary()` that now allows for column vectors to be named within a data frame. (#1403)\r\n",
+  "reactions": {
+    "url": "https://api.github.com/repos/ddsjoberg/gtsummary/releases/88837173/reactions",
+    "total_count": 1,
+    "+1": 0,
+    "-1": 0,
+    "laugh": 0,
+    "hooray": 1,
+    "confused": 0,
+    "heart": 0,
+    "rocket": 0,
+    "eyes": 0
+  }
 }

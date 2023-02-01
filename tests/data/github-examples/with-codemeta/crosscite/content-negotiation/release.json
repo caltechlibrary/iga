@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/crosscite/content-negotiation/releases/63288035",
+  "assets_url": "https://api.github.com/repos/crosscite/content-negotiation/releases/63288035/assets",
+  "upload_url": "https://uploads.github.com/repos/crosscite/content-negotiation/releases/63288035/assets{?name,label}",
+  "html_url": "https://github.com/crosscite/content-negotiation/releases/tag/1.2.33",
+  "id": 63288035,
+  "author": {
+    "login": "richardhallett",
+    "id": 7294431,
+    "node_id": "MDQ6VXNlcjcyOTQ0MzE=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/7294431?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/richardhallett",
+    "html_url": "https://github.com/richardhallett",
+    "followers_url": "https://api.github.com/users/richardhallett/followers",
+    "following_url": "https://api.github.com/users/richardhallett/following{/other_user}",
+    "gists_url": "https://api.github.com/users/richardhallett/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/richardhallett/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/richardhallett/subscriptions",
+    "organizations_url": "https://api.github.com/users/richardhallett/orgs",
+    "repos_url": "https://api.github.com/users/richardhallett/repos",
+    "events_url": "https://api.github.com/users/richardhallett/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/richardhallett/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOBTjjO84DxbLj",
+  "tag_name": "1.2.33",
+  "target_commitish": "master",
+  "name": "",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-03-31T16:34:04Z",
+  "published_at": "2022-03-31T16:42:06Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/crosscite/content-negotiation/tarball/1.2.33",
+  "zipball_url": "https://api.github.com/repos/crosscite/content-negotiation/zipball/1.2.33",
+  "body": ""
 }

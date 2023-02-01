@@ -1,4 +1,41 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/proycon/codemeta-harvester/releases/82542594",
+  "assets_url": "https://api.github.com/repos/proycon/codemeta-harvester/releases/82542594/assets",
+  "upload_url": "https://uploads.github.com/repos/proycon/codemeta-harvester/releases/82542594/assets{?name,label}",
+  "html_url": "https://github.com/proycon/codemeta-harvester/releases/tag/v0.3.1",
+  "id": 82542594,
+  "author": {
+    "login": "proycon",
+    "id": 75427,
+    "node_id": "MDQ6VXNlcjc1NDI3",
+    "avatar_url": "https://avatars.githubusercontent.com/u/75427?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/proycon",
+    "html_url": "https://github.com/proycon",
+    "followers_url": "https://api.github.com/users/proycon/followers",
+    "following_url": "https://api.github.com/users/proycon/following{/other_user}",
+    "gists_url": "https://api.github.com/users/proycon/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/proycon/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/proycon/subscriptions",
+    "organizations_url": "https://api.github.com/users/proycon/orgs",
+    "repos_url": "https://api.github.com/users/proycon/repos",
+    "events_url": "https://api.github.com/users/proycon/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/proycon/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOGoQyZc4E64AC",
+  "tag_name": "v0.3.1",
+  "target_commitish": "master",
+  "name": "v0.3.1",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-11-09T12:23:44Z",
+  "published_at": "2022-11-09T12:25:11Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/proycon/codemeta-harvester/tarball/v0.3.1",
+  "zipball_url": "https://api.github.com/repos/proycon/codemeta-harvester/zipball/v0.3.1",
+  "body": "* support for setting group in configuration, adding a means to aggregate tools into groups  #10"
 }

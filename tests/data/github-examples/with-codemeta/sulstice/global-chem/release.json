@@ -1,4 +1,42 @@
 {
-  "message": "Not Found",
-  "documentation_url": "https://docs.github.com/rest/reference/repos#get-a-release-by-tag-name"
+  "url": "https://api.github.com/repos/Sulstice/global-chem/releases/83646645",
+  "assets_url": "https://api.github.com/repos/Sulstice/global-chem/releases/83646645/assets",
+  "upload_url": "https://uploads.github.com/repos/Sulstice/global-chem/releases/83646645/assets{?name,label}",
+  "html_url": "https://github.com/Sulstice/global-chem/releases/tag/v.1.8.0",
+  "id": 83646645,
+  "author": {
+    "login": "Sulstice",
+    "id": 11812946,
+    "node_id": "MDQ6VXNlcjExODEyOTQ2",
+    "avatar_url": "https://avatars.githubusercontent.com/u/11812946?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/Sulstice",
+    "html_url": "https://github.com/Sulstice",
+    "followers_url": "https://api.github.com/users/Sulstice/followers",
+    "following_url": "https://api.github.com/users/Sulstice/following{/other_user}",
+    "gists_url": "https://api.github.com/users/Sulstice/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/Sulstice/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/Sulstice/subscriptions",
+    "organizations_url": "https://api.github.com/users/Sulstice/orgs",
+    "repos_url": "https://api.github.com/users/Sulstice/repos",
+    "events_url": "https://api.github.com/users/Sulstice/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/Sulstice/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOD3C7as4E_Fi1",
+  "tag_name": "v.1.8.0",
+  "target_commitish": "production",
+  "name": "v.1.8.0",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-11-19T16:03:27Z",
+  "published_at": "2022-11-19T16:07:05Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/Sulstice/global-chem/tarball/v.1.8.0",
+  "zipball_url": "https://api.github.com/repos/Sulstice/global-chem/zipball/v.1.8.0",
+  "body": "Bugs and Fixes Changes Implemented:\r\n\r\n- Bit Vectors have been removed as a core functionality. Standard fingerprints haven't been achieved yet and not yet worthwhile to store as fixed data. \r\n- Alternative Jet Fuels have been added in the Environment Section for SMILES and SMARTS\r\n- The FDA Colour Additive Bot Bug has been fixed where it was reading in the first row as data and not as headers. \r\n- READMEs in other languages have moved to its own directory\r\n- Social Guidelines like code of conduct and contributing guidelines have been moved to the social guidelines directory. \r\n-  The main README has been updated to be more focused on just the core network itself.",
+  "discussion_url": "https://github.com/Sulstice/global-chem/discussions/225"
 }
