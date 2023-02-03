@@ -3,6 +3,11 @@
 arg=$1
 release=$2
 
+if (( $# < 2 )); then
+    echo "Usage: get-github OWNER/REPO TAG"
+    exit 1
+fi
+
 user=$(echo $arg | cut -d/ -f1)
 repo=$(echo $arg | cut -d/ -f2)
 
@@ -24,9 +29,17 @@ echo ']' >> $user/$repo/filenames.json
 
 license=$(egrep -i licen.e $user/$repo/filenames.json | tr -d ',"')
 
-for file in codemeta.json CITATION.cff $license; do
+for file in codemeta.json CITATION.cff citation.cff $license; do
     curl -s $API/repos/$user/$repo/contents/$file |\
         jq -r .content | base64 -D > $user/$repo/$file
 done
 
 echo "Downloading files for $user/$repo ... Done."
+echo "Cleaning up..."
+
+# Delete empty files.
+
+find $arg -type f -size -4c | xargs rm
+grep -rl '"message": "Not Found"' $arg | xargs rm
+
+echo "Cleaning up... Done."
