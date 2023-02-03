@@ -1,0 +1,17 @@
+[
+".gitattributes",
+".github",
+".gitignore",
+".readthedocs.yml",
+"CITATION.bib",
+"CODE_OF_CONDUCT.md",
+"LICENSE",
+"README.md",
+"codemeta.json",
+"docs",
+"notebooks",
+"qnm",
+"requirements.txt",
+"setup.py",
+"test",
+]
