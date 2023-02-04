@@ -1,0 +1,41 @@
+{
+  "url": "https://api.github.com/repos/TCCON/py-ginput/releases/76654366",
+  "assets_url": "https://api.github.com/repos/TCCON/py-ginput/releases/76654366/assets",
+  "upload_url": "https://uploads.github.com/repos/TCCON/py-ginput/releases/76654366/assets{?name,label}",
+  "html_url": "https://github.com/TCCON/py-ginput/releases/tag/v1.1.6",
+  "id": 76654366,
+  "author": {
+    "login": "joshua-laughner",
+    "id": 38451780,
+    "node_id": "MDQ6VXNlcjM4NDUxNzgw",
+    "avatar_url": "https://avatars.githubusercontent.com/u/38451780?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/joshua-laughner",
+    "html_url": "https://github.com/joshua-laughner",
+    "followers_url": "https://api.github.com/users/joshua-laughner/followers",
+    "following_url": "https://api.github.com/users/joshua-laughner/following{/other_user}",
+    "gists_url": "https://api.github.com/users/joshua-laughner/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/joshua-laughner/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/joshua-laughner/subscriptions",
+    "organizations_url": "https://api.github.com/users/joshua-laughner/orgs",
+    "repos_url": "https://api.github.com/users/joshua-laughner/repos",
+    "events_url": "https://api.github.com/users/joshua-laughner/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/joshua-laughner/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOH9qdRs4Ekace",
+  "tag_name": "v1.1.6",
+  "target_commitish": "main",
+  "name": "ginput v1.1.6 release",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-09-08T22:52:33Z",
+  "published_at": "2022-09-08T23:24:04Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/TCCON/py-ginput/tarball/v1.1.6",
+  "zipball_url": "https://api.github.com/repos/TCCON/py-ginput/zipball/v1.1.6",
+  "body": "This release includes (1) a license change and (2) fixes to allow ginput to run with Python 3.10.\r\n\r\n**License change** The license associated with ginput has changed from LGPL to Apache 2.0. If you download this software after 8 Sept 2022, the Apache 2.0 license is in effect.\r\n\r\n**Python update** The code has been updated to work with Python 3.10. If you install with `make install` or `./install.sh`, a Python 3.10 conda environment is created instead of a Python 3.6 one. If you need to work with Python 3.6, the `environment-py36.yml` file contains the previous 3.6 environment configuration, and can be use with `conda env create -f` to manually create a Python 3.6 environment."
+}

@@ -1,0 +1,119 @@
+{
+  "access": {
+    "embargo": {
+      "active": false,
+      "reason": null
+    },
+    "files": "public",
+    "record": "public",
+    "status": "open"
+  },
+  "created": "2022-09-19T17:51:22.646699+00:00",
+  "files": {
+    "enabled": true,
+    "order": []
+  },
+  "id": "24spe-gvc05",
+  "is_draft": false,
+  "is_published": true,
+  "links": {
+    "access_links": "https://data.caltech.edu/api/records/24spe-gvc05/access/links",
+    "doi": "https://doi.org/10.22002/D1.20285",
+    "draft": "https://data.caltech.edu/api/records/24spe-gvc05/draft",
+    "files": "https://data.caltech.edu/api/records/24spe-gvc05/files",
+    "latest": "https://data.caltech.edu/api/records/24spe-gvc05/versions/latest",
+    "latest_html": "https://data.caltech.edu/records/24spe-gvc05/latest",
+    "reserve_doi": "https://data.caltech.edu/api/records/24spe-gvc05/draft/pids/doi",
+    "self": "https://data.caltech.edu/api/records/24spe-gvc05",
+    "self_doi": "https://data.caltech.edu/doi/10.22002/D1.20285",
+    "self_html": "https://data.caltech.edu/records/24spe-gvc05",
+    "self_iiif_manifest": "https://data.caltech.edu/api/iiif/record:24spe-gvc05/manifest",
+    "self_iiif_sequence": "https://data.caltech.edu/api/iiif/record:24spe-gvc05/sequence/default",
+    "versions": "https://data.caltech.edu/api/records/24spe-gvc05/versions"
+  },
+  "metadata": {
+    "additional_descriptions": [
+      {
+        "description": "Public repository for the GINPUT priors generator",
+        "type": {
+          "id": "other",
+          "title": {
+            "de": "Sonstige",
+            "en": "Other"
+          }
+        }
+      }
+    ],
+    "creators": [
+      {
+        "affiliations": [
+          {
+            "id": "05dxps055",
+            "name": "California Institute of Technology"
+          }
+        ],
+        "person_or_org": {
+          "name": "Joshua (Josh) Laughner",
+          "type": "organizational"
+        }
+      }
+    ],
+    "description": "This release includes (1) a license change and (2) fixes to allow ginput to run with Python 3.10.\n\n**License change** The license associated with ginput has changed from LGPL to Apache 2.0. If you download this software after 8 Sept 2022, the Apache 2.0 license is in effect.\n\n**Python update** The code has been updated to work with Python 3.10. If you install with `make install` or `./install.sh`, a Python 3.10 conda environment is created instead of a Python 3.6 one. If you need to work with Python 3.6, the `environment-py36.yml` file contains the previous 3.6 environment configuration, and can be use with `conda env create -f` to manually create a Python 3.6 environment.",
+    "identifiers": [
+      {
+        "identifier": "20285",
+        "scheme": "cdid"
+      }
+    ],
+    "publication_date": "2022-09-08",
+    "publisher": "CaltechDATA",
+    "related_identifiers": [
+      {
+        "identifier": "https://github.com/WennbergLab/py-ginput/releases/tag/v1.1.6",
+        "relation_type": {
+          "id": "isidenticalto",
+          "title": {
+            "de": "Ist identisch mit",
+            "en": "Is identical to"
+          }
+        },
+        "scheme": "url"
+      }
+    ],
+    "resource_type": {
+      "id": "software",
+      "title": {
+        "en": "Software"
+      }
+    },
+    "subjects": [
+      {
+        "subject": "Github"
+      }
+    ],
+    "title": "WennbergLab/py-ginput: ginput v1.1.6 release",
+    "version": "v1.1.6"
+  },
+  "parent": {
+    "communities": {},
+    "id": "jzbza-fvg70"
+  },
+  "pids": {
+    "doi": {
+      "client": "datacite",
+      "identifier": "10.22002/D1.20285",
+      "provider": "datacite"
+    },
+    "oai": {
+      "identifier": "oai:data.caltech.edu:24spe-gvc05",
+      "provider": "oai"
+    }
+  },
+  "revision_id": 5,
+  "status": "published",
+  "updated": "2022-11-23T23:31:33.018091+00:00",
+  "versions": {
+    "index": 1,
+    "is_latest": true
+  }
+}
