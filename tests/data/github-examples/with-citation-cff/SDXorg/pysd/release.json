@@ -1,0 +1,42 @@
+{
+  "url": "https://api.github.com/repos/SDXorg/pysd/releases/86355718",
+  "assets_url": "https://api.github.com/repos/SDXorg/pysd/releases/86355718/assets",
+  "upload_url": "https://uploads.github.com/repos/SDXorg/pysd/releases/86355718/assets{?name,label}",
+  "html_url": "https://github.com/SDXorg/pysd/releases/tag/v3.9.0",
+  "id": 86355718,
+  "author": {
+    "login": "enekomartinmartinez",
+    "id": 61285767,
+    "node_id": "MDQ6VXNlcjYxMjg1NzY3",
+    "avatar_url": "https://avatars.githubusercontent.com/u/61285767?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/enekomartinmartinez",
+    "html_url": "https://github.com/enekomartinmartinez",
+    "followers_url": "https://api.github.com/users/enekomartinmartinez/followers",
+    "following_url": "https://api.github.com/users/enekomartinmartinez/following{/other_user}",
+    "gists_url": "https://api.github.com/users/enekomartinmartinez/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/enekomartinmartinez/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/enekomartinmartinez/subscriptions",
+    "organizations_url": "https://api.github.com/users/enekomartinmartinez/orgs",
+    "repos_url": "https://api.github.com/users/enekomartinmartinez/repos",
+    "events_url": "https://api.github.com/users/enekomartinmartinez/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/enekomartinmartinez/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOAOhdas4FJa8G",
+  "tag_name": "v3.9.0",
+  "target_commitish": "master",
+  "name": "3.9.0",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2022-12-16T18:56:11Z",
+  "published_at": "2022-12-16T19:06:26Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/SDXorg/pysd/tarball/v3.9.0",
+  "zipball_url": "https://api.github.com/repos/SDXorg/pysd/zipball/v3.9.0",
+  "body": "**New Features**\r\n\r\n- Parses and ignores reality check functions during translation of Vensim models. (@rogersamso)\r\n\r\n**Bug fixes**\r\n\r\n- Fix issue with the classification of variables in modules and submodules ([issue #388](https://github.com/SDXorg/pysd/issues/388)). When a model had a view with 3 sublevels (e.g. energy-transformation.losses) but another view was defined with only two of them (e.g. energy-transformation), the variables in the second view were placed in the main model file. Now, if this happens, the variables in the second view will be placed in a main.py file (i.e. energy/transformation/main.py). (@rogersamso)\r\n- Fix bug on the CLI when passing a hyphen as first value to the –subview-sep argument (issue #388). (@rogersamso)\r\n- Fix bug on the CLI when parsing initial conditions ([ssue #395). (@rogersamso)\r\n\r\n**Documentation**\r\n\r\n- The Splitting Vensim views in different files section in [Command Line Usage](https://pysd.readthedocs.io/en/master/command_line_usage.html) has been updated to include an example of the usage of the –subview-sep CLI argument. (@rogersamso)\r\n\r\n**Internal Changes**\r\n\r\n- The _merge_nested_dicts() method from the [pysd.translators.vensim.vensim_file.VensimFile](https://pysd.readthedocs.io/en/master/structure/vensim_translation.html#pysd.translators.vensim.vensim_file.VensimFile) class has been made a static method, as it does not need to access any attribute of the instance, and it does facilitate unit testing. (@rogersamso)\r\n- The pysd/translators/vensim/parsing_grammars/element_object.peg grammar has been modified to be able to parse reality check elements. (@rogersamso)\r\n-  pysd.translators.vensim.vensim_element.Constraint and pysd.translators.vensim.vensim_element.TestInputs classes have been added, which inherit from the also newly created pysd.translators.vensim.vensim_element.GenericComponent, which include the parse() and get_abstract_component() methods. (@rogersamso and @enekomartinmartinez)\r\n- The [pysd.translators.structures.abstract_model.AbstractSection](https://pysd.readthedocs.io/en/master/structure/abstract_model.html#pysd.translators.structures.abstract_model.AbstractSection) class now has two extra attributes (constraints and input_tests), which hold the [pysd.translators.structures.abstract_model.AbstractConstraint](https://pysd.readthedocs.io/en/master/structure/abstract_model.html#pysd.translators.structures.abstract_model.AbstractConstraint) and pysd.translators.structures.abstract_model.AbstractTestInputs objects. (@rogersamso)",
+  "mentions_count": 2
+}

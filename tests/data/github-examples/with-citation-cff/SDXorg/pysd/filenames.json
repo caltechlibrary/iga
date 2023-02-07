@@ -1,0 +1,17 @@
+[
+".github",
+".gitignore",
+".gitmodules",
+".readthedocs.yaml",
+"LICENSE",
+"MANIFEST.in",
+"README.md",
+"citation.cff",
+"docs",
+"paper",
+"pysd",
+"requirements.txt",
+"setup.cfg",
+"setup.py",
+"tests",
+]
