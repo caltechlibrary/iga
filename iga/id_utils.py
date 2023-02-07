@@ -10,6 +10,7 @@ file "LICENSE" for more information.
 
 from idutils import (
     detect_identifier_schemes,
+    is_pmid,
     normalize_doi,
     normalize_arxiv,
     normalize_pmid,
@@ -21,19 +22,21 @@ import re
 
 
 # The idutils regular expression for PMCID doesn't have a capturing expression
-# and also, idutils lacks a normalize_X for pmcid, for some reason.
-PMCID_REGEX = re.compile(r"(PMC\d{6,8})")
+# and also, idutils lacks a "normalize_X()" for pmcid, for some reason.
+PMCID_REGEX = re.compile(r"(PMC\d{6,8})", flags=re.IGNORECASE)
 
 
 def contains_pmcid(val):
     '''Return True if the given value contains a PMCID.'''
-    return PMCID_REGEX.match(val)
+    return bool(PMCID_REGEX.match(val)) if val else False
 
 
 def normalize_pmcid(val):
     '''Normalize a PubMed ID.'''
-    m = PMCID_REGEX.match(val)
-    return m.group(2)
+    if not val:
+        return ''
+    m = PMCID_REGEX.match(val.upper())
+    return m.group(1) if m else ''
 
 
 RECOGNIZED_SCHEMES = {
@@ -59,7 +62,10 @@ def recognized_scheme(text):
         if scheme in RECOGNIZED_SCHEMES:
             return scheme
     else:
-        # Special case not handled well by idutils.
+        # Special case not handled well by idutils. PMID's are a particular
+        # PITA b/c they're integers & cause false-positives for other things.
         if contains_pmcid(text):
             return 'pmcid'
+        elif is_pmid(text):
+            return 'pmid'
     return None
