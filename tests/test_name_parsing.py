@@ -7,7 +7,7 @@
 # =============================================================================
 
 from collections import namedtuple
-from iga.record import _cleaned_name, _split_name
+from iga.name_utils import _cleaned_name, split_name, flattened_name
 
 Name = namedtuple('Name', 'first last')
 
@@ -82,6 +82,6 @@ def test_cleaned_name():
 
 def test_name_parsing():
     for original, parsed in PARSED_NAMES:
-        (first, last) = _split_name(original)
+        (first, last) = split_name(original)
         assert first == parsed.first
         assert last == parsed.last
