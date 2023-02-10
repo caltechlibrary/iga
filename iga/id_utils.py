@@ -11,12 +11,13 @@ file "LICENSE" for more information.
 from idutils import (
     detect_identifier_schemes,
     is_pmid,
-    normalize_doi,
     normalize_arxiv,
-    normalize_pmid,
+    normalize_doi,
+    normalize_gnd,
     normalize_isbn,
-    normalize_ror,
     normalize_orcid,
+    normalize_pmid,
+    normalize_ror,
 )
 import re
 
@@ -39,20 +40,35 @@ def normalize_pmcid(val):
     return m.group(1) if m else ''
 
 
+def normalize_isni(val):
+    '''Normalize an International Standard Name Identifier (ISNI).'''
+    # FIXME not sure if anything needs to be done
+    return val
+
+
+def normalize_swh(val):
+    '''Normalize a Software Heritage identifier (SWHID).'''
+    # FIXME not sure if anything needs to be done
+    return val
+
+
 RECOGNIZED_SCHEMES = {
     'arxiv': normalize_arxiv,
     'doi'  : normalize_doi,
+    'gnd'  : normalize_gnd,
     'isbn' : normalize_isbn,
+    'isni' : normalize_isni,
     'orcid': normalize_orcid,
     'pmcid': normalize_pmcid,
     'pmid' : normalize_pmid,
     'ror'  : normalize_ror,
+    'swh'  : normalize_swh,
 }
 
 
 def detected_id(text):
     '''Return a tuple (identifier, scheme) for an id found in text.'''
-    if scheme := recognized_scheme(text):
+    if isinstance(text, str) and (scheme := recognized_scheme(text)):
         return RECOGNIZED_SCHEMES[scheme](text)
     return ''
 
