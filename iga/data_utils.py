@@ -8,26 +8,45 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+from typing import Generator, Iterator
+
+
 def deduplicated(_list):
     if not _list:
         return []
+    elif isinstance(_list, Generator):
+        return deduplicated(list(_list))
+    elif isinstance(_list, Iterator):
+        return deduplicated([x for x in _list])
     elif not isinstance(_list, list):
         return _list
     elif isinstance(_list[0], dict):
-        # Python dicts are not hashable, so comparing them is difficult.
-        # Many implementations of a deduplication process use frozenset, but
-        # frozenset alone doesn't handle nested dictionaries. The following
-        # is not very elegant, nor efficient, but works for small data sizes.
-        # Based in part on answer by Martijn Pieters posted to Stack Overflow
-        # on 2014-12-09 at https://stackoverflow.com/a/27374412/743730
-        from commonpy.data_utils import flattened
+        # Python dicts are not hashable, so comparing them is difficult. One
+        # approach would be to use a set of frozensets to help uniquefy
+        # values, but frozenset alone doesn't handle nested dictionaries.
+        # The following simple solution is O(n^2) -- bad for big sets, but
+        # our uses in IGA are small, so this is sufficient.
         deduplicated_list = []
-        seen = set()
+        seen = []
         for item in _list:
-            if (item_flattened := frozenset(flattened(item))) not in seen:
-                seen.add(item_flattened)
+            if item not in seen:
+                seen.append(item)
                 deduplicated_list.append(item)
         return deduplicated_list
     else:
         from commonpy.data_utils import unique
         return unique(_list)
+
+
+def similar_urls(url1, url2):
+    return (
+        url1 == url2
+        or url1.rstrip('/') == url2
+        or url1 == url2.rstrip('/')
+        or url1.replace('http://', 'https://') == url2
+        or url1.replace('https://', 'http://') == url2
+        or url1.replace('http://', 'https://').rstrip('/') == url2
+        or url1.replace('http://', 'https://') == url2.rstrip('/')
+        or url1.replace('https://', 'http://').rstrip('/') == url2
+        or url1.replace('https://', 'http://') == url2.rstrip('/')
+    )
