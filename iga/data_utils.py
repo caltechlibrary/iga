@@ -11,16 +11,16 @@ file "LICENSE" for more information.
 from typing import Generator, Iterator
 
 
-def deduplicated(_list):
-    if not _list:
+def deduplicated(lst):
+    if not lst:
         return []
-    elif isinstance(_list, Generator):
-        return deduplicated(list(_list))
-    elif isinstance(_list, Iterator):
-        return deduplicated([x for x in _list])
-    elif not isinstance(_list, list):
-        return _list
-    elif isinstance(_list[0], dict):
+    elif isinstance(lst, Generator):
+        return deduplicated(list(lst))
+    elif isinstance(lst, Iterator):
+        return deduplicated([x for x in lst])
+    elif not isinstance(lst, list):
+        return lst
+    elif isinstance(lst[0], dict):
         # Python dicts are not hashable, so comparing them is difficult. One
         # approach would be to use a set of frozensets to help uniquefy
         # values, but frozenset alone doesn't handle nested dictionaries.
@@ -28,25 +28,25 @@ def deduplicated(_list):
         # our uses in IGA are small, so this is sufficient.
         deduplicated_list = []
         seen = []
-        for item in _list:
+        for item in lst:
             if item not in seen:
                 seen.append(item)
                 deduplicated_list.append(item)
         return deduplicated_list
     else:
         from commonpy.data_utils import unique
-        return unique(_list)
+        return unique(lst)
 
 
 def similar_urls(url1, url2):
     return (
         url1 == url2
-        or url1.rstrip('/') == url2
-        or url1 == url2.rstrip('/')
+        or url1.removesuffix('/') == url2
+        or url1 == url2.removesuffix('/')
         or url1.replace('http://', 'https://') == url2
         or url1.replace('https://', 'http://') == url2
-        or url1.replace('http://', 'https://').rstrip('/') == url2
-        or url1.replace('http://', 'https://') == url2.rstrip('/')
-        or url1.replace('https://', 'http://').rstrip('/') == url2
-        or url1.replace('https://', 'http://') == url2.rstrip('/')
+        or url1.replace('http://', 'https://').removesuffix('/') == url2
+        or url1.replace('http://', 'https://') == url2.removesuffix('/')
+        or url1.replace('https://', 'http://').removesuffix('/') == url2
+        or url1.replace('https://', 'http://') == url2.removesuffix('/')
     )
