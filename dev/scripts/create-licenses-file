@@ -8,10 +8,9 @@ from   os import path
 import sys
 
 
-repodir    = path.abspath(path.join(__file__, '../../..'))
-outputfile = path.join(repodir, 'iga/t.py')
+# Define some block comments added to the generated file ~~~~~~~~~~~~~~~~~~~~~~
 
-file_header = """'''
+FILE_HEADER = """'''
 licenses.py: license descriptions.
 
  ╭───────────────────── Notice ── Notice ── Notice ────────────────────╮
@@ -31,7 +30,7 @@ from commonpy.data_structures import CaseFoldDict
 License = namedtuple('License', 'title description url')
 """
 
-licenses_comment = '''
+LICENSES_COMMENT = '''
 
 # The following hash table has all SPDX license identifiers as keys, and our
 # simple License named tuple as values. The URLs are the main URLs that SDPX
@@ -40,36 +39,29 @@ licenses_comment = '''
 # licenses, which is why not all the entries below have a description.
 '''
 
-license_url_comment = '''
+LICENSE_URL_COMMENT = '''
 
 # The following is a hash table of all known common SPDX URLs (including
 # variants) mapping to the SPDX license id's. We use this to look up SPDX
 # license identifiers given license URLs.
 '''
 
+# Handle preliminaries and command-line arguments ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Gather the data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+program = path.basename(__file__)
 
-print('Getting SDPX licenses.json')
-spdx = 'https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json'
-(response, error) = net('get', spdx)
-if error:
-    print('Error: ' + str(error))
+if sys.version_info.major < 3 or sys.version_info.minor < 8:
+    print(f'‼️  {program} requires Python version 3.8 or higher')
     sys.exit(1)
 
-spdx_json = json.loads(response.text)
-spdx_licenses = spdx_json['licenses']
+if len(sys.argv[1:]) < 1:
+    print(f'‼️  {program} requires one argument: the path to the output file')
+    sys.exit(1)
 
-spdx_urls = {}
-descriptions = CaseFoldDict()
+outputfile = path.abspath(sys.argv[1])
 
-for item in spdx_licenses:
-    key = item['licenseId']
-    url = item['reference'].rstrip('.html')
-    spdx_urls[url] = key
-    for also_url in item['seeAlso']:
-        spdx_urls[also_url] = key
-    descriptions[key] = ''
+
+# Gather the data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # The entries in spdx_licenses look like this:
 #     {
@@ -89,12 +81,33 @@ for item in spdx_licenses:
 # Notes: the JSON file at the detailsUrl does not contain a short description;
 # it contains the full license text.
 
+print('Getting SDPX licenses.json')
+spdx = 'https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json'
+(response, error) = net('get', spdx)
+if error:
+    print('‼️  Error: ' + str(error))
+    sys.exit(1)
+
+spdx_json = json.loads(response.text)
+spdx_licenses = spdx_json['licenses']
+
+spdx_urls = {}
+descriptions = CaseFoldDict()
+
+for item in spdx_licenses:
+    key = item['licenseId']
+    url = item['reference'].rstrip('.html')
+    spdx_urls[url] = key
+    for also_url in item['seeAlso']:
+        spdx_urls[also_url] = key
+    descriptions[key] = ''
+
 # We get the descriptions from a different repository.
 
 print('Getting github/choosealicense.com repo file list')
 (response, error) = net('get', 'https://api.github.com/repos/github/choosealicense.com/git/trees/gh-pages')
 if error:
-    print('Error: ' + str(error))
+    print('‼️  Error: ' + str(error))
     sys.exit(1)
 
 files_json = json.loads(response.text)
@@ -112,7 +125,7 @@ for item in licenses_dir_list:
     if not item['path'].endswith('.txt'):
         continue
 
-    license_id = item['path'].rstrip('.txt')
+    license_id = item['path'].removesuffix('.txt')
     if license_id not in descriptions:
         print('Choosealicense id not in spdx table: ' + license_id)
         print('Source item: ' + str(item))
@@ -121,12 +134,14 @@ for item in licenses_dir_list:
     print('Getting choosealicense.com license file for ' + license_id)
     (response, error) = net('get', item['url'])
     if error:
-        print('Error: ' + str(error))
+        print('‼️  Error: ' + str(error))
         sys.exit(1)
 
     file_dict = json.loads(response.text)
     if file_dict['encoding'] != 'base64':
         print('File encoding not base64: ' + item['url'])
+        sys.exit(1)
+
     contents = base64.b64decode(file_dict['content']).decode()
     for line in contents.split('\n'):
         if line.startswith('description:'):
@@ -134,15 +149,14 @@ for item in licenses_dir_list:
             print('Found description for ' + license_id)
             break
     else:
-        print('Did not find a description line in the file for ' + license_id)
-        sys.exit(1)
+        print('⚠️️  Did not "description" line in the file at ' + item['url'])
 
-# Write the licenses.py file ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Write the output file ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 print('Writing ' + outputfile)
 with open(outputfile, 'w') as out:
-    out.write(file_header)
-    out.write(licenses_comment)
+    out.write(FILE_HEADER)
+    out.write(LICENSES_COMMENT)
     out.write('\n')
     out.write('LICENSES = CaseFoldDict({')
     out.write('\n')
@@ -152,13 +166,13 @@ with open(outputfile, 'w') as out:
         out.write('  "' + license_id
                   + '": License(title="' + item['name']
                   + '", description="' + desc
-                  + '", url="' + item['reference'].rstrip('.html')
+                  + '", url="' + item['reference'].removesuffix('.html')
                   + '"),')
         out.write('\n')
     out.write('})')
     out.write('\n')
     out.write('\n')
-    out.write(license_url_comment)
+    out.write(LICENSE_URL_COMMENT)
     out.write('\n')
     out.write('LICENSE_URLS = CaseFoldDict({')
     out.write('\n')
