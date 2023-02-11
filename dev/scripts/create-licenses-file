@@ -4,6 +4,7 @@ import base64
 from   commonpy.data_structures import CaseFoldDict
 from   commonpy.network_utils import net
 import json
+from   lxml import html
 from   os import path
 import sys
 
@@ -145,7 +146,8 @@ for item in licenses_dir_list:
     contents = base64.b64decode(file_dict['content']).decode()
     for line in contents.split('\n'):
         if line.startswith('description:'):
-            descriptions[license_id] = line[13:]
+            desc = html.fromstring(line[13:]).text_content().strip()
+            descriptions[license_id] = desc
             print('Found description for ' + license_id)
             break
     else:
