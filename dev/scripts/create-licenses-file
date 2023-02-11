@@ -1,21 +1,17 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-repodir=$(dirname $(dirname $(dirname $(realpath -- "${BASH_SOURCE[0]}"))))
-jsonfile=$repodir/iga/licenses.py
-tmpdir=$(mktemp -d)
+import base64
+from   commonpy.data_structures import CaseFoldDict
+from   commonpy.network_utils import net
+import json
+from   os import path
+import sys
 
-# Exit if the temp directory wasn't created successfully.
-if [ ! -e "$tmpdir" ]; then
-    >&2 echo "Failed to create temp directory"
-    exit 1
-fi
 
-# Make sure the temp directory gets removed on script exit.
-trap "exit 1" HUP INT PIPE QUIT TERM
-trap 'rm -rf "$tmpdir"' EXIT
+repodir    = path.abspath(path.join(__file__, '../../..'))
+outputfile = path.join(repodir, 'iga/t.py')
 
-cat > $jsonfile <<EOF
-'''
+file_header = """'''
 licenses.py: license descriptions.
 
  ╭───────────────────── Notice ── Notice ── Notice ────────────────────╮
@@ -28,23 +24,148 @@ from collections import namedtuple
 from commonpy.data_structures import CaseFoldDict
 
 
+# The following named tuple is used in one of the hash tables below. Note that
+# callers do not need to import this named tuple definition; they can access
+# access the fields directly on the objects retrieved from the table.
+
 License = namedtuple('License', 'title description url')
+"""
+
+licenses_comment = '''
+
+# The following hash table has all SPDX license identifiers as keys, and our
+# simple License named tuple as values. The URLs are the main URLs that SDPX
+# gives as the reference URLs. The descriptions come from a different source,
+# choosealicense.com. That source does not have a description for all SPDX
+# licenses, which is why not all the entries below have a description.
+'''
+
+license_url_comment = '''
+
+# The following is a hash table of all known common SPDX URLs (including
+# variants) mapping to the SPDX license id's. We use this to look up SPDX
+# license identifiers given license URLs.
+'''
 
 
-LICENSES = CaseFoldDict({
-EOF
+# Gather the data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-cd $tmpdir
-git clone git@github.com:github/choosealicense.com.git
-for file in choosealicense.com/_licenses/*.txt; do
-    key=$(basename $file .txt)
-    echo -n '  "'$key'": License(title="' >> $jsonfile
-    grep title: $file | awk -F': ' '{print $2}' | tr '"' "'" | tr -d '\r\n' >> $jsonfile
-    echo -n '", description="' >> $jsonfile
-    grep description: $file | awk -F': ' '{print $2}' | tr '"' "'" | tr -d '\r\n' >> $jsonfile
-    echo -n '", url="https://spdx.org/licenses/' >> $jsonfile
-    grep spdx-id: $file | awk -F': ' '{print $2}' | tr '"' "'" | tr -d '\r\n' >> $jsonfile
-    echo '"),' >> $jsonfile
-done
+print('Getting SDPX licenses.json')
+spdx = 'https://raw.githubusercontent.com/spdx/license-list-data/master/json/licenses.json'
+(response, error) = net('get', spdx)
+if error:
+    print('Error: ' + str(error))
+    sys.exit(1)
 
-echo '})' >> $jsonfile
+spdx_json = json.loads(response.text)
+spdx_licenses = spdx_json['licenses']
+
+spdx_urls = {}
+descriptions = CaseFoldDict()
+
+for item in spdx_licenses:
+    key = item['licenseId']
+    url = item['reference'].rstrip('.html')
+    spdx_urls[url] = key
+    for also_url in item['seeAlso']:
+        spdx_urls[also_url] = key
+    descriptions[key] = ''
+
+# The entries in spdx_licenses look like this:
+#     {
+#       "licenseId": "APSL-1.0",
+#       "name": "Apple Public Source License 1.0",
+#       "reference": "https://spdx.org/licenses/APSL-1.0.html",
+#       "isDeprecatedLicenseId": false,
+#       "detailsUrl": "https://spdx.org/licenses/APSL-1.0.json",
+#       "referenceNumber": 293,
+#       "seeAlso": [
+#         "https://fedoraproject.org/wiki/Licensing/Apple_Public_Source_License_1.0"
+#       ],
+#       "isOsiApproved": true,
+#       "isFsfLibre": false
+#     },
+#
+# Notes: the JSON file at the detailsUrl does not contain a short description;
+# it contains the full license text.
+
+# We get the descriptions from a different repository.
+
+print('Getting github/choosealicense.com repo file list')
+(response, error) = net('get', 'https://api.github.com/repos/github/choosealicense.com/git/trees/gh-pages')
+if error:
+    print('Error: ' + str(error))
+    sys.exit(1)
+
+files_json = json.loads(response.text)
+files_list = files_json['tree']
+for item in files_list:
+    if item['path'] == '_licenses':
+        subdir_url = item['url']
+
+print('Getting license subdirectory from github/choosealicense.com')
+(response, error) = net('get', subdir_url)
+licenses_dir_json = json.loads(response.text)
+licenses_dir_list = licenses_dir_json['tree']
+
+for item in licenses_dir_list:
+    if not item['path'].endswith('.txt'):
+        continue
+
+    license_id = item['path'].rstrip('.txt')
+    if license_id not in descriptions:
+        print('Choosealicense id not in spdx table: ' + license_id)
+        print('Source item: ' + str(item))
+        continue
+
+    print('Getting choosealicense.com license file for ' + license_id)
+    (response, error) = net('get', item['url'])
+    if error:
+        print('Error: ' + str(error))
+        sys.exit(1)
+
+    file_dict = json.loads(response.text)
+    if file_dict['encoding'] != 'base64':
+        print('File encoding not base64: ' + item['url'])
+    contents = base64.b64decode(file_dict['content']).decode()
+    for line in contents.split('\n'):
+        if line.startswith('description:'):
+            descriptions[license_id] = line[13:]
+            print('Found description for ' + license_id)
+            break
+    else:
+        print('Did not find a description line in the file for ' + license_id)
+        sys.exit(1)
+
+# Write the licenses.py file ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+print('Writing ' + outputfile)
+with open(outputfile, 'w') as out:
+    out.write(file_header)
+    out.write(licenses_comment)
+    out.write('\n')
+    out.write('LICENSES = CaseFoldDict({')
+    out.write('\n')
+    for item in spdx_licenses:
+        license_id = item['licenseId']
+        desc = descriptions[license_id] if license_id in descriptions else ''
+        out.write('  "' + license_id
+                  + '": License(title="' + item['name']
+                  + '", description="' + desc
+                  + '", url="' + item['reference'].rstrip('.html')
+                  + '"),')
+        out.write('\n')
+    out.write('})')
+    out.write('\n')
+    out.write('\n')
+    out.write(license_url_comment)
+    out.write('\n')
+    out.write('LICENSE_URLS = CaseFoldDict({')
+    out.write('\n')
+    for url, key in spdx_urls.items():
+        out.write('  "' + url + '": "' + key + '",')
+        out.write('\n')
+    out.write('})')
+    out.write('\n')
+
+print('Done.')
