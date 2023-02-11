@@ -1,5 +1,5 @@
 '''
-reference_utils.py: utilities for working with references
+reference.py: create a formatted reference for a given publication.
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
@@ -30,7 +30,7 @@ def reference(pub_id):
 
     formatted_reference = ''
     if scheme == 'isbn':
-        # ISBNs can't be converted to DOIs & have to be handled separately.
+        # ISBNs cannot be converted to DOIs & have to be handled separately.
         import isbnlib
         from   isbnlib.registry import bibformatters as isbn_bibformatters
         if isbn_metadata := isbnlib.meta(pub_id):
