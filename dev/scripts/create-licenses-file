@@ -165,11 +165,11 @@ with open(outputfile, 'w') as out:
     for item in spdx_licenses:
         license_id = item['licenseId']
         desc = descriptions[license_id] if license_id in descriptions else ''
-        out.write('  "' + license_id
-                  + '": License(title="' + item['name']
-                  + '", description="' + desc
-                  + '", url="' + item['reference'].removesuffix('.html')
-                  + '"),')
+        out.write("  '" + license_id
+                  + "': License(title='''" + item['name']
+                  + "''', description='''" + desc
+                  + "''', url='" + item['reference'].removesuffix('.html')
+                  + "'),")
         out.write('\n')
     out.write('})')
     out.write('\n')
@@ -179,7 +179,7 @@ with open(outputfile, 'w') as out:
     out.write('LICENSE_URLS = CaseFoldDict({')
     out.write('\n')
     for url, key in spdx_urls.items():
-        out.write('  "' + url + '": "' + key + '",')
+        out.write("  '" + url + "': '" + key + "',")
         out.write('\n')
     out.write('})')
     out.write('\n')
