@@ -48,3 +48,4 @@ per-file-ignores =
     # that block in the file, BUT flake8 only recognizes per-line annotations,
     # so there's no way to tell it to ignore a rule only for a block of code.
     iga/__main__.py: E251
+    tests/*: F403, W391, E202, E251
