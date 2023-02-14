@@ -1,0 +1,62 @@
+{
+    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+    "@type": "SoftwareSourceCode",
+    "description": "Command line tools, Golang package and Python module for working with the EPrints 3.x REST API",
+    "name": "eprinttools",
+    "codeRepository": "https://github.com/caltechlibrary/eprinttools",
+    "issueTracker": "https://github.com/caltechlibrary/eprinttools/issues",
+    "license": "https://caltechlibrary.github.io/eprinttools/license.html",
+    "version": "1.2.2",
+    "author": [
+        {
+            "@type": "Person",
+            "givenName": "R. S.",
+            "familyName": "Doiel",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },
+            "email": "rsdoiel@caltech.edu",
+            "@id": "https://orcid.org/0000-0003-0900-6903"
+        }
+    ],
+    "contributor": [
+        {
+            "@type": "Person",
+            "givenName": "George",
+            "familyName": "Porter",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },
+            "email": "george@library.caltech.edu",
+            "@id": "https://orcid.org/0000-0002-6539-638X"
+        }
+    ],
+    "developmentStatus": "active",
+    "downloadUrl": "https://github.com/caltechlibrary/eprinttools/release/latest",
+    "keywords": [
+        "metadata",
+        "repository",
+        "EPrints",
+        "CrossRef",
+        "DataCite",
+        "software"
+    ],
+    "maintainer": [
+        {
+            "@type": "Person",
+            "givenName": "R. S.",
+            "familyName": "Doiel",
+            "affiliation": {
+                "@type": "Organization",
+                "name": "Caltech Library"
+            },
+            "email": "rsdoiel@caltech.edu",
+            "@id": "https://orcid.org/0000-0003-0900-6903"
+        }
+    ],
+    "programmingLanguage": [
+        "Go"
+    ]
+}
