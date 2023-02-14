@@ -50,3 +50,19 @@ def similar_urls(url1, url2):
         or url1.replace('https://', 'http://').removesuffix('/') == url2
         or url1.replace('https://', 'http://') == url2.removesuffix('/')
     )
+
+
+def listified(thing):
+    if not thing:
+        return []
+    return thing if isinstance(thing, (list, Iterator, Generator)) else [thing]
+
+
+def cleaned_text(text):
+    # Get rid of embedded newlines and related characters.
+    text = ' '.join(text.splitlines())
+    # Make sure periods are followed by spaces.
+    text = text.replace('.', '. ')
+    # Normalize runs of multiple spaces to one.
+    text = ' '.join(text.split())
+    return text
