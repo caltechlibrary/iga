@@ -1,5 +1,5 @@
 import iga.github
-from iga.github import GitHubRelease, GitHubRepo, GitHubUser
+from iga.github import GitHubRelease, GitHubRepo, GitHubAccount
 from os import path
 import json5
 from unittest.mock import patch
@@ -43,9 +43,9 @@ def test_mocking_user(mocker):
         user_json = json5.load(f)
 
     mocked_function = mocker.patch("iga.github._object_for_github")
-    mocked_function.return_value = GitHubUser(user_json)
+    mocked_function.return_value = GitHubAccount(user_json)
     value = mocked_function()
-    assert isinstance(value, GitHubUser)
+    assert isinstance(value, GitHubAccount)
     assert value.url == 'https://api.github.com/users/digitaldogsbody'
 
 

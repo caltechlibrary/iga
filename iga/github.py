@@ -51,8 +51,8 @@ class GitHubRepo(SimpleNamespace):
         self._json_dict = repo_dict
 
 
-class GitHubUser(SimpleNamespace):
-    '''Simple data structure corresponding to a user in GitHub.'''
+class GitHubAccount(SimpleNamespace):
+    '''Simple data structure corresponding to a GitHub user or org account.'''
     def __init__(self, user_dict):
         super().__init__(**user_dict)
         log('GitHub user data: ' + json5.dumps(user_dict, indent=2))
@@ -86,11 +86,11 @@ def github_release(account, repo, tag):
     return _object_for_github(endpoint, GitHubRelease)
 
 
-def github_user(account):
-    '''Return a User object corresponding to the GitHub user account.'''
+def github_account(account):
+    '''Return an Account object corresponding to the GitHub user account.'''
     endpoint = 'https://api.github.com/users/' + account
     log('getting GitHub data for user at ' + endpoint)
-    return _object_for_github(endpoint, GitHubUser)
+    return _object_for_github(endpoint, GitHubAccount)
 
 
 def github_repo(account, repo):
@@ -109,7 +109,7 @@ def github_repo_filenames(repo):
     (response, error) = net('get', files_url)
     if error:
         log('unable to get listof files for repo: ' + str(error))
-        return []
+        raise error
     json_dict = json5.loads(response.text)
     files = [GitHubFile(**f) for f in json_dict['tree']]
     log(f'found {len(files)} files in repo')
@@ -128,13 +128,13 @@ def github_repo_file(repo, filename):
     file = next(f for f in repo._files if f.path == filename)
     (response, error) = net('get', file.url)
     if error:
-        return ''
-    file_dict = json5.loads(response.text)
-    if file_dict['encoding'] != 'base64':
-        log(f'GitHub file encoding for {filename} is ' + file_dict['encoding'])
-        raise InternalError('Unimplemented file encoding ' + file_dict['encoding'])
+        raise error
+    json_dict = json5.loads(response.text)
+    if json_dict['encoding'] != 'base64':
+        log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
+        raise InternalError('Unimplemented file encoding ' + json_dict['encoding'])
     import base64
-    contents = base64.b64decode(file_dict['content']).decode()
+    contents = base64.b64decode(json_dict['content']).decode()
     if not getattr(repo, '_file_contents', {}):
         repo._file_contents = {}
     # Cache the file contents, so we don't have to get it from GitHub again.
