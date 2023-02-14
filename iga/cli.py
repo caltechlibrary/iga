@@ -18,7 +18,7 @@ from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, InternalError
 from iga.github import valid_github_release_url, github_account_repo_tag
 from iga.invenio import invenio_write
-from iga.record import valid_record, record_from_release
+from iga.record import valid_record, record_for_release
 
 
 # Main command-line interface.
@@ -251,8 +251,8 @@ possible values:
         else:
             account, repo, tag = github_account_repo_tag(url_or_tag)
     elif not all([account, repo, url_or_tag]):
-        alert(ctx, 'When not using a release URL, the options `--account` and'
-              ' `--repo` and a tag name must all be provided.')
+        alert(ctx, 'When not using a release URL, all of the following must be'
+              ' provided: the options `--account`, `--repo`, and a tag name.')
         sys.exit(int(ExitCode.bad_arg))
     else:
         tag = url_or_tag
@@ -267,14 +267,14 @@ possible values:
 
     from commonpy.network_utils import network_available
     if not network_available():
-        alert(ctx, 'No network – cannot proceed.')
+        alert(ctx, 'No network; cannot proceed further.')
         sys.exit(int(ExitCode.no_network))
 
     # Do the main work ........................................................
 
     exit_code = ExitCode.success
     try:
-        record = given_record or record_from_release(account, repo, tag)
+        record = given_record or record_for_release(account, repo, tag)
         if dry_run:
             report_actions(ctx, record)
         else:
