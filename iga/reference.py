@@ -62,7 +62,7 @@ def reference_from_doi(doi):
     (response, error) = net('get', doi_url, headers=headers)
     if not error:
         log('received response from Crossref: ' + response.text)
-        cleaned_text = clean_text(response.text)
+        cleaned_text = without_html(response.text)
         _CACHE[cache_key] = cleaned_text
         return cleaned_text
     else:
@@ -139,7 +139,7 @@ def doi_from_pubmed(pub_id, scheme):
         return ''
 
 
-def clean_text(text):
+def without_html(text):
     from lxml import html
     try:
         return html.fromstring(text).text_content().strip()
