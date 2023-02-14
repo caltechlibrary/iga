@@ -1,9 +1,10 @@
 # IGA
 
-InvenioRDM GitHub Archiver
+IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHub Action that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
 
-[![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg)](https://github.com/caltechlibrary/iga/LICENSE)
-[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?color=b44e88)](https://github.com/caltechlibrary/iga/releases)
+[![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.8+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-380/)
+[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?color=b44e88&style=flat-square)](https://github.com/caltechlibrary/iga/releases)
 
 
 ## Table of contents
@@ -20,7 +21,15 @@ InvenioRDM GitHub Archiver
 
 ## Introduction
 
-_[… forthcoming …]_
+[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional data and software repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution.
+
+The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line to send releases on demand; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
+* Automatic extraction of metadata from the GitHub release data, the repository data, and [`codemeta.json`](https://codemeta.github.io) and/or [`CITATION.cff`](https://citation-file-format.github.io) files if they exist in the repository
+* Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using elaborate procedures
+* Support for overriding the metadata it record it creates, for complete control if you need it
+* Use of the GitHub public API without the need for a [GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+* Extensive use of logging so you can see what's going on under the hood
+
 
 ## Installation
 
@@ -46,7 +55,7 @@ Your help and participation in enhancing IGA is welcome!  Please visit the [guid
 
 ## License
 
-Software produced by the Caltech Library is Copyright © 2022 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
+Software produced by the Caltech Library is Copyright © 2023 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
 
 ## Acknowledgments
 
