@@ -36,3 +36,4 @@ __pycache__/
 .pytest_cache
 .coverage
 *.tmp
+tests/*.log
