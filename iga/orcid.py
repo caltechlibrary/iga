@@ -8,6 +8,7 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+from   commonpy.exceptions import CommonPyException
 from   commonpy.network_utils import net
 import json
 from   sidetrack import log
@@ -20,28 +21,44 @@ from iga.name_utils import split_name
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def name_from_orcid(orcid):
-    '''Contact ORCID to get the public record for a given ORCID id.'''
+    '''Return a (first name, family name) tuple for the given ORCID id.
+
+    The identifier can be a pure ORCID id like 0000-0001-9105-5960, or it can
+    be in the form of a URL like https://orcid.org/0000-0001-9105-5960.
+
+    ORCID records often provide split family/given names, but not always. If a
+    given user's name is not available in a split form but a name is available
+    in the form of an undifferentiated name, attempt to split the name using
+    methods in IGA's name_utils module.
+    '''
+    if not orcid or not isinstance(orcid, str):
+        return ('', '')
     orcid = detected_id(orcid) if orcid.startswith('http') else orcid
     log('contacting ORCID for record for ' + orcid)
     data_url = f'https://orcid.org/{orcid}/public-record.json'
-    response, error = net('get', data_url)
-    if error:
-        log(f'failed to get ORCID page for {orcid} due to error: ' + str(error))
-        return ('', '')
+    try:
+        response, error = net('get', data_url)
+        if error:
+            log(f'failed to get ORCID data for {orcid}: ' + str(error))
+            return ('', '')
+        json_dict = json.loads(response.text)
+    except json.JSONDecodeError as ex:
+        log('unable to decode response from orcid.org API: ' + str(ex))
+        return ''
+    except CommonPyException as ex:
+        log('failed to communicate with orcid.org: ' + str(ex))
+        return ''
 
-    json_dict = json.loads(response.text)
     given = ''
     family = ''
     if names := json_dict.get('names', {}):
-        log('found names dict in ORCID data')
-        # When broken out into parts in ORCID, the first name often omits
-        # middle names and middle initials, yet these are often included in the
-        # value of a separate "creditName" field. Frustratingly, that field is
-        # a single string and not separated into parts, so we can't just use it
-        # directly. We won't let that stop us, though. If creditName is
-        # present, we hand it to our name splitter and use the first name from
-        # that result (in the hopes that it will be more complete), and combine
-        # that with the family name given in the ORCID record.
+        # People often set a creditName value. This would be preferred for our
+        # uses (to wit, giving credit for someone's work) except that the field
+        # is a single string and not separated into parts. So we resort to the
+        # following: if creditName is present, we hand it to our name splitter
+        # and use just the first name part of the result because it's the part
+        # we suspect will be preferred over the givenNames field value. In any
+        # case, we always use the familyName part of the ORCID names dict.
         if (cn := names.get('creditName', {})) and (value := cn.get('value', '')):
             log('record has a creditName value: ' + value)
             given, family = split_name(value)
@@ -54,9 +71,16 @@ def name_from_orcid(orcid):
                 given = given_dict.get('value', '')
             if family_dict := names.get('familyName', {}):
                 family = family_dict.get('value')
-            log('values from given and family fields: ' + given + ' ' + family)
-    elif other := json_dict.get('otherNames', {}):
-        # Yes, it has a nested dict with the same name. Don't ask me why.
+            log('values from given and family names: ' + given + ' ' + family)
+
+        # In some societies, people only have a single name. If we get that
+        # much from the name field, we assume we're done.
+        if family:
+            return (given, family)
+
+    # The "names" object is empty for some reason. See if there's another name.
+    if other := json_dict.get('otherNames', {}):
+        # Yes, this dict has a nested dict with the same name. Don't ask me why.
         for item in other.get('otherNames', []):
             name = item.get('content', '') or item.get('sourceName', '')
             if name:
@@ -64,8 +88,7 @@ def name_from_orcid(orcid):
                 given, family = split_name(name)
                 break
             else:
-                log('found otherNames dict in ORCID data without a name field')
+                log('found otherNames dict in ORCID data without a name')
         else:
             log('failed to find nested otherNames dict in ORCID data')
-
     return (given, family)
