@@ -26,10 +26,14 @@ def name_from_orcid(orcid):
     The identifier can be a pure ORCID id like 0000-0001-9105-5960, or it can
     be in the form of a URL like https://orcid.org/0000-0001-9105-5960.
 
-    ORCID records often provide split family/given names, but not always. If a
-    given user's name is not available in a split form but a name is available
-    in the form of an undifferentiated name, attempt to split the name using
-    methods in IGA's name_utils module.
+    ORCID records often provide split family/given names, though not always.
+    If a given user's name is not available in a split form but a name is
+    available in the form of an undifferentiated name, attempt to split the
+    name using methods in IGA's name_utils module.
+
+    Records in ORCID can be deprecated or deactivated, but the public JSON
+    record data does not contain successor or replacement record information.
+    Return empty strings in that case.
     '''
     if not orcid or not isinstance(orcid, str):
         return ('', '')
@@ -49,16 +53,22 @@ def name_from_orcid(orcid):
         log('failed to communicate with orcid.org: ' + str(ex))
         return ''
 
+    # The public record JSON has no status field. If a record is deprecated or
+    # deactivated, there's no explicit indicator AND we have no way to find the
+    # replacement even though visiting orcid.org shows it. We're stuck w/ this:
+    if 'family name deactivated' in json_dict.get('displayName', '').lower():
+        log(f'{orcid} is a deactivated record')
+        return ('', '')
+
     given = ''
     family = ''
     if names := json_dict.get('names', {}):
-        # People often set a creditName value. This would be preferred for our
-        # uses (to wit, giving credit for someone's work) except that the field
-        # is a single string and not separated into parts. So we resort to the
-        # following: if creditName is present, we hand it to our name splitter
-        # and use just the first name part of the result because it's the part
-        # we suspect will be preferred over the givenNames field value. In any
-        # case, we always use the familyName part of the ORCID names dict.
+        # The creditName value is preferred for our uses (giving credit for
+        # work) and may be more complete than the givenName & familyName field
+        # values, but it's a single string. Splitting names is error-prone, so
+        # we compromise: use our name splitter & use only the given name from
+        # the result b/c it's the part we suspect will be preferred over the
+        # givenNames field value anyway, and always use the familyName value.
         if (cn := names.get('creditName', {})) and (value := cn.get('value', '')):
             log('record has a creditName value: ' + value)
             given, family = split_name(value)
