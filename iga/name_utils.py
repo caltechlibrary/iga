@@ -11,17 +11,153 @@ file "LICENSE" for more information.
 from sidetrack import log
 
 
+# Internal module variables.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# The following is based on an answer posted to Stack Overflow on 2018-10-16
+# by user "9999years" at https://stackoverflow.com/a/52837006/743730.
+CJK_RANGES = [
+    (0x4E00, 0x62FF),
+    (0x6300, 0x77FF),
+    (0x7800, 0x8CFF),
+    (0x8D00, 0x9FCC),
+    (0x3400, 0x4DB5),
+    (0x20000, 0x215FF),
+    (0x21600, 0x230FF),
+    (0x23100, 0x245FF),
+    (0x24600, 0x260FF),
+    (0x26100, 0x275FF),
+    (0x27600, 0x290FF),
+    (0x29100, 0x2A6DF),
+    (0x2A700, 0x2B734),
+    (0x2B740, 0x2B81D),
+    (0x2B820, 0x2CEAF),
+    (0x2CEB0, 0x2EBEF),
+    (0x2F800, 0x2FA1F)
+]
+'''List of codepoint ranges for CJK characters in Unicode. Tuples indicate
+the bottom and top of the range, inclusive.'''
+
+_NLP = {}
+'''Cache for the spaCy model so that we don't have to load it more than once.'''
+
+_COMPANIES = set()
+'''Set of well-known company names.'''
+
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# https://stackoverflow.com/questions/54334304/spacy-cant-find-model-en-core-web-sm-on-windows-10-and-python-3-5-3-anacon
+# import spacy.cli
+# spacy.cli.download("en_core_web_trf")
+# spacy.cli.download("zh_core_web_trf")
+
+
+def is_person(name):
+    '''Try to guess whether the given string is a person's name.
+
+    In the most general case, it is impossible to reliably determine whether a
+    given string of characters represents the name of a person and not, say,
+    the name of a company or product. This function makes a best-effort guess
+    using heuristics in combination with methods from natural language
+    processing (NLP), but it will sometimes make mistakes.
+
+    This function is designed with the assumption that its input is already
+    expected to be a name, and it only needs to make the determination of
+    whether it is the name of a person or not. To reach an answer, it uses the
+    following overall approach:
+
+    1. If the input has only one word, it is always judged not to be a person's
+       name. This is incorrect for some real names, and the author apologizes
+       to people from societies where mononyms are common. In the contexts where
+       this function is used, hopefully other info will be available that will
+       avoid having to call this function in the first place.
+
+    '''
+    if not name:
+        return False
+
+    # If the input contains a mix of Latin and CJK characters, it's likely that
+    # there's both an English and CJK version of the same thing. (E.g., if
+    # someone writes their name in Chinese in parentheses after an English
+    # version.) If that's the case, we use only the non-CJK part if there is
+    # one. If there are no CJK characters, we always use the cleaned version.
+    charset = 'cjk' if contains_cjk(name) else 'default'
+    cleaned = _cleaned_name(name)
+    if charset == 'default' or len(cleaned) > 0:
+        log('using cleaned version of name: ' + cleaned)
+        name = cleaned
+    if not name:
+        # Cleaning removed everything.
+        log('ended up with empty string; returning False')
+        return False
+
+    # The ML-based NER systems sometimes mislabel company names, so we start
+    # by checking against a list of well-known company names.
+    global _COMPANIES
+    if name in _COMPANIES:
+        log(f'recognized {name} as a known company')
+        return False
+
+    # Delay loading the ML systems because they take a long time to load.
+    global _NLP
+    if charset not in _NLP:
+        import spacy
+        from os import path
+        if charset == 'cjk':
+            log('loading zh_core_web_trf')
+            _NLP[charset] = spacy.load('zh_core_web_trf')
+        else:
+            log('loading en_core_web_trf')
+            _NLP[charset] = spacy.load('en_core_web_trf')
+        here = path.dirname(path.abspath(__file__))
+        with open(path.join(here, 'data/known-companies.txt'), 'r') as f:
+            _COMPANIES.update(_cleaned_name(line) for line in f.readlines())
+
+    def person_according_to_spacy(name):
+        try:
+            parsed = _NLP[charset](name)
+            if parsed.ents:
+                entity_type = parsed.ents[0].label_
+                log(f'spaCy [{charset}] entity type for {name}: {entity_type}')
+                # Get better accuracy testing "!= ORG" instead of "== PERSON"
+                return (entity_type not in ['ORG', 'GPE'])
+            else:
+                log(f'spaCy did not return entity labels for {name}')
+                return None
+        except Exception as ex:             # noqa: PIE786
+            log('unable to use spaCy due to error: ' + str(ex))
+        return False
+
+    def person_according_to_pp(name):
+        import probablepeople as pp
+        try:
+            from_pp = pp.tag(name)
+            log(f'entity type according to PP for {name}: {from_pp[1]}')
+            return (from_pp[1] == 'Person')
+        except Exception:                 # noqa: PIE786
+            # PP sometimes fails with an exception.
+            log(f'probablepeople failed for {name}')
+        return False
+
+    # spaCy does the best job, but sometimes it doesn't produce any tags.
+    # We fall back to PP in that case.
+    decision = person_according_to_spacy(name)
+    if decision is None:
+        decision = person_according_to_pp(name)
+    log(f'final decision: is_person({name}) = {decision}')
+    return decision
+
 
 def split_name(name):
     '''Split a name into given name & surname.
 
-    To be honest, trying to split names automatically into parts is not only
-    impossible in general -- it's also undesirable: not all cultures use names
-    with only first and/or last name components, or just one last name, or in
-    the same order as Western names, etc. However, we have no choice for IGA
-    because InvenioRDM's record format only supports split first & last names.
+    Note: trying to split names automatically into parts is not only impossible
+    in general -- it's also undesirable: not all cultures use names with only
+    first and/or last name components, or just one last name, or in the same
+    order as Western names, etc. However, we have no choice for IGA because
+    InvenioRDM's record format only supports split first & last names.
     '''
     # The approach taken here is roughly:
     #  1) strip non-Latin characters and non-alpha characters from the string
@@ -89,6 +225,15 @@ def flattened_name(name):
     '''Return name as a string even if it's a list and not a simple string.'''
     return ' '.join(part for part in name) if isinstance(name, list) else name
 
+
+def contains_cjk(text):
+    '''Return True if text contains any character in the CJK character sets.'''
+    def is_cjk(char):
+        char = ord(char)
+        return any(char >= bottom and char <= top for bottom, top in CJK_RANGES)
+
+    return any(map(is_cjk, text))
+
 
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -96,6 +241,9 @@ def flattened_name(name):
 def _cleaned_name(name):
     import re
     import demoji
+    from iga.data_utils import without_html
+    # Remove any HTML tags there might be left.
+    name = without_html(name)
     # Remove parenthetical text like "Somedude [somedomain.io]".
     name = re.sub(r"\(.*?\)|\[.*?\]", "", name)
     # Remove CJK characters because the name parsers can't handle them.
