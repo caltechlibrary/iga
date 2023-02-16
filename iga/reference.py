@@ -14,7 +14,7 @@ from sidetrack import log
 from iga.id_utils import recognized_scheme
 
 
-# Constants for this module.
+# Internal variables for this module.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 _CACHE = {}
@@ -50,6 +50,7 @@ def reference(pub_id):
 
 
 def reference_from_doi(doi):
+    global _CACHE
     cache_key = doi + '-reference'
     if cache_key in _CACHE:
         cached = _CACHE[cache_key]
@@ -75,6 +76,7 @@ def reference_from_doi(doi):
 
 def reference_from_bibtex(bibtex_string):
     # Cache the results of these plugin lookups for greater efficiency.
+    global _CACHE
     if 'apa_style' in _CACHE:
         apa_style = _CACHE['apa_style']
         plain_text = _CACHE['plain_text']
@@ -97,7 +99,7 @@ def reference_from_bibtex(bibtex_string):
     return formatted_item.text.render(plain_text)
 
 
-def doi_for_publication(pub_id, scheme = None):
+def doi_for_publication(pub_id, scheme=None):
     scheme = recognized_scheme(pub_id) if not scheme else scheme
     if scheme == 'doi':
         return pub_id
@@ -110,6 +112,7 @@ def doi_for_publication(pub_id, scheme = None):
 
 
 def doi_from_pubmed(pub_id, scheme):
+    global _CACHE
     if pub_id in _CACHE:
         cached = _CACHE[pub_id]
         log(f'returning cached DOI for {pub_id}: ' + cached)
