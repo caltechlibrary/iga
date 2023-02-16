@@ -36,6 +36,7 @@ file "LICENSE" for more information.
 '''
 
 import arrow
+from   commonpy.data_structures import CaseFoldSet
 import json5
 from   sidetrack import log
 import sys
@@ -295,12 +296,12 @@ def contributors(repo, release):
 
     # CFF's contact field is defined as a single object.
     if contact := repo.cff.get('contact', {}):
-        contributors.append(_identity(contact, role='contactperson'))
+        contributors.append(_entity(contact, role='contactperson'))
 
     # Codemeta's "maintainer" is a person, but people often use a list here.
     # InvenioRDM roles lack an explicit term for maintainer, so we use "other".
     for maintainer in listified(repo.codemeta.get('maintainer', {})):
-        contributors.append(_identity(maintainer, role='other'))
+        contributors.append(_entity(maintainer, role='other'))
 
     # Both codemeta & cff files may have lists of contributors. Give priority
     # to codemeta. Comparing names is error-prone and we can't reliably detect
@@ -310,7 +311,10 @@ def contributors(repo, release):
         role = 'other'
         if matched := _cv_match('contributor-roles', contributor.get('role', '')):
             role = matched
-        contributors.append(_identity(contributor, role=role))
+        contributors.append(_entity(contributor, role=role))
+
+    # FIXME if there is no contributors info, use github contributors &
+    # look up peole's names using github api
 
     # We're getting data from multiple sources & we might have duplicates.
     return deduplicated(contributors)
@@ -324,7 +328,7 @@ def creators(repo, release):
     # release data, so try them 1st.
     if authors := (listified(repo.codemeta.get('author', []))
                    or repo.cff.get('author', [])):
-        return deduplicated(_identity(x) for x in authors)
+        return deduplicated(_entity(x) for x in authors)
 
     # Couldn't get authors from codemeta.json or CITATION.cff. Try the release
     # author first, followed by the repo owner.
@@ -407,8 +411,14 @@ def formats(repo, release):
     '''Return InvenioRDM "formats".
     https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
     '''
-    # FIXME
-    return []
+    formats = []
+    if release.tarball_url:
+        formats.append("application/x-tar-gz")
+    if release.zipball_url:
+        formats.append("application/zip")
+    for asset in release.assets:
+        formats.append(asset.content_type)
+    return formats
 
 
 def funding(repo, release):
@@ -436,7 +446,7 @@ def funding(repo, release):
     for item in listified(funder_field):
         if isinstance(item, dict):
             # Correct data type.
-            funder_tuples.append(_funder_info(item))
+            funder_tuples.append(_parsed_funder_info(item))
         elif isinstance(item, str):
             # Incorrect data type. Let's take it anyway. Use the whole string.
             funder_tuples.append((item, ''))
@@ -467,8 +477,9 @@ def funding(repo, release):
             # If there's only one token in the funding item string, it's likely
             # an award id. If there's more than 1 token, we can't reliably
             # parse out the grant id, so give up and use the whole string.
-            award_id = item if len(item) == 1 else ''
-            award_name = item if len(item) > 1 else ''
+            num_terms = len(item.split())
+            award_id = item if num_terms == 1 else ''
+            award_name = item if num_terms > 1 else ''
             results.append(_funding(funder, funder_id, award_name, award_id))
         elif isinstance(item, dict):
             award_name = item.get('name', '') or item.get('@name', '')
@@ -482,7 +493,7 @@ def funding(repo, release):
                 if isinstance(fun, str):
                     item_funder = fun
                 elif isinstance(fun, dict):
-                    item_funder, item_funder_id = _funder_info(fun)
+                    item_funder, item_funder_id = _parsed_funder_info(fun)
             # If there's an overall funder name in the codemeta file & this
             # item also has its own funder name, use this item's value.
             item_funder = item_funder or funder
@@ -790,34 +801,48 @@ def sizes(repo, release):
     '''Return InvenioRDM "sizes".
     https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
     '''
-    # fixme
-    return []
+    sizes = []
+    # FIXME can't get size of tarball & zipball from GitHub for some reason,
+    # so need to get it after downloading the files locally.
+    sizes.append('unknown')
+    sizes.append('unknown')
+    for asset in release.assets:
+        sizes.append(f'{asset.size} bytes')
+    return sizes
 
 
 def subjects(repo, release):
     '''Return InvenioRDM "subjects".
     https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
     '''
-    # We create a union of the repo topics and "keywords" from codemeta & cff.
-    subjects = set(repo.topics)
+    # We will combine any GitHub repo topics and "keywords" from codemeta & cff.
+    subjects = CaseFoldSet(repo.topics)
 
-    if keywords := repo.codemeta.get('keywords', []):
-        if isinstance(keywords, str):
-            # People sometimes use a single string with keywords separated by
-            # a comma or semicolon. Default to blank space.
-            if ',' in keywords:
-                subjects.update(keywords.split(','))
-            elif ';' in keywords:
-                subjects.update(keywords.split(';'))
-            else:
-                subjects.update(keywords.split())
-        elif isinstance(keywords, list) and isinstance(keywords[0], str):
-            subjects.update(keywords)
+    # If the value is a single string, assume it's the case where someone set
+    # "keywords" to a string with terms separated by a comma or semicolon.
+    keywords = repo.codemeta.get('keywords', [])
+    if isinstance(keywords, str):
+        if ';' in keywords:
+            subjects.update(keywords.split(';'))
+        elif ',' in keywords:
+            subjects.update(keywords.split(','))
         else:
-            log('found keywords with unrecognized format in codemeta.json')
+            subjects.update(keywords.split())
+    else:
+        for item in listified(keywords):
+            if isinstance(item, str):
+                subjects.add(item)
+            else:
+                log('found keywords with unrecognized format in codemeta.json')
+                break
 
-    if keywords := repo.cff.get('keywords', []):
-        subjects.update(keywords)
+    # In CFF people usually write lists, but I've seen mistakes. Be safe here.
+    for keyword in listified(repo.cff.get('keywords', [])):
+        if isinstance(item, str):
+            subjects.add(item)
+        else:
+            log('found keywords with unrecognized format in CITATION.cff')
+            break
 
     return [{'subject': x} for x in subjects]
 
@@ -847,12 +872,81 @@ def version(repo, release):
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n for
-# info about the fields for authors in InvenioRDM. Although people sometimes
-# put more things in (e.g.) CITATION.cff authors info (e.g., email addr),
-# there's no provision in InvenioRDM for that.
+# See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n for info
+# about the fields for authors in InvenioRDM. Although people sometimes put
+# more things in (e.g.) the CFF authors fields (e.g., email addr), there's no
+# provision in InvenioRDM for that.
 
-def _identity(data, role=None):
+def _entity(data, role=None):
+    if isinstance(data, dict):          # Correct data type.
+        return _entity_from_dict(data, role)
+    elif isinstance(data, str):         # Wrong data type, but we try anyway.
+        return _entity_from_string(data, role)
+    else:                               # If we get here, it's beyond us.
+        log('entity value is neither a string nor a dict -- giving up')
+        return {}
+
+
+def _entity_from_string(data, role):
+    # We don't expect strings for this, so everything we do here is heuristics.
+    # Possibilities considered:
+    #  - an ORCID URL, like "https://orcid.org/0000-0001-9105-5960"
+    #  - an ORCID by itself, like "0000-0001-9105-5960"
+    #  - an organization's ROR URL, like "https://ror.org/05dxps055"
+    #  - an organization's ROR ID by itself, like "05dxps055"
+    #  - a GitHub user's name, like "mhucka"
+    #  - a GitHub org account name, like "caltechlibrary"
+    #  - a person's name, like "Michael Hucka"
+    #  - an organization's name, like "California Institute of Technology"
+
+    result = {}
+    scheme = recognized_scheme(data)
+    if scheme == 'orcid':
+        from iga.orcid import name_from_orcid
+        orcid = detected_id(data)
+        (given, family) = name_from_orcid(orcid)
+        if family or given:
+            result = {'family_name': flattened_name(family),
+                      'given_name': flattened_name(given),
+                      'identifiers': [{'identifier': orcid,
+                                       'scheme': 'orcid'}],
+                      'type': 'personal'}
+    elif scheme == 'ror':
+        from iga.ror import name_from_ror
+        name = name_from_ror(data)
+        if name:
+            result = {'name': name,
+                      'type': 'organizational'}
+    elif data.startswith('https://github.com'):
+        # Might be the URL to an account page on GitHub.
+        tail = data.replace('https://github.com/', '')
+        if '/' not in tail and (account := github_account(tail)):
+            result = _identity_from_github(account)
+        else:
+            log('{data} is not interpretable as a GitHub account')
+    elif len(data.split()) == 1 and (account := github_account(data)):
+        # This is the name of an account in GitHub.
+        result = _identity_from_github(account)
+    else:
+        # We're getting into expensive heuristic guesswork now.
+        from iga.name_utils import is_person
+        if is_person(data):
+            (given, family) = split_name(data)
+            if family or given:
+                result = {'family_name': flattened_name(family),
+                          'given_name': flattened_name(given),
+                          'type': 'personal'}
+            else:
+                log(f'guessing "{data}" is a person but failed to split name')
+        else:
+            result = {'name': data,
+                      'type': 'organizational'}
+    if result and role:
+        result['role'] = role
+    return result
+
+
+def _entity_from_dict(data, role):
     person = {}
     org = {}
 
@@ -915,26 +1009,24 @@ def _release_author(release):
 
 def _repo_owner(repo):
     account = github_account(repo.owner.login)
-    if account.type == 'Organization':
-        return {'name': account.name,
-                'type': 'organizational'}
-    elif account.name:
-        return _identity_from_github(account)
-    else:
-        return {}
+    return _identity_from_github(account)
 
 
 def _identity_from_github(account):
-    (given, family) = split_name(account.name)
-    person = {'given_name': given,
-              'family_name': family,
-              'type': 'personal'}
-    if account.company:
-        person.update({'affiliations': [{'name': account.company}]})
-    return person
+    if account.type == 'User':
+        (given, family) = split_name(account.name)
+        result = {'given_name': given,
+                  'family_name': family,
+                  'type': 'personal'}
+        if account.company:
+            result.update({'affiliations': [{'name': account.company}]})
+    else:
+        return {'name': account.name,
+                'type': 'organizational'}
+    return result
 
 
-def _funder_info(data):
+def _parsed_funder_info(data):
     funder_name = data.get('name', '') or data.get('@name', '')
     funder_id = ''
     if recognized_scheme(data.get('@id', '')) == 'ror':
@@ -964,7 +1056,7 @@ def _codemeta_references(repo):
     # Codemeta's referencePublication is supposed to be a ScholarlyArticle
     # (dict), but people often make it a list, and moreover, sometimes they
     # make it a list of strings (often URLs) instead of dicts.
-    identifiers = set()
+    identifiers = CaseFoldSet()
     for item in listified(repo.codemeta.get('referencePublication', [])):
         if isinstance(item, str):
             if recognized_scheme(item):
@@ -987,7 +1079,7 @@ def _cff_references(repo):
     # CFF has "preferred-citation" and "references". The former is one CFF
     # "reference" type object, while the latter is a list of those objects.
     # Annoyingly, a "reference" object itself can have a list of identifiers.
-    identifiers = set()
+    identifiers = CaseFoldSet()
     for ref in (listified(repo.cff.get('preferred-citation', []))
                 + repo.cff.get('references', [])):
         # These are the relevant field names defined in codemeta & CFF.
