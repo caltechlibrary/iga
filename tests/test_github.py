@@ -5,9 +5,20 @@ from unittest.mock import patch
 import iga.github
 from iga.github import (
     GitHubRepo,
+    github_account,
     github_account_repo_tag,
     github_file_url,
     valid_github_release_url)
+
+
+def test_github_account():
+    account = github_account('mhucka')
+    assert account
+    assert account.login == "mhucka"
+    assert account.type == "User"
+
+    account = github_account('55fake99zxy100')
+    assert not account
 
 
 def test_github_account_repo_tag():
@@ -22,7 +33,7 @@ def test_github_valid_release_url():
 
 here = path.dirname(path.abspath(__file__))
 json_file = 'data/github-examples/with-codemeta/fairdataihub/FAIRshare-Docs/repo.json'
-with open(path.join(HERE, json_file), 'r') as f:
+with open(path.join(here, json_file), 'r') as f:
     repo_object = GitHubRepo(json5.loads(f.read()))
 
 @patch('iga.github.github_repo', autospec=True, return_value = repo_object)

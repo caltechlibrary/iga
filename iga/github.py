@@ -24,12 +24,12 @@ class GitHubRelease(SimpleNamespace):
     def __init__(self, release_dict):
         super().__init__(**release_dict)
         log('GitHub release data: ' + json5.dumps(release_dict, indent=2))
-        self.author = GitHubAccount(**release_dict['author'])
+        self.author = GitHubAccount(release_dict['author'])
         # First, do in-place conversion of the 'uploader' field (a dict) ...
         for asset in self.assets:
-            asset['uploader'] = GitHubAccount(**asset['uploader'])
+            asset['uploader'] = GitHubAccount(asset['uploader'])
         # ... then convert the dict of the asset (which contains uploader).
-        self.assets = [GitHubAsset(**asset) for asset in self.assets]
+        self.assets = [GitHubAsset(asset) for asset in self.assets]
         # Save the original data for debugging purposes.
         self._json_dict = release_dict
 
@@ -41,12 +41,12 @@ class GitHubRepo(SimpleNamespace):
 
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
-        self.owner = GitHubAccount(**repo_dict['owner'])
+        self.owner = GitHubAccount(repo_dict['owner'])
         log('GitHub repo data: ' + json5.dumps(repo_dict, indent=2))
         if repo_dict.get('organization', None):
-            self.organization = GitHubAccount(**repo_dict['organization'])
+            self.organization = GitHubAccount(repo_dict['organization'])
         if repo_dict.get('license', None):
-            self.license = GitHubLicense(**repo_dict['license'])
+            self.license = GitHubLicense(repo_dict['license'])
         # Save the original data for debugging purposes.
         self._json_dict = repo_dict
 
@@ -60,20 +60,22 @@ class GitHubAccount(SimpleNamespace):
         self._json_dict = user_dict
 
 
-class GitHubAccount(SimpleNamespace):
-    '''Simple data structure corresponding to a GitHub account JSON object.'''
-
-
 class GitHubAsset(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub file asset JSON object.'''
+    def __init__(self, asset_dict):
+        super().__init__(**asset_dict)
 
 
 class GitHubLicense(SimpleNamespace):
     '''Simple data structure corresponding to a license object.'''
+    def __init__(self, license_dict):
+        super().__init__(**license_dict)
 
 
 class GitHubFile(SimpleNamespace):
     '''Simple data structure corresponding to a file in a repo.'''
+    def __init__(self, file_dict):
+        super().__init__(**file_dict)
 
 
 # Principal exported functions.
@@ -111,7 +113,7 @@ def github_repo_filenames(repo):
         log('unable to get listof files for repo: ' + str(error))
         raise error
     json_dict = json5.loads(response.text)
-    files = [GitHubFile(**f) for f in json_dict['tree']]
+    files = [GitHubFile(data) for data in json_dict['tree']]
     log(f'found {len(files)} files in repo')
     # Cache the results on the repo object, so we don't have to recompute it.
     repo._files = files
@@ -172,7 +174,10 @@ def _object_for_github(api_url, cls):
     (response, error) = net('get', api_url)
     if error:
         import commonpy.exceptions
-        if isinstance(error, commonpy.exceptions.AuthenticationFailure):
+        if isinstance(error, commonpy.exceptions.NoContent):
+            # The requested thing does not exist.
+            return None
+        elif isinstance(error, commonpy.exceptions.AuthenticationFailure):
             # GitHub returns 403 when you hit the rate limit.
             # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
             if 'API rate limit exceeded' in response.text:
@@ -192,6 +197,6 @@ def _object_for_github(api_url, cls):
         obj.api_url = api_url
         return obj
     except Exception as ex:
-        # GitHub returned an unexpected value. We need to fix our handling.
-        log('unexpected problem decode json from GitHub: ' + str(ex))
-        raise InternalError('GitHub returned an unexpected value.')
+        # Something unexpected happened. We need to fix our handling.
+        log('Error: ' + str(ex))
+        raise InternalError('Encountered error trying to get GitHub data.')
