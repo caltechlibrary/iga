@@ -62,6 +62,7 @@ def reference_from_doi(doi):
     headers = {'accept': 'text/x-bibliography; style=apa'}
     (response, error) = net('get', doi_url, headers=headers)
     if not error:
+        from iga.data_utils import without_html
         log('received response from Crossref: ' + response.text)
         cleaned_text = without_html(response.text)
         _CACHE[cache_key] = cleaned_text
@@ -140,11 +141,3 @@ def doi_from_pubmed(pub_id, scheme):
     else:
         log(f'error trying to get DOI for {pub_id}: ' + str(error))
         return ''
-
-
-def without_html(text):
-    from lxml import html
-    try:
-        return html.fromstring(text).text_content().strip()
-    except Exception:                   # noqa PIE786
-        return text

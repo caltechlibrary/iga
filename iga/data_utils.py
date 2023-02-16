@@ -64,5 +64,13 @@ def cleaned_text(text):
     # Make sure periods are followed by spaces.
     text = text.replace('.', '. ')
     # Normalize runs of multiple spaces to one.
-    text = ' '.join(text.split())
-    return text
+    return ' '.join(text.split())
+
+
+def without_html(text):
+    '''Return the given text with HTML tags, if any, removed.'''
+    from lxml import html
+    try:
+        return html.fromstring(text).text_content().strip()
+    except Exception:                   # noqa PIE786
+        return text
