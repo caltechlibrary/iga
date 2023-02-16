@@ -96,6 +96,8 @@ def is_person(name):
     # The ML-based NER systems sometimes mislabel company names, so we start
     # by checking against a list of well-known company names.
     global _COMPANIES
+    if not _COMPANIES:
+        _load_companies()
     if name in _COMPANIES:
         log(f'recognized {name} as a known company')
         return False
@@ -103,17 +105,7 @@ def is_person(name):
     # Delay loading the ML systems because they take a long time to load.
     global _NLP
     if charset not in _NLP:
-        import spacy
-        from os import path
-        if charset == 'cjk':
-            log('loading zh_core_web_trf')
-            _NLP[charset] = spacy.load('zh_core_web_trf')
-        else:
-            log('loading en_core_web_trf')
-            _NLP[charset] = spacy.load('en_core_web_trf')
-        here = path.dirname(path.abspath(__file__))
-        with open(path.join(here, 'data/known-companies.txt'), 'r') as f:
-            _COMPANIES.update(_cleaned_name(line) for line in f.readlines())
+        _load_spacy(charset)
 
     def person_according_to_spacy(name):
         try:
@@ -272,3 +264,23 @@ def _upcase_first_letters(name):
     # Python's .title() will downcase the letters after the 1st letter, which
     # is undesired behavior for the situation where we need this.
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
+
+
+def _load_companies():
+    from os.path import dirname, abspath, join
+    here = dirname(abspath(__file__))
+    companies_file = join(here, 'data/known-companies.txt')
+    log('loading companies list from ' + companies_file)
+    with open(companies_file, 'r') as f:
+        _COMPANIES.update(_cleaned_name(line) for line in f.readlines())
+
+
+def _load_spacy(charset):
+    import spacy
+    if charset == 'cjk':
+        log('loading spaCy zh_core_web_trf -- this may take a long time')
+        _NLP[charset] = spacy.load('zh_core_web_trf')
+    else:
+        log('loading spaCy en_core_web_trf -- this may take a long time')
+        _NLP[charset] = spacy.load('en_core_web_trf')
+    log(f'finished loading spaCy pipeline for {charset} charset')
