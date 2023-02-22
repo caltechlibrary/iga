@@ -698,8 +698,10 @@ def related_identifiers(repo, release):
                             'scheme': 'url'})
 
     # The issues URL is kind of a supplemental resource.
-    if issues_url := repo.issues_url:
+    issues_url = repo.codemeta.get('issueTracker', '')
+    if not issues_url and repo.issues_url:
         issues_url = f'https://github.com/{repo.full_name}/issues'
+    if issues_url:
         identifiers.append({'identifier': url_normalize(issues_url),
                             'relation_type': {'id': 'issupplementedby',
                                               'title': {'en': 'Is supplemented by'}},
