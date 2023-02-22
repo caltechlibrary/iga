@@ -144,6 +144,17 @@ def github_repo_file(repo, filename):
     return contents
 
 
+def github_repo_languages(repo):
+    '''Return a list of languages used in the repo according.'''
+    endpoint = repo.languages_url
+    (response, error) = net('get', endpoint)
+    if error:
+        log('error trying to get GitHub languages (' + endpoint + '): ' + str(error))
+        return []
+    json_dict = json5.loads(response.text)
+    return json_dict.keys() if json_dict else []
+
+
 def github_account_repo_tag(release_url):
     '''Return tuple (account, repo name, tag) based on the given web URL.'''
     # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
