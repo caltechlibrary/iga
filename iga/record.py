@@ -310,10 +310,30 @@ def contributors(repo, release):
     if contact := repo.cff.get('contact', {}):
         contributors.append(_entity(contact, role='contactperson'))
 
-    # Codemeta's "maintainer" is a person, but people often use a list here.
+    # Codemeta's "sponsor" is a person or org, but people might use a list.
+    for sponsor in listified(repo.codemeta.get('sponsor', {})):
+        contributors.append(_entity(sponsor, role='sponsor'))
+
+    # Codemeta's "producer" is a person or org, but people might use a list.
+    for producer in listified(repo.codemeta.get('producer', {})):
+        contributors.append(_entity(producer, role='producer'))
+
+    # Codemeta's "editor" is a person or org, but people might use a list.
+    for editor in listified(repo.codemeta.get('editor', {})):
+        contributors.append(_entity(editor, role='editor'))
+
+    # Codemeta's "copyrightHolder" is a person or org, but ... oh you know.
+    for copyrightHolder in listified(repo.codemeta.get('copyrightHolder', {})):
+        contributors.append(_entity(copyrightHolder, role='rightsholder'))
+
+    # Codemeta's "maintainer" is person or org, but people often use a list.
     # InvenioRDM roles lack an explicit term for maintainer, so we use "other".
     for maintainer in listified(repo.codemeta.get('maintainer', {})):
         contributors.append(_entity(maintainer, role='other'))
+
+    # InvenioRDM lacks an explicit term for "provider", so we use "other"
+    for provider in listified(repo.codemeta.get('provider', {})):
+        contributors.append(_entity(provider, role='other'))
 
     # Both codemeta & cff files may have lists of contributors. Give priority
     # to codemeta. Comparing names is error-prone and we can't reliably detect
