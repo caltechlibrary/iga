@@ -44,11 +44,12 @@ import sys
 from iga.data_utils import deduplicated, similar_urls, listified, cleaned_text
 from iga.exceptions import MissingData
 from iga.github import (
+    github_account,
     github_release,
     github_repo,
     github_repo_file,
     github_repo_filenames,
-    github_account
+    github_repo_languages,
 )
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
@@ -226,37 +227,48 @@ def additional_descriptions(repo, release):
     '''Return InvenioRDM "additional descriptions".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-descriptions-0-n
     '''
-    descriptions = []
-
     # Description types come from DataCite, and can be: "abstract", "methods",
     # "series-information", "table-of-contents", "technical-info", "other".
 
-    # If the GitHub release object doesn't have a description body, then we'll
-    # end up using something else for our InvenioRDM record -- see the function
-    # description() in this file. Only add the others here if we didn't there.
-    if not release.body:
-        desc = description(repo, release)
+    descriptions = []
 
-        rel_notes = repo.codemeta.get('releaseNotes', '').strip()
-        if rel_notes != desc and not rel_notes.startswith('http'):
-            # We didn't use the release notes as the description, so add it.
-            descriptions.append({'description': rel_notes,
-                                 'type': {'id': 'other',
-                                          'title': {'en': 'Other'}}})
+    # We don't want to reuse the text that we put in the InvenioRDM description
+    # field, hence the need for the logic that follows.
+    desc = description(repo, release)
 
-        # Codemeta's "description" and CITATION.cff's "abstract" are equivalent
-        # according to the Codemeta crosswalk, so we only use one or the other.
-        text = repo.codemeta.get('description', '') or repo.cff.get('abstract', '')
-        text = text.strip()
-        if text != desc:
-            # There's a decision to be made about whether the CFF abstract
-            # should be given description type "abstract" here. Examples of cff
-            # files show that people invariably use it to describe the software
-            # as a whole, not the release. Consequently, as an additional
-            # description for the *release*, it's not acting as an abstract.
-            descriptions.append({'description': text,
-                                 'type': {'id': 'other',
-                                          'title': {'en': 'Other'}}})
+    # Add the release notes if we didn't use that as the main description.
+    rel_notes = repo.codemeta.get('releaseNotes', '').strip()
+    if rel_notes != desc and not rel_notes.startswith('http'):
+        descriptions.append({'description': rel_notes,
+                             'type': {'id': 'other',
+                                      'title': {'en': 'Other'}}})
+
+    # Add one of Codemeta's "description", CFF's "abstract", or the GitHub repo
+    # description if we didn't that as the main description. These are listed
+    # as equivalent by the Codemeta crosswalk. If more than one is set, it's
+    # likely that they're all similar anyway, so add only one of them.
+    #
+    # Note #1: we could use a string distance measure (e.g., Levenshtein) to
+    # evaluate the values really are different and add them individually if
+    # they are not too similar. However, finding a threshold that works for all
+    # cases would be difficult if not impossible, and it would still risk that
+    # the values essentially say the same thing using different words. There
+    # seems to be little value in adding all 3, especially since they describe
+    # the software as a whole and not the release per se. Adding one is enough.
+    #
+    # Note #2: the fact that DataCite offers a description type of "abstract"
+    # makes it tempting to use that for the CFF "abstract" field, but IMHO that
+    # would be wrong because CFF's definition of "abstract" is that it's "a
+    # description of the software or dataset" -- in other words, the same kind
+    # of text as the other fields. Thus, we should use the same type value.
+    text = (repo.codemeta.get('description', '')
+            or repo.cff.get('abstract', '')
+            or repo.description)
+    text = text.strip()
+    if text != desc:
+        descriptions.append({'description': text,
+                             'type': {'id': 'other',
+                                      'title': {'en': 'Other'}}})
 
     # Codemeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
     # say "For software description, this may include a readme.txt ...".)
@@ -395,11 +407,14 @@ def description(repo, release):
         else:
             log('codemeta has releaseNotes in the form of a URL -- skipping')
 
-    # Codemeta's "description" and CFF's "abstract" (which the Codemeta
-    # crosswalk maps as equivalent) refer to the software or dataset overall,
-    # not specifically to the release. Still, if there's nothing else, it seems
-    # better to use this instead of leaving an empty description in the record.
-    if text := (repo.codemeta.get('description', '') or repo.cff.get('abstract', '')):
+    # Codemeta's "description" & CFF's "abstract" (which the Codemeta crosswalk
+    # maps as equivalent) and GitHub's repo "description" field refer to the
+    # software or dataset overall, not specifically to the release. Still, if
+    # there's nothing else, it seems better to use this instead of leaving an
+    # empty description in the record.
+    if text := (repo.codemeta.get('description', '')
+                or repo.cff.get('abstract', '')
+                or repo.description):
         return text.strip()
 
     # Bummer.
@@ -630,6 +645,17 @@ def related_identifiers(repo, release):
                                               'title': {'en': 'Software'}},
                             'scheme': 'url'})
 
+    # If releaseNotes is a URL, we will not have used it for either the
+    # description or additional descriptions, so add it here.
+    relnotes_url = repo.codemeta.get('releaseNotes', '').strip()
+    if relnotes_url.startswith('http'):
+        identifiers.append({'identifier': url_normalize(relnotes_url),
+                            'relation_type': {'id': 'isdescribedby',
+                                              'title': {'en': 'Is described by'}},
+                            'resource_type': {'id': 'other',
+                                              'title': {'en': 'Other'}},
+                            'scheme': 'url'})
+
     # A GitHub repo may give a homepage for the software, though users don't
     # always set it. CFF's "url" field is defined as "The URL of a landing
     # page/website for the software or dataset", which is the same concept.
@@ -669,6 +695,16 @@ def related_identifiers(repo, release):
                                               'title': {'en': 'Is documented by'}},
                             'resource_type': {'id': 'publication-softwaredocumentation',
                                               'title': {'en': 'Software documentation'}},
+                            'scheme': 'url'})
+
+    # The issues URL is kind of a supplemental resource.
+    if issues_url := repo.issues_url:
+        issues_url = f'https://github.com/{repo.full_name}/issues'
+        identifiers.append({'identifier': url_normalize(issues_url),
+                            'relation_type': {'id': 'issupplementedby',
+                                              'title': {'en': 'Is supplemented by'}},
+                            'resource_type': {'id': 'other',
+                                              'title': {'en': 'Other'}},
                             'scheme': 'url'})
 
     # Codemeta says "relatedLink" value is supposed to be a URL, but most files
@@ -815,13 +851,16 @@ def subjects(repo, release):
     '''Return InvenioRDM "subjects".
     https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
     '''
-    # We will combine any GitHub repo topics and "keywords" from codemeta & cff.
+    # Start with the topics list from the GitHub repo. Use a case-insensitive
+    # set to try to uniquefy the values added to this.
     subjects = CaseFoldSet(repo.topics)
 
-    # If the value is a single string, assume it's the case where someone set
-    # "keywords" to a string with terms separated by a comma or semicolon.
+    # Add values from Codemeta field "keywords". If the whole value is one
+    # string, it may contain multiple terms separated by a comma or semicolon.
     keywords = repo.codemeta.get('keywords', [])
     if isinstance(keywords, str):
+        # Trying the ';' first, alone, is deliberate in case the values
+        # separated by semicolons have commas within them.
         if ';' in keywords:
             subjects.update(keywords.split(';'))
         elif ',' in keywords:
@@ -836,12 +875,26 @@ def subjects(repo, release):
                 log('found keywords with unrecognized format in codemeta.json')
                 break
 
-    # In CFF people usually write lists, but I've seen mistakes. Be safe here.
+    # In CFF, people usually write lists, but I've seen mistakes. Be safe here.
     for keyword in listified(repo.cff.get('keywords', [])):
         if isinstance(item, str):
             subjects.add(item)
         else:
             log('found keywords with unrecognized format in CITATION.cff')
+            break
+
+    # Add languages as topics too.
+    for lang in github_repo_languages(repo):
+        subjects.add(lang)
+    for item in listified(repo.codemeta.get('programmingLanguage', [])):
+        if isinstance(item, str):
+            subjects.add(item)
+        elif isinstance(item, dict):
+            if lang := (item.get('name', '') or item.get('@name', '')):
+                subjects.add(lang)
+        else:
+            log('found programmingLanguage item with unrecognized format'
+                ' in codemeta.json: ' + str(item))
             break
 
     return [{'subject': x} for x in subjects]
