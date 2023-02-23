@@ -1068,7 +1068,8 @@ def _entity_from_dict(data, role):
             name = affiliation.get('legalName', '') or affiliation.get('name', '')
         else:
             name = affiliation
-        structure.update({'affiliations': [{'name': flattened_name(name)}]})
+        if name:
+            structure.update({'affiliations': [{'name': flattened_name(name)}]})
     if role:
         structure['role'] = {'id': role}
     return structure
