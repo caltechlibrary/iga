@@ -145,7 +145,7 @@ def github_repo_file(repo, filename):
 
 
 def github_repo_languages(repo):
-    '''Return a list of languages used in the repo according.'''
+    '''Return a list of languages used in the repo according to GitHub.'''
     endpoint = repo.languages_url
     (response, error) = net('get', endpoint)
     if error:
@@ -153,6 +153,20 @@ def github_repo_languages(repo):
         return []
     json_dict = json5.loads(response.text)
     return json_dict.keys() if json_dict else []
+
+
+def github_repo_contributors(repo):
+    '''Return a list of GitHubAccount objects for users shown as repo contributors.'''
+    endpoint = repo.contributors_url
+    (response, error) = net('get', endpoint)
+    if error:
+        log('error trying to get GitHub contributors (' + endpoint + '): ' + str(error))
+        return []
+    # The JSON data is a list containing a kind of minimal user info dict.
+    contributors = []
+    for user_dict in json5.loads(response.text):
+        contributors.append(github_account(user_dict['login']))
+    return contributors
 
 
 def github_account_repo_tag(release_url):
