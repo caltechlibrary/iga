@@ -47,6 +47,7 @@ from iga.github import (
     github_account,
     github_release,
     github_repo,
+    github_repo_contributors,
     github_repo_file,
     github_repo_filenames,
     github_repo_languages,
@@ -234,11 +235,11 @@ def additional_descriptions(repo, release):
 
     # We don't want to reuse the text that we put in the InvenioRDM description
     # field, hence the need for the logic that follows.
-    desc = description(repo, release)
+    main_desc = description(repo, release)
 
     # Add the release notes if we didn't use that as the main description.
     rel_notes = repo.codemeta.get('releaseNotes', '').strip()
-    if rel_notes != desc and not rel_notes.startswith('http'):
+    if rel_notes and rel_notes != main_desc and not rel_notes.startswith('http'):
         descriptions.append({'description': rel_notes,
                              'type': {'id': 'other',
                                       'title': {'en': 'Other'}}})
@@ -265,7 +266,7 @@ def additional_descriptions(repo, release):
             or repo.cff.get('abstract', '')
             or repo.description)
     text = text.strip()
-    if text != desc:
+    if text != main_desc:
         descriptions.append({'description': text,
                              'type': {'id': 'other',
                                       'title': {'en': 'Other'}}})
@@ -286,18 +287,25 @@ def additional_titles(repo, release):
     '''Return InvenioRDM "additional titles".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
     '''
-    # If we can't get a name or title from the codemeta or cff files, give up.
-    # The GitHub data doesn't offer anything we can use in this regard.
-    if name := (repo.codemeta.get('name', '') or repo.cff.get('title', '')):
-        version = repo.codemeta.get('version', '') or repo.cff.get('version', '')
-        title = name + (f' (version {version})' if version else '')
-        return [{'title': cleaned_text(title),
-                 'type': {'id': 'alternative-title',
-                          'title': {'en': 'Alternative Title'}},
-                 'lang': {'id': 'eng'},
-                 }]
-    else:
-        return []
+    # The main title for the InvenioRDM record is made using the repo name
+    # and release tag. Here we add things from Codemeta and CFF.
+
+    titles = []
+    if name := repo.codemeta.get('name', ''):
+        titles.append({'title': cleaned_text(name),
+                       'type': {'id': 'alternative-title',
+                                'title': {'en': 'Alternative Title'}},
+                       'lang': {'id': 'eng'},
+                       })
+
+    title = repo.cff.get('title', '')
+    if title and title.strip() != repo.codemeta.get('name', '').strip():
+        titles.append({'title': cleaned_text(title),
+                       'type': {'id': 'alternative-title',
+                                'title': {'en': 'Alternative Title'}},
+                       'lang': {'id': 'eng'},
+                       })
+    return titles
 
 
 def contributors(repo, release):
@@ -338,18 +346,41 @@ def contributors(repo, release):
     # Both codemeta & cff files may have lists of contributors. Give priority
     # to codemeta. Comparing names is error-prone and we can't reliably detect
     # duplicates, so use only one or the other, not both.
-    for contributor in (listified(repo.codemeta.get('contributor', []))
-                        or repo.cff.get('contributors', [])):
+    contribs = (listified(repo.codemeta.get('contributor', []))
+                or repo.cff.get('contributors', []))
+    for contributor in contribs:
         role = 'other'
         if matched := _cv_match('contributor-roles', contributor.get('role', '')):
             role = matched
         contributors.append(_entity(contributor, role=role))
 
-    # FIXME if there is no contributors info, use github contributors &
-    # look up peole's names using github api
+    # If neither Codemeta nor CFF contain contributors, use the repo's, if any.
+    if not contribs:
+        for account in github_repo_contributors(repo):
+            if account.type == 'Bot':
+                continue
+            contributors.append({'person_or_org': _identity_from_github(account),
+                                 'role': {'id': 'other'}})
 
     # We're getting data from multiple sources & we might have duplicates.
-    return deduplicated(contributors)
+    # Deduplicate based on names & roles only.
+    result = []
+    seen = set()
+    for entry in contributors:
+        item = entry['person_or_org']
+        if 'name' in item.keys():
+            name = item['name']
+        elif 'family_name' in item.keys():
+            name = item['given_name'] + ' ' + item['family_name']
+        else:
+            result.append(entry)
+            continue
+        role = entry['role']['id']
+        key = (name, role)
+        if key not in seen:
+            seen.add(key)
+            result.append(entry)
+    return result
 
 
 def creators(repo, release):
@@ -630,9 +661,11 @@ def references(repo, release):
     # we can use for publications is "other". The tough one is the "reference"
     # value, which is free text and supposed to be a "full reference string".
 
-    identifiers = _codemeta_references(repo) | _cff_references(repo)
-    return [{'reference': reference(_id), 'identifier': _id, 'scheme': 'other'}
-            for _id in identifiers]
+    ids = _codemeta_references(repo) | _cff_references(repo)
+    refs = [{'reference': reference(_id), 'identifier': _id, 'scheme': 'other'}
+            for _id in ids]
+    log(f'constructed a total of {len(refs)} references')
+    return refs
 
 
 def related_identifiers(repo, release):
@@ -705,12 +738,14 @@ def related_identifiers(repo, release):
 
     # GitHub pages are usually used to document a given software package.
     # That's not necessarily documentation for this release of the software,
-    # but it's the best we can do.
+    # but it's the best we can do. We add it, but not if it's already been
+    # added as one of the URLs above.
     doc_url = repo.codemeta.get('softwareHelp', '')
     if not doc_url and repo.has_pages:
         doc_url = f'https://{repo.owner.login}.github.io/{repo.name}'
-    if doc_url:
-        identifiers.append({'identifier': url_normalize(doc_url),
+    doc_url = url_normalize(doc_url)
+    if doc_url and not any(doc_url == item['identifier'] for item in identifiers):
+        identifiers.append({'identifier': doc_url,
                             'relation_type': {'id': 'isdocumentedby',
                                               'title': {'en': 'Is documented by'}},
                             'resource_type': {'id': 'publication-softwaredocumentation',
@@ -974,50 +1009,52 @@ def _entity_from_string(data, role):
     #  - a person's name, like "Michael Hucka"
     #  - an organization's name, like "California Institute of Technology"
 
-    result = {}
+    structure = {}
     scheme = recognized_scheme(data)
     if scheme == 'orcid':
         from iga.orcid import name_from_orcid
         orcid = detected_id(data)
         (given, family) = name_from_orcid(orcid)
         if family or given:
-            result = {'family_name': flattened_name(family),
-                      'given_name': flattened_name(given),
-                      'identifiers': [{'identifier': orcid,
-                                       'scheme': 'orcid'}],
-                      'type': 'personal'}
+            structure = {'family_name': flattened_name(family),
+                         'given_name': flattened_name(given),
+                         'identifiers': [{'identifier': orcid,
+                                          'scheme': 'orcid'}],
+                         'type': 'personal'}
     elif scheme == 'ror':
         from iga.ror import name_from_ror
         name = name_from_ror(data)
         if name:
-            result = {'name': name,
-                      'type': 'organizational'}
+            structure = {'name': name,
+                         'type': 'organizational'}
     elif data.startswith('https://github.com'):
         # Might be the URL to an account page on GitHub.
         tail = data.replace('https://github.com/', '')
         if '/' not in tail and (account := github_account(tail)):
-            result = _identity_from_github(account)
+            structure = _identity_from_github(account)
         else:
             log('{data} is not interpretable as a GitHub account')
     elif len(data.split()) == 1 and (account := github_account(data)):
         # This is the name of an account in GitHub.
-        result = _identity_from_github(account)
+        structure = _identity_from_github(account)
     else:
         # We're getting into expensive heuristic guesswork now.
         from iga.name_utils import is_person
         if is_person(data):
             (given, family) = split_name(data)
             if family or given:
-                result = {'family_name': flattened_name(family),
-                          'given_name': flattened_name(given),
-                          'type': 'personal'}
+                structure = {'family_name': flattened_name(family),
+                             'given_name': flattened_name(given),
+                             'type': 'personal'}
             else:
                 log(f'guessing "{data}" is a person but failed to split name')
         else:
-            result = {'name': data,
-                      'type': 'organizational'}
+            structure = {'name': data,
+                         'type': 'organizational'}
+
+    result = {'person_or_org': structure} if structure else {}
     if result and role:
-        result['role'] = role
+        result['role'] = {'id': role}
     return result
 
 
@@ -1058,21 +1095,23 @@ def _entity_from_dict(data, role):
     else:
         org = {'name': flattened_name(data.get('name', '')),
                'type': 'organizational'}
-    structure = {'person_or_org': person or org}
 
-    if affiliation := data.get('affiliation', ''):
-        if isinstance(affiliation, str):
-            name = affiliation
-        elif isinstance(affiliation, dict):
-            # In CFF, the field name is 'legalName'. In codemeta, it's 'name'.
-            name = affiliation.get('legalName', '') or affiliation.get('name', '')
-        else:
-            name = affiliation
-        if name:
-            structure.update({'affiliations': [{'name': flattened_name(name)}]})
-    if role:
-        structure['role'] = {'id': role}
-    return structure
+    result = {}
+    if person or org:
+        result = {'person_or_org': person or org}
+        if affiliation := data.get('affiliation', ''):
+            if isinstance(affiliation, str):
+                name = affiliation
+            elif isinstance(affiliation, dict):
+                # In CFF, the field name is 'legalName'. In codemeta, it's 'name'.
+                name = affiliation.get('legalName', '') or affiliation.get('name', '')
+            else:
+                name = affiliation
+            if name:
+                result.update({'affiliations': [{'name': flattened_name(name)}]})
+        if role:
+            result['role'] = {'id': role}
+    return result
 
 
 def _release_author(release):
