@@ -41,7 +41,7 @@ the bottom and top of the range, inclusive.'''
 _NLP = {}
 '''Cache for the spaCy model so that we don't have to load it more than once.'''
 
-_COMPANIES = set()
+_ORGANIZATIONS = set()
 '''Set of well-known company names.'''
 
 
@@ -95,14 +95,14 @@ def is_person(name):
 
     # The ML-based NER systems sometimes mislabel company names, so we start
     # by checking against a list of well-known company names.
-    global _COMPANIES
-    if not _COMPANIES:
-        _load_companies()
-    if name in _COMPANIES:
+    global _ORGANIZATIONS
+    if not _ORGANIZATIONS:
+        _load_organizations()
+    if name in _ORGANIZATIONS:
         log(f'recognized {name} as a known company')
         return False
 
-    # Delay loading the ML systems because they take a long time to load.
+    # Delay loading the ML systems until we need them because they long to load.
     global _NLP
     if charset not in _NLP:
         _load_spacy(charset)
@@ -266,13 +266,13 @@ def _upcase_first_letters(name):
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
 
 
-def _load_companies():
+def _load_organizations():
     from os.path import dirname, abspath, join
     here = dirname(abspath(__file__))
-    companies_file = join(here, 'data/known-companies.txt')
-    log('loading companies list from ' + companies_file)
-    with open(companies_file, 'r') as f:
-        _COMPANIES.update(_cleaned_name(line) for line in f.readlines())
+    organizations_file = join(here, 'data/known-organizations.txt')
+    log('loading organizations list from ' + organizations_file)
+    with open(organizations_file, 'r') as f:
+        _ORGANIZATIONS.update(_cleaned_name(line) for line in f.readlines())
 
 
 def _load_spacy(charset):
