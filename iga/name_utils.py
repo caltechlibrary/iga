@@ -8,6 +8,7 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+from commonpy.data_structures import CaseFoldSet
 from sidetrack import log
 
 
@@ -41,7 +42,7 @@ the bottom and top of the range, inclusive.'''
 _NLP = {}
 '''Cache for the spaCy model so that we don't have to load it more than once.'''
 
-_ORGANIZATIONS = set()
+_ORGANIZATIONS = CaseFoldSet()
 '''Set of well-known company names.'''
 
 
