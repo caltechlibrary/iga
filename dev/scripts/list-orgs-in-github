@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import arrow
+import time
 import os
 import rich_click as click
 from   rich_click import File
@@ -119,7 +121,8 @@ to indicate console output, or a file path to send the debug output to a file.
 
         graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
         headers = {'Authorization': f'Bearer {token}'}
-        for batch_start in range(9900, 6000000, 100):
+        batch_start = 509800
+        while batch_start < 6000000:
             log(f'batch_start = {batch_start}')
             ids = []
             for id_ in range(batch_start, batch_start + 100):
@@ -127,11 +130,21 @@ to indicate console output, or a file path to send the debug output to a file.
                 ids.append(id_bytes.decode())
             results = graphql.execute(query=_QUERY, variables={'ids': ids},
                                       headers=headers)
+            if 'errors' in results:
+                if results['errors'][0]['type'] == 'RATE_LIMITED':
+                    log('pausing; will resume at ' + str(arrow.now().shift(hours=1)))
+                    time.sleep(60 * 60)
+                    log('unpausing after rate limit')
+                    continue
+                elif results['errors'][0]['type'] != 'NOT_FOUND':
+                    # Ignore id's not found, but stop if get other errors.
+                    raise Exception(results['errors'])
             if data := results.get('data', {}):
                 for node in filter(None, data.get('nodes', [])):
                     name = node['name']
                     log('org name: ' + name)
                     print(name, flush=True)
+            batch_start += 100
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
