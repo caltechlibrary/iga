@@ -1,0 +1,194 @@
+#!/usr/bin/env python3
+
+import os
+import rich_click as click
+from   rich_click import File
+from   sidetrack import set_debug, log
+import sys
+
+
+
+# Internal constants.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# The query part is always the same; we set the variable $ids dynamically.
+_QUERY = '''
+query($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on Organization {
+            name
+        }
+    }
+}
+'''
+
+# Style preferences for rich_click.
+click.rich_click.STYLE_HELPTEXT = ""
+click.rich_click.USE_MARKDOWN = True
+click.rich_click.STYLE_ERRORS_SUGGESTION = "bold italic"
+click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help."
+
+
+# Callback functions used in the click CLI definition.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _config_debug(ctx, param, debug_dest):
+    '''Handle the --debug option and configure debug settings as needed.'''
+    if debug_dest:
+        if debug_dest.name == '<stdout>':
+            set_debug(True, '-')
+        else:
+            set_debug(True, debug_dest.name)
+        import faulthandler
+        faulthandler.enable()
+        if os.name != 'nt':                 # Can't use next part on Windows.
+            import signal
+            from boltons.debugutils import pdb_on_signal
+            pdb_on_signal(signal.SIGUSR1)
+            log(f'installed signal handler on {signal.SIGUSR1}')
+    return debug_dest
+
+
+def _read_token(ctx, param, file_):
+    '''Read the file and set the environment variable GITHUB_TOKEN.'''
+    if ctx.params.get('args', None) == 'help':
+        _print_help_and_exit(ctx)
+    elif file_:
+        log('reading token from file')
+        os.environ['GITHUB_TOKEN'] = file_.read()
+    elif 'GITHUB_TOKEN' in os.environ:
+        log('GITHUB_TOKEN found in environment')
+    else:
+        _alert(ctx, 'Cannot proceed without an access token. (Tip: provide the'
+               ' `--token` option or set the environment variable **GITHUB_TOKEN**.)')
+        sys.exit(1)
+    return os.environ['GITHUB_TOKEN']
+
+
+def _print_help_and_exit(ctx):
+    '''Print the help text and exit with a success code.'''
+    click.echo(ctx.get_help())
+    sys.exit()
+
+
+# Main function.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@click.command(add_help_option=False)
+@click.help_option('--help', '-h', help='Show this message and exit')
+#
+@click.option('--token', '-t', metavar='FILE', type=File('r'), callback=_read_token,
+              help="File ('-' for stdin) containing a GitHub PAT")
+#
+@click.option('--debug', '-@', metavar='OUT', type=File('w', lazy=False),
+              callback=_config_debug, help='Write debug output to destination "OUT"')
+#
+@click.argument('args', required=False)
+@click.pass_context
+def main(ctx, args, token=None, debug=False):
+    '''Produce a list of all org accounts on GitHub.
+\r
+This outputs the results to standard output. Simple example of usage:
+```
+list-orgs-in-github --token YOURTOKEN > organizations.txt
+```
+\r
+A "classic" Personal Access Token (PAT) for making API calls to GitHub server
+must be supplied, either in a file whose path is given as the value of the
+option `--token` (use `-` for standard input), _or_ in an environment variable
+named `GITHUB_TOKEN`.
+\r
+Running IGA with the option `--help` will make it print help text and exit
+without doing anything else.
+\r
+If given the `--debug` argument, taupe will output details about what it is
+doing. The debug trace will be sent to the given destination, which can be `-`
+to indicate console output, or a file path to send the debug output to a file.
+'''
+    # Process arguments & handle early exits ..................................
+
+    if args == 'help':      # Detect if the user typed "help" without dashes.
+        _print_help_and_exit(ctx)
+
+    # Do the main work ........................................................
+
+    exit_code = 0
+    try:
+        from base64 import b64encode
+        from python_graphql_client import GraphqlClient
+
+        graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
+        headers = {'Authorization': f'Bearer {token}'}
+        for batch_start in range(9900, 6000000, 100):
+            log(f'batch_start = {batch_start}')
+            ids = []
+            for id_ in range(batch_start, batch_start + 100):
+                id_bytes = b64encode(f"012:Organization{id_}".encode())
+                ids.append(id_bytes.decode())
+            results = graphql.execute(query=_QUERY, variables={'ids': ids},
+                                      headers=headers)
+            if data := results.get('data', {}):
+                for node in filter(None, data.get('nodes', [])):
+                    name = node['name']
+                    log('org name: ' + name)
+                    print(name, flush=True)
+    except KeyboardInterrupt:
+        # Catch it, but don't treat it as an error; just stop execution.
+        log('keyboard interrupt received')
+    except Exception as ex:             # noqa: PIE786
+        exit_code = 2
+        import traceback
+        exception = sys.exc_info()
+        details = ''.join(traceback.format_exception(*exception))
+        log('exception: ' + str(ex) + '\n\n' + details)
+        _alert(ctx, 'IGA experienced an unrecoverable error: ' + str(ex), False)
+        breakpoint()
+    sys.exit(exit_code)
+
+
+# Miscellaneous helpers.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _alert(ctx, msg, print_usage=True):
+    '''Print an error message in the style of rich_click.'''
+    # The following code tries to emulate what rich_click does. It doesn't use
+    # private methods or properties, but it might break if rich_click changes.
+    log('error: ' + msg)
+    from rich.console import Console
+    from rich.markdown import Markdown
+    from rich.padding import Padding
+    from rich.panel import Panel
+    from rich.theme import Theme
+    from rich_click.rich_click import (
+        ALIGN_ERRORS_PANEL,
+        ERRORS_PANEL_TITLE,
+        STYLE_ERRORS_PANEL_BORDER,
+        STYLE_USAGE,
+        STYLE_OPTION,
+        STYLE_ARGUMENT,
+        STYLE_SWITCH,
+        OptionHighlighter,
+    )
+    highlighter = OptionHighlighter()
+    console = Console(theme=Theme({
+        "option": STYLE_OPTION,
+        "argument": STYLE_ARGUMENT,
+        "switch": STYLE_SWITCH,
+        "usage": STYLE_USAGE,
+    }), highlighter=highlighter)
+    if print_usage:
+        console.print(Padding(highlighter(ctx.get_usage()), 1))
+    console.print(
+        Panel(
+            Markdown(msg),
+            border_style=STYLE_ERRORS_PANEL_BORDER,
+            title=ERRORS_PANEL_TITLE,
+            title_align=ALIGN_ERRORS_PANEL,
+        )
+    )
+
+
+# Main invocation.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+main()
