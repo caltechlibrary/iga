@@ -66,15 +66,7 @@ def is_person(name):
 
     This function is designed with the assumption that its input is already
     expected to be a name, and it only needs to make the determination of
-    whether it is the name of a person or not. To reach an answer, it uses the
-    following overall approach:
-
-    1. If the input has only one word, it is always judged not to be a person's
-       name. This is incorrect for some real names, and the author apologizes
-       to people from societies where mononyms are common. In the contexts where
-       this function is used, hopefully other info will be available that will
-       avoid having to call this function in the first place.
-
+    whether it is the name of a person or not.
     '''
     if not name:
         return False
@@ -103,7 +95,7 @@ def is_person(name):
         log(f'recognized {name} as a known company')
         return False
 
-    # Delay loading the ML systems until we need them because they long to load.
+    # Delay loading the ML systems until needed because they take long to load.
     global _NLP
     if charset not in _NLP:
         _load_spacy(charset)
@@ -270,7 +262,7 @@ def _upcase_first_letters(name):
 def _load_organizations():
     from os.path import dirname, abspath, join
     here = dirname(abspath(__file__))
-    organizations_file = join(here, 'data/known-organizations.txt')
+    organizations_file = join(here, 'data/famous-organizations.txt')
     log('loading organizations list from ' + organizations_file)
     with open(organizations_file, 'r') as f:
         _ORGANIZATIONS.update(_cleaned_name(line) for line in f.readlines())
