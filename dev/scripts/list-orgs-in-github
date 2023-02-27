@@ -1,19 +1,42 @@
 #!/usr/bin/env python3
+# =============================================================================
+# @file    list-orgs-in-github
+# @brief   Print a subset of GitHub organization account names
+# @author  Michael Hucka <mhucka@caltech.edu>
+# @license MIT license; please see the file LICENSE in the repo
+# @repo    https://github.com/caltechlibrary/iga
+#
+# This program is used to generate a list of GitHub organization names for
+# use by iga/name_utils.py.
+#
+# Approach: this uses a GraphQL query to ask GitHub for all accounts of type
+# "org". It applies various heuristics and NLP tools to filter out names that
+# look like the names of people, names that are too short (1 char long), and
+# names that look like mistakes. Note this means the resulting list is not a
+# complete list of all org accounts in GitHub -- the filtering applied is
+# designed to make the results useful for the specific goal of distinguishing
+# people names from org names, not to generate a comprehensive list of all
+# org accounts in GitHub.
+# =============================================================================
 
-import arrow
-import time
+from   base64 import b64encode
 import os
+import requests.exceptions
 import rich_click as click
 from   rich_click import File
 from   sidetrack import set_debug, log
+import string
 import sys
-
 
 
 # Internal constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# The query part is always the same; we set the variable $ids dynamically.
+# The GraphQL query to GitHub is always the same. Note: although the presence
+# of "$" makes it seem like we might do Python string/format substitutions,
+# the "$" is actually part of GraphQL syntax. The text below is used as-is,
+# without further subsitution. We pass a separate keyword parameter in the
+# graphql client call that sets the value of the variable $ids.
 _QUERY = '''
 query($ids: [ID!]!) {
     nodes(ids: $ids) {
@@ -21,8 +44,183 @@ query($ids: [ID!]!) {
             name
         }
     }
+    rateLimit {
+        resetAt
+    }
 }
 '''
+
+# We load spaCy at run time when it's finally needed, because it takes so long.
+_SPACY = None
+
+# Set of common ~1000 words, used as part of our name filtering.  (The
+# original set came from lists of words found on various places on the web.
+# I removed words that could be people's names, like "chase", "black", etc.,
+# and added some words that show up often in GitHub, like "cloud" and "dev".)
+_COMMON_NONNAME_WORDS = {
+    'à', 'a', 'ability', 'able', 'aboard', 'about', 'above',
+    'absolutely', 'accept', 'according', 'account', 'across',
+    'act', 'action', 'activity', 'actually', 'add',
+    'administration', 'affect', 'after', 'again', 'against',
+    'age', 'agency', 'ago', 'agree', 'air', 'all', 'allow',
+    'almost', 'along', 'already', 'also', 'although', 'always',
+    'american', 'amid', 'amidst', 'among', 'amongst', 'amount',
+    'an', 'analysis', 'and', 'animal', 'another', 'answer',
+    'any', 'anyone', 'anything', 'anyway', 'app', 'appear', 'apply',
+    'approach', 'area', 'argue', 'argument', 'arm', 'army',
+    'around', 'arrive', 'article', 'artist', 'as', 'ask', 'at',
+    'atop', 'attack', 'attention', 'author', 'authority',
+    'available', 'avoid', 'away', 'baby', 'back', 'bad', 'ball',
+    'bank', 'base', 'be', 'beautiful', 'because', 'become',
+    'bed', 'before', 'begin', 'behavior', 'behind', 'believe',
+    'below', 'beneath', 'benefit', 'beside', 'besides', 'best',
+    'better', 'between', 'beyond', 'big', 'bit',
+    'blood', 'blue', 'board', 'body', 'book', 'both', 'box',
+    'boy', 'brain', 'break', 'bring', 'brother', 'build',
+    'building', 'business', 'but', 'buy', 'by', 'call',
+    'camera', 'campaign', 'can', 'candidate', 'car', 'card',
+    'care', 'career', 'carry', 'case', 'catch', 'cause', 'cell',
+    'center', 'central', 'century', 'certain', 'certainly',
+    'challenge', 'chance', 'change', 'character', 'charge',
+    'check', 'chef', 'child', 'choice', 'choose', 'church', 'circa',
+    'city', 'claim', 'class', 'clear', 'clearly', 'close', 'cloud',
+    'club', 'code', 'college', 'color', 'come', 'comment', 'committee',
+    'common', 'community', 'company', 'compare', 'completely',
+    'computer', 'concern', 'condition', 'congress', 'consider',
+    'continue', 'control', 'conversation', 'cost', 'could',
+    'country', 'county', 'couple', 'course', 'court', 'cover',
+    'create', 'crime', 'culture', 'cup', 'current', 'cut', 'cyber',
+    'dad', 'dark', 'data', 'date', 'daughter', 'day', 'dead',
+    'deal', 'death', 'decade', 'decide', 'decision', 'defense',
+    'degree', 'democrat', 'department', 'describe', 'design',
+    'despite', 'detail', 'determine', 'dev', 'develop', 'developer',
+    'development', 'die', 'difference', 'different', 'difficult',
+    'digital', 'director', 'discuss', 'discussion', 'disease', 'district',
+    'do', 'doctor', 'dog', 'dollar', 'door', 'down', 'draw', 'dream',
+    'drive', 'drop', 'drug', 'during', 'each', 'early', 'earth',
+    'east', 'easy', 'eat', 'economic', 'economy', 'education',
+    'effect', 'effort', 'eight', 'either', 'election', 'else',
+    'employee', 'end', 'energy', 'enjoy', 'enough', 'enter',
+    'entire', 'environment', 'especially', 'et', 'even',
+    'event', 'ever', 'every', 'everybody', 'everyone',
+    'everything', 'evidence', 'exactly', 'example', 'exist',
+    'expect', 'experience', 'explain', 'eye', 'face', 'fact',
+    'factor', 'fail', 'fall', 'family', 'far', 'father',
+    'federal', 'feel', 'feeling', 'few', 'field', 'fight',
+    'figure', 'fill', 'film', 'final', 'finally', 'financial',
+    'find', 'fine', 'finish', 'fire', 'first', 'five', 'floor',
+    'focus', 'follow', 'food', 'foot', 'for', 'force',
+    'foreign', 'forget', 'form', 'former', 'forward', 'four',
+    'free', 'friend', 'from', 'full', 'fund', 'future', 'game',
+    'general', 'get', 'girl', 'give', 'global', 'go', 'goal',
+    'good', 'government', 'great', 'ground', 'group', 'grow',
+    'growth', 'guess', 'gun', 'hair', 'half', 'hand', 'hang',
+    'happen', 'happy', 'hard', 'hate', 'have', 'he', 'head',
+    'health', 'hear', 'heart', 'hell', 'help', 'her', 'here',
+    'herself', 'hey', 'hi', 'high', 'him', 'himself', 'his',
+    'history', 'hit', 'hold', 'home', 'hospital', 'hot',
+    'hour', 'house', 'how', 'however', 'huge', 'human',
+    'husband', 'idea', 'identify', 'if', 'image',
+    'imagine', 'impact', 'important', 'in', 'include',
+    'including', 'increase', 'indeed', 'indicate', 'individual',
+    'industry', 'information', 'inside', 'instead', 'interest',
+    'interesting', 'international', 'interview', 'into',
+    'involve', 'island', 'issue', 'it', 'its', 'itself', 'job',
+    'join', 'just', 'justice', 'keep', 'kid', 'kill', 'kind',
+    'king', 'know', 'knowledge', 'la', 'lab', 'lady', 'land',
+    'language', 'large', 'last', 'late', 'later', 'laugh',
+    'law', 'lay', 'lead', 'leader', 'learn', 'least', 'leave',
+    'left', 'legal', 'less', 'let', 'letter', 'level', 'lie',
+    'life', 'light', 'like', 'likely', 'line', 'list', 'listen',
+    'little', 'live', 'local', 'long', 'look', 'lose', 'loss',
+    'lot', 'love', 'low', 'main', 'major', 'make', 'man',
+    'manage', 'many', 'market', 'material', 'matter', 'maybe',
+    'me', 'mean', 'media', 'medical', 'meet', 'meeting',
+    'member', 'memory', 'mention', 'message', 'method', 'might',
+    'mile', 'military', 'million', 'mind', 'minus', 'minute',
+    'miss', 'model', 'mom', 'moment', 'money', 'month', 'more',
+    'morning', 'most', 'mother', 'move', 'movement', 'movie',
+    'much', 'music', 'must', 'my', 'myself', 'name', 'nation',
+    'national', 'natural', 'nature', 'near', 'nearly', 'need',
+    'network', 'never', 'new', 'news', 'next', 'nice', 'night',
+    'no', 'nobody', 'north', 'not', 'note', 'nothing', 'notice',
+    'now', 'number', 'occur', 'of', 'off', 'offer',
+    'office', 'officer', 'official', 'often', 'oh', 'oil', 'ok',
+    'okay', 'old', 'on', 'once', 'one', 'only', 'onto', 'open',
+    'opinion', 'opportunity', 'opposite', 'option', 'or',
+    'order', 'organization', 'other', 'our', 'out', 'outside',
+    'over', 'own', 'page', 'pain', 'paper', 'parent', 'park',
+    'part', 'particularly', 'party', 'pass', 'past', 'patient',
+    'pay', 'people', 'per', 'percent', 'perfect', 'performance',
+    'perhaps', 'period', 'person', 'personal', 'phone', 'photo',
+    'physical', 'pick', 'picture', 'piece', 'place', 'plan',
+    'plant', 'play', 'player', 'please', 'plus', 'point',
+    'police', 'policy', 'political', 'poor', 'population',
+    'position', 'possible', 'post', 'power', 'practice',
+    'prepare', 'present', 'president', 'press', 'pressure',
+    'pretty', 'price', 'private', 'pro', 'probably', 'problem',
+    'process', 'produce', 'product', 'professor', 'program',
+    'project', 'property', 'protect', 'prove', 'provide',
+    'public', 'pull', 'purpose', 'push', 'put', 'quality',
+    'question', 'quickly', 'quite', 'race', 'raise', 'rate',
+    'rather', 'reach', 'read', 'ready', 'real', 'reality',
+    'realize', 'really', 'reason', 'receive', 'recent',
+    'recently', 'recognize', 'record', 'reduce', 'region',
+    'relationship', 'release', 'remain', 'remember', 'remove',
+    'report', 'reports', 'represent', 'republican', 'require', 'research',
+    'resource', 'respond', 'response', 'rest', 'result',
+    'return', 'right', 'rise', 'risk', 'road', 'robot', 'role', 'room',
+    'round', 'rule', 'run', 'safe', 'same', 'save', 'say',
+    'scene', 'school', 'science', 'season', 'seat', 'second',
+    'section', 'security', 'see', 'seek', 'seem', 'sell',
+    'send', 'sense', 'september', 'series', 'serious', 'serve',
+    'service', 'set', 'seven', 'several', 'sex', 'share', 'she',
+    'shoot', 'short', 'shot', 'should', 'show', 'side',
+    'sign', 'significant', 'similar', 'simple', 'simply',
+    'since', 'single', 'sir', 'sister', 'sit', 'site',
+    'situation', 'six', 'size', 'skill', 'small', 'so',
+    'social', 'society', 'some', 'somebody', 'someone',
+    'something', 'sometimes', 'son', 'soon', 'sorry',
+    'sort', 'sound', 'source', 'south', 'space', 'speak',
+    'special', 'specific', 'spend', 'sport', 'staff', 'stage',
+    'stand', 'standard', 'star', 'start', 'state', 'statement',
+    'station', 'stay', 'step', 'still', 'stop', 'store',
+    'story', 'strategy', 'street', 'strong', 'student', 'study',
+    'stuff', 'subject', 'success', 'such', 'suggest', 'sun',
+    'support', 'supposed', 'sure', 'system', 'table', 'take',
+    'talk', 'tax', 'teach', 'teacher', 'team', 'technology',
+    'tell', 'ten', 'term', 'test', 'than', 'thank', 'thanks',
+    'that', 'the', 'their', 'them', 'themselves', 'then',
+    'theory', 'there', 'these', 'they', 'thing', 'think',
+    'third', 'this', 'those', 'though', 'thought', 'three',
+    'through', 'throughout', 'throw', 'thus', 'till', 'time',
+    'to', 'today', 'together', 'tonight', 'too', 'top',
+    'toward', 'towards', 'town', 'training', 'treat',
+    'treatment', 'tree', 'trouble', 'truth', 'try', 'turn',
+    'tv', 'two', 'type', 'uh', 'under', 'underneath',
+    'understand', 'union', 'university', 'unlike', 'until',
+    'up', 'upon', 'us', 'use', 'usually', 'value', 'various',
+    'version', 'versus', 'very', 'via', 'video', 'view',
+    'visit', 'voice', 'vote', 'wait', 'walk', 'wall', 'want',
+    'war', 'watch', 'water', 'way', 'we', 'weapon', 'wear', 'web',
+    'week', 'well', 'west', 'what', 'whatever', 'when', 'where',
+    'whether', 'which', 'while', 'who', 'whole',
+    'whose', 'why', 'wife', 'win', 'window', 'wish', 'with',
+    'within', 'without', 'woman', 'wonder', 'word', 'work',
+    'worker', 'world', 'worry', 'would', 'write', 'wrong',
+    'yeah', 'year', 'yes', 'yet', 'you', 'your', 'yourself',
+}
+
+_NON_PERSON_ELEMENTS = {
+    # Possessive expressions are almost never part of a person's name.
+    "'s",
+    # People who hyphenate their names don't put spaces around the hyphen.
+    ' - ',
+    ' – ',                              # en-dash
+    ' — ',                              # em-dash
+}
+
+_PUNCTUATION = set(string.punctuation)
 
 # Style preferences for rich_click.
 click.rich_click.STYLE_HELPTEXT = ""
@@ -79,20 +277,36 @@ def _print_help_and_exit(ctx):
 @click.command(add_help_option=False)
 @click.help_option('--help', '-h', help='Show this message and exit')
 #
+@click.option('--id-range', '-i', metavar='INT:INT', default='0:70000000',
+              help='Account id numbers to consider (_min_ ≤ id < _max_)')
+#
+@click.option('--output', '-o', metavar='DEST', type=File('w'),
+              help='Write the output to file DEST (default: stdout)')
+#
 @click.option('--token', '-t', metavar='FILE', type=File('r'), callback=_read_token,
-              help="File ('-' for stdin) containing a GitHub PAT")
+              help="File ('-' for stdin) containing a GitHub access token")
 #
 @click.option('--debug', '-@', metavar='OUT', type=File('w', lazy=False),
               callback=_config_debug, help='Write debug output to destination "OUT"')
 #
-@click.argument('args', required=False)
 @click.pass_context
-def main(ctx, args, token=None, debug=False):
-    '''Produce a list of all org accounts on GitHub.
+def main(ctx, id_range=None, output=None, token=None, debug=False):
+    '''Produce a list of organization account names on GitHub.
 \r
-This outputs the results to standard output. Simple example of usage:
+This uses a GraphQL query to ask GitHub for all accounts of type "org". It
+applies various heuristics and NLP tools to recognize and ignore text strings
+that look like the names of people, are too short (1-2 chars long), are only
+numbers, or look like mistakes. Note that this means the resulting list is
+_not_ a complete list of all org accounts in GitHub – the filtering applied
+is designed to make the results useful for the specific goal of IGA's name
+discrimination functions, not to generate a comprehensive list of all org
+accounts in GitHub. (Some organizations are truly named after people, but to
+reduce false positives in the code in IGA, this program rejects such org
+names.)
+\r
+Simple example of usage:
 ```
-list-orgs-in-github --token YOURTOKEN > organizations.txt
+  list-orgs-in-github --output orgs.txt
 ```
 \r
 A "classic" Personal Access Token (PAT) for making API calls to GitHub server
@@ -100,67 +314,207 @@ must be supplied, either in a file whose path is given as the value of the
 option `--token` (use `-` for standard input), _or_ in an environment variable
 named `GITHUB_TOKEN`.
 \r
+To cope with the limitations imposed by GitHub on the maximum number of
+values returned by any given GraphQL call, this program takes an indirect
+route to obtaining the names of the millions of organization names in GitHub.
+It repeatedly constructs potential organization identifiers, then asks GitHub
+to return the name of the corresponding organization. This approach works
+because every GitHub account has an identifier consisting of a string in
+which a part of the string is an integer, and those integers are assigned
+sequentially when new accounts are created. (For example, the organization
+account for the Caltech Library has an embedded number of 15038637.) By
+constructing account identifiers up to a large number, this program will
+eventually end up asking GitHub about every organization account that exists
+in the system. At the time of this writing (early 2023), the largest id
+number is below 60,000,000, so by default, this program tries numbers up to
+70,000,000, which should make the default work for some time longer. To use a
+different range, you can use the option `--id-range` with two integers
+separated by a colon (`:`). For example, the following will limit consideration
+to organizations whose id's are 1000 up to, but not including, 2000:
+```
+  list-orgs-in-github --id-range 1000:2000
+```
+The overall process is slow because GitHub also imposes API rate limits. This
+program pauses when the rate limit is reached and automatically continues when
+it can. You should expect this program to need several days to get the names
+of ~60,000,000 organization accounts.
+\r
+If given the `--debug` argument, this program will output details about what it
+is doing. The debug trace will be written to the given destination path; to
+write to standard output instead, use a dash (`-`).
+\r
 Running IGA with the option `--help` will make it print help text and exit
 without doing anything else.
-\r
-If given the `--debug` argument, taupe will output details about what it is
-doing. The debug trace will be sent to the given destination, which can be `-`
-to indicate console output, or a file path to send the debug output to a file.
 '''
     # Process arguments & handle early exits ..................................
 
-    if args == 'help':      # Detect if the user typed "help" without dashes.
-        _print_help_and_exit(ctx)
+    output = output or sys.stdout
+    log('writing output to ' + output.name)
+
+    from commonpy.network_utils import network_available
+    if not network_available():
+        _alert(ctx, 'No network – cannot proceed.', False)
+        sys.exit(2)
 
     # Do the main work ........................................................
 
     exit_code = 0
     try:
-        from base64 import b64encode
+        import arrow
         from python_graphql_client import GraphqlClient
+        from time import sleep
 
         graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
         headers = {'Authorization': f'Bearer {token}'}
-        batch_start = 509800
-        while batch_start < 6000000:
-            log(f'batch_start = {batch_start}')
-            ids = []
-            for id_ in range(batch_start, batch_start + 100):
-                id_bytes = b64encode(f"012:Organization{id_}".encode())
-                ids.append(id_bytes.decode())
-            results = graphql.execute(query=_QUERY, variables={'ids': ids},
-                                      headers=headers)
-            if 'errors' in results:
-                if results['errors'][0]['type'] == 'RATE_LIMITED':
-                    log('pausing; will resume at ' + str(arrow.now().shift(hours=1)))
-                    time.sleep(60 * 60)
-                    log('unpausing after rate limit')
+        reset_at = arrow.now()
+        start, end = (int(value) for value in id_range.split(':'))
+        while start < end:
+            log(f'batch_start = {start}')
+            vars = {'ids': _encoded_org_ids(start, start + 100)}
+            result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
+            if 'errors' in result:
+                # If we restart this program while rate limited, we won't get a
+                # resetAt (GitHub will only send the 'rate_limited' item). So,
+                # keep going around this loop, making up reset times 5 min in
+                # the future until we get out of the rate limit period.
+                if arrow.get(reset_at) <= arrow.now():
+                    reset_at = arrow.now().shift(minutes=5)
+                if result['errors'][0]['type'] == 'RATE_LIMITED':
+                    # Shift by 1 min b/c GitHub's clock might differ from ours.
+                    restart_time = arrow.get(reset_at).to('local').shift(minutes=1)
+                    time_difference = restart_time - arrow.now()
+                    sleep_duration = time_difference.seconds
+                    log(f'pausing for {sleep_duration} sec until {restart_time}')
+                    sleep(sleep_duration)
+                    log('unpausing')
                     continue
-                elif results['errors'][0]['type'] != 'NOT_FOUND':
+                elif result['errors'][0]['type'] != 'NOT_FOUND':
                     # Ignore id's not found, but stop if get other errors.
-                    raise Exception(results['errors'])
-            if data := results.get('data', {}):
-                for node in filter(None, data.get('nodes', [])):
-                    name = node['name']
+                    raise Exception(result['errors'])
+            for node in filter(None, result['data']['nodes']):
+                name = node['name'].strip()
+                if _acceptable(name):
+                    output.write(name + '\n')
+                    output.flush()
                     log('org name: ' + name)
-                    print(name, flush=True)
-            batch_start += 100
+                else:
+                    log('rejected name: ' + name)
+            # When we hit the rate limit, the results from GitHub will not have
+            # the data element. So, always remember the last reset we saw.
+            reset_at = result['data']['rateLimit']['resetAt']
+            start += 100
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
+    except requests.exceptions.HTTPError as ex:
+        if getattr(ex, 'response') is not None and ex.response.status_code == 401:
+            _alert(ctx, 'Failed GitHub authentication.', False)
+            sys.exit(1)
+        else:
+            _alert(ctx, 'Unable to query GitHub: ' + str(ex), False)
+            sys.exit(2)
     except Exception as ex:             # noqa: PIE786
         exit_code = 2
         import traceback
         exception = sys.exc_info()
         details = ''.join(traceback.format_exception(*exception))
         log('exception: ' + str(ex) + '\n\n' + details)
-        _alert(ctx, 'IGA experienced an unrecoverable error: ' + str(ex), False)
+        _alert(ctx, 'Experienced an unrecoverable error: ' + str(ex), False)
         breakpoint()
     sys.exit(exit_code)
 
 
 # Miscellaneous helpers.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _encoded_org_ids(start, end):
+    '''Return a list of base64-encoded GitHub organization identifiers.'''
+    # GitHub node id's have an unobvious property. The node id of an account
+    # is a string like "MDEyOk9yZ2FuaXphdGlvbjUwOTg4Mw==", and it turns out
+    # this is a base64 encoded string which, when decoded, has the form
+    # "012:OrganizationN", where "N" is an integer. The numbers are assigned
+    # sequentially and the highest number (as of this writing, in early 2023)
+    # is somewhere between 5,500,000 and 6,000,000. So, we can construct id's
+    # for organizations by creeating "012:OrganizationN" strings for the
+    # numbers we want to try, the base64 encoding them.
+    ids = []
+    for id_ in range(start, end):
+        # The extra encode/decode's is because b64encode only works with bytes.
+        id_bytes = b64encode(f"012:Organization{id_}".encode())
+        ids.append(id_bytes.decode())
+    return ids
+
+
+def _load_spacy():
+    global _SPACY
+    log('loading spaCy en_core_web_trf -- this may take a long time')
+    import spacy
+    _SPACY = spacy.load('en_core_web_trf')
+    log('finished loading spaCy pipeline')
+
+
+def _acceptable(name):
+    '''Return True if the name passes some basic acceptability criteria.'''
+    global _SPACY
+    if not _SPACY:
+        _load_spacy()
+
+    name_length = len(name)
+    split_name  = [word.lower() for word in name.split()]
+    single_word = (len(split_name) == 1)
+
+    def likely_person():
+        # Reject single-word names b/c they're probably not a person.
+        if single_word:
+            return False
+        # If there are special characters in the name, it's not a person.
+        if any(c in name for c in '#@[]<>/!|&%$=+:_^~¡¿'):
+            return False
+        # If any whole word in the name is only numbers, it's not a person.
+        if any(word.isdigit() for word in split_name):
+            return False
+        # If a word in the name is a common word, it's probably not a person.
+        if any(word in _COMMON_NONNAME_WORDS for word in split_name):
+            return False
+        # A name like "Joe's Foobar" sometimes is labeled as a person by spaCy.
+        # We try to catch them before we finally invoke spaCy.
+        if any(item in name for item in _NON_PERSON_ELEMENTS):
+            return False
+        try:
+            parsed = _SPACY(name)
+            if parsed.ents:
+                entity_type = parsed.ents[0].label_
+                log(f'spaCy entity type for {name}: {entity_type}')
+                return entity_type == 'PERSON'
+            else:
+                # If spaCy doesn't label it, don't assume it's a person.
+                log(f'spaCy did not return entity labels for {name}')
+                return False
+        except Exception as ex:             # noqa: PIE786
+            log('unable to use spaCy due to error: ' + str(ex))
+        return False
+
+    return (
+        # Reject names shorter than 2 chars long.
+        name_length >= 2
+        # Reject single-word names 20 chars or longer.
+        and not (single_word and name_length >= 20)
+        # Reject single words in all lower case; also reject all upper case if
+        # longer than 12 chars. (Too many junk names.)
+        and not (single_word and name.islower())
+        and not (single_word and name.isupper() and name_length > 12)
+        # Reject names that are only numbers.
+        and not name.isdigit()
+        # Reject names that look like they contain HTML tags.
+        and not ('<' in name and '>' in name)
+        # Reject names that start with certain characters.
+        and not any(name.startswith(c) for c in '!`-~()[]{}_+*')
+        # Reject names that are only punctuation characters.
+        and not all(c in _PUNCTUATION for c in name)
+        # Reject what looks like a person's name.
+        and not likely_person()
+    )
+
 
 def _alert(ctx, msg, print_usage=True):
     '''Print an error message in the style of rich_click.'''
