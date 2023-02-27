@@ -71,7 +71,6 @@ Alpine Group
 Always
 AmSouth Bancorp.
 Amazon.Com
-Amazon.com
 Amerada Hess
 Amerco
 Ameren
@@ -870,7 +869,6 @@ Nature Valley
 Navistar International
 Neiman Marcus
 NetApp
-Netapp
 Neutrogena
 New Jersey Resources
 New York Life Insurance
