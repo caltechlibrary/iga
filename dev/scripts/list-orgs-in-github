@@ -21,6 +21,7 @@
 
 from   base64 import b64encode
 import os
+import re
 import requests.exceptions
 import rich_click as click
 from   rich_click import File
@@ -459,24 +460,18 @@ def _acceptable(name):
     if not _SPACY:
         _load_spacy()
 
-    name_length = len(name)
-    split_name  = [word.lower() for word in name.split()]
-    single_word = (len(split_name) == 1)
+    name_tokens = re.split(r'[-\s_+:^~¡¿]+', name)
+    split_name  = [part.lower() for part in re.split(r'[\s]+', name)]
 
     def likely_person():
-        # Reject single-word names b/c they're probably not a person.
-        if single_word:
-            return False
         # If there are special characters in the name, it's not a person.
         if any(c in name for c in '#@[]<>/!|&%$=+:_^~¡¿'):
             return False
-        # If any whole word in the name is only numbers, it's not a person.
-        if any(word.isdigit() for word in split_name):
-            return False
         # If a word in the name is a common word, it's probably not a person.
+        # (Not necessarily true, but good enough for the filtering done here.)
         if any(word in _COMMON_NONNAME_WORDS for word in split_name):
             return False
-        # A name like "Joe's Foobar" sometimes is labeled as a person by spaCy.
+        # A name like "Joe's Foobar" is sometimes labeled as a person by spaCy.
         # We try to catch them before we finally invoke spaCy.
         if any(item in name for item in _NON_PERSON_ELEMENTS):
             return False
@@ -496,21 +491,17 @@ def _acceptable(name):
 
     return (
         # Reject names shorter than 2 chars long.
-        name_length >= 2
-        # Reject single-word names 20 chars or longer.
-        and not (single_word and name_length >= 20)
-        # Reject single words in all lower case; also reject all upper case if
-        # longer than 12 chars. (Too many junk names.)
-        and not (single_word and name.islower())
-        and not (single_word and name.isupper() and name_length > 12)
-        # Reject names that are only numbers.
-        and not name.isdigit()
+        not len(name) <= 2
+        # Reject names that don't have at least 2 items separated by whitespace.
+        and not len(split_name) == 1
+        # Reject names whose parts are only numbers.
+        and not all(token.isdigit() for token in name_tokens)
+        # Reject names whose parts are all in entirely lower case.
+        and not all(token.islower() for token in name_tokens)
+        # Reject names whose parts are only punctuation characters.
+        and not all(part in _PUNCTUATION for part in split_name)
         # Reject names that look like they contain HTML tags.
-        and not ('<' in name and '>' in name)
-        # Reject names that start with certain characters.
-        and not any(name.startswith(c) for c in '!`-~()[]{}_+*')
-        # Reject names that are only punctuation characters.
-        and not all(c in _PUNCTUATION for c in name)
+        and not any(('<' in part and '>' in part) for part in split_name)
         # Reject what looks like a person's name.
         and not likely_person()
     )
