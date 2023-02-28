@@ -11,6 +11,9 @@
 # release of a software project. It saves the results in the current directory
 # in a subdirectory named after "owner/repo". I use this to save the various
 # repo snapshots in tests/data/github-examples/.
+#
+# This assumes a GitHub "classic" PAT is contained in the environment
+# variable GITHUB_TOKEN.
 # =============================================================================
 
 owner=$1
@@ -22,27 +25,34 @@ if (( $# < 2 )); then
     exit 1
 fi
 
+if [[ -z "${GITHUB_TOKEN}" ]]; then
+    echo "GITHUB_TOKEN variable not set"
+    exit 1
+fi
+
 mkdir -p $owner/$repo
+
+echo "Created $owner/$repo"
+echo "Downloading files for $owner/$repo ..."
 
 API=https://api.github.com
 
-echo "Downloading files for $owner/$repo ..."
-
-curl -s $API/repos/$owner/$repo > $owner/$repo/repo.json
-curl -s $API/repos/$owner/$repo/releases/tags/$tag > $owner/$repo/release.json
-curl -s $API/owners/$owner > $owner/$repo/owner.json
+header="Authorization: token $GITHUB_TOKEN"
+curl -H "$header" -s $API/repos/$owner/$repo > $owner/$repo/repo.json
+curl -H "$header" -s $API/repos/$owner/$repo/releases/tags/$tag > $owner/$repo/release.json
+curl -H "$header" -s $API/owners/$owner > $owner/$repo/owner.json
 
 branch=$(jq -r .default_branch $owner/$repo/repo.json)
 treesurl="$API/repos/$owner/$repo/git/trees/$branch"
 
 echo '[' > $owner/$repo/filenames.json
-curl -s $treesurl | jq '.tree[].path' | sed 's/$/,/g' >> $owner/$repo/filenames.json
+curl -H "$header" -s $treesurl | jq '.tree[].path' | sed 's/$/,/g' >> $owner/$repo/filenames.json
 echo ']' >> $owner/$repo/filenames.json
 
 license=$(egrep -i licen.e $owner/$repo/filenames.json | tr -d ',"')
 
 for file in codemeta.json CITATION.cff citation.cff $license; do
-    curl -s $API/repos/$owner/$repo/contents/$file > $owner/$repo/tmp
+    curl -H "$header" -s $API/repos/$owner/$repo/contents/$file > $owner/$repo/tmp
     if ! grep -q "Not Found" $owner/$repo/tmp; then
        jq -r .content < $owner/$repo/tmp | base64 -D > $owner/$repo/$file
     fi
