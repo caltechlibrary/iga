@@ -662,8 +662,8 @@ def references(repo, release):
     # value, which is free text and supposed to be a "full reference string".
 
     ids = _codemeta_references(repo) | _cff_references(repo)
-    refs = [{'reference': reference(_id), 'identifier': _id, 'scheme': 'other'}
-            for _id in ids]
+    refs = [{'reference': reference(id), 'identifier': id, 'scheme': 'other'}
+            for id in ids]
     log(f'constructed a total of {len(refs)} references')
     return refs
 
@@ -795,12 +795,12 @@ def related_identifiers(repo, release):
     # InvenioRDM doesn't do much with the "references" field & data.caltech.edu
     # doesn't currently show it, so we also add the items as related ids here.
     added_identifiers = [detected_id(item['identifier']) for item in identifiers]
-    for _id in (_codemeta_references(repo) | _cff_references(repo)):
-        if _id not in added_identifiers:
-            identifiers.append({'identifier': _id,
+    for id in (_codemeta_references(repo) | _cff_references(repo)):
+        if id not in added_identifiers:
+            identifiers.append({'identifier': id,
                                 'relation_type': {'id': 'isreferencedby',
                                                   'title': {'en': 'Is referenced by'}},
-                                'scheme': recognized_scheme(_id)})
+                                'scheme': recognized_scheme(id)})
 
     return identifiers
 
@@ -1087,10 +1087,10 @@ def _entity_from_dict(data, role):
             person = {'name': flattened_name(name),
                       'type': 'personal'}
 
-        if _id := detected_id(data.get('@id', '')):
-            id_type = recognized_scheme(_id)
+        if id := detected_id(data.get('@id', '')):
+            id_type = recognized_scheme(id)
             if id_type in ['orcid', 'isni', 'gnd', 'ror']:
-                person.update({'identifiers': [{'identifier': _id,
+                person.update({'identifiers': [{'identifier': id,
                                                 'scheme': id_type}]})
     else:
         org = {'name': flattened_name(data.get('name', '')),
