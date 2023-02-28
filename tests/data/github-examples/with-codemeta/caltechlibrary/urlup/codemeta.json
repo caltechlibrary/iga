@@ -1,0 +1,28 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "description": "A small utility program and Python 3 module to dereference URLs and determine their final destinations after following redirections.",
+  "name": "Urlup",
+  "codeRepository": "https://github.com/caltechlibrary/urlup",
+  "issueTracker": "https://github.com/caltechlibrary/urlup/issues",
+  "license": "https://github.com/caltechlibrary/urlup/blob/master/LICENSE",
+  "version": "1.5.1",
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Michael",
+      "familyName": "Hucka",
+      "affiliation": "Caltech Library",
+      "email": "mhucka@caltech.edu",
+      "@id": "https://orcid.org/0000-0001-9105-5960"
+    }],
+  "developmentStatus": "active",
+  "downloadUrl": "https://github.com/caltechlibrary/urlup/archive/1.5.1.zip",
+  "keywords": [
+    "TIND.io",
+    "MARC",
+    "URL"
+  ],
+  "maintainer": "https://orcid.org/0000-0001-9105-5960",
+  "programmingLanguage": "Python"
+}
