@@ -39,11 +39,24 @@ CJK_RANGES = [
 '''List of codepoint ranges for CJK characters in Unicode. Tuples indicate
 the bottom and top of the range, inclusive.'''
 
+_NON_PERSON_ELEMENTS = {
+    # Possessive expressions are almost never part of a person's name.
+    "'s",
+    # People who hyphenate their names don't put spaces around the hyphen.
+    ' - ',
+    ' – ',                              # en-dash
+    ' — ',                              # em-dash
+}
+'''Items used as part of a filter to rule out person names.'''
+
 _NLP = {}
 '''Cache for the spaCy model so that we don't have to load it more than once.'''
 
 _ORGANIZATIONS = CaseFoldSet()
 '''Set of well-known company names.'''
+
+_ORGANIZATIONS_FILENAMES = ['famous-orgs.txt', 'github-orgs.txt']
+'''List of files in iga/data containing organization names.'''
 
 
 # Exported module functions.
@@ -71,28 +84,41 @@ def is_person(name):
     if not name:
         return False
 
-    # If the input contains a mix of Latin and CJK characters, it's likely that
-    # there's both an English and CJK version of the same thing. (E.g., if
-    # someone writes their name in Chinese in parentheses after an English
+    # A string like "Joe's Foobar" is not a name.
+    if any(item in name for item in _NON_PERSON_ELEMENTS):
+        log(f'{name} contains non-person elements => not a person')
+        return False
+
+    # If the input contains a mix of Latin and CJK characters, it's likely to
+    # contain both an English and CJK version of the same thing. (E.g.,
+    # someone might write their name in Chinese in parentheses after an English
     # version.) If that's the case, we use only the non-CJK part if there is
     # one. If there are no CJK characters, we always use the cleaned version.
     charset = 'cjk' if contains_cjk(name) else 'default'
+    log(f'{name} uses the {charset} charset')
     cleaned = _cleaned_name(name)
     if charset == 'default' or len(cleaned) > 0:
-        log('using cleaned version of name: ' + cleaned)
+        log(f'using cleaned version of name: {cleaned}')
         name = cleaned
     if not name:
         # Cleaning removed everything.
-        log('ended up with empty string; returning False')
+        log(f'cleaning {name} resulted in an empty string => returning False')
+        return False
+
+    # Reject names whose every part is a number.
+    import re
+    name_tokens = re.split(r'[-\s:]+', name)
+    if all(token.isdigit() for token in name_tokens):
+        log(f'{name} consists of just numbers => not a person')
         return False
 
     # The ML-based NER systems sometimes mislabel company names, so we start
-    # by checking against a list of well-known company names.
+    # by checking against a list of known organization names.
     global _ORGANIZATIONS
     if not _ORGANIZATIONS:
         _load_organizations()
     if name in _ORGANIZATIONS:
-        log(f'recognized {name} as a known company')
+        log(f'recognized {name} as a known organization => not a person')
         return False
 
     # Delay loading the ML systems until needed because they take long to load.
@@ -236,7 +262,7 @@ def _cleaned_name(name):
     name = re.sub(u'[⺀-⺙⺛-⻳⼀-⿕々〇〡-〩〸-〺〻㐀-䶵一-鿃豈-鶴侮-頻並-龎]', '', name)
     # Remove miscellaneous weird characters if there are any.
     name = demoji.replace(name)
-    name = re.sub(r'[~`!@#$%^&*_+=?<>(){}|[\]]', '', name)
+    name = re.sub(r'[~`!@#$%^&*_+=?<>(){}|[\]¡¿]', '', name)
     # Replace typographical quotes with regular quotes, for PP's benefit.
     name = re.sub(r'[“”‘’]', '"', name)
     # Make sure periods are followed by spaces.
@@ -262,10 +288,11 @@ def _upcase_first_letters(name):
 def _load_organizations():
     from os.path import dirname, abspath, join
     here = dirname(abspath(__file__))
-    organizations_file = join(here, 'data/famous-organizations.txt')
-    log('loading organizations list from ' + organizations_file)
-    with open(organizations_file, 'r') as f:
-        _ORGANIZATIONS.update(_cleaned_name(line) for line in f.readlines())
+    for file in _ORGANIZATIONS_FILENAMES:
+        log(f'loading data/{file}')
+        with open(join(here, f'data/{file}'), 'r') as f:
+            for line in f.readlines():
+                _ORGANIZATIONS.add(_cleaned_name(line))
 
 
 def _load_spacy(charset):

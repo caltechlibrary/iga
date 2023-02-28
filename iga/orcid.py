@@ -50,7 +50,7 @@ def name_from_orcid(orcid):
         log('unable to decode response from orcid.org API: ' + str(ex))
         return ''
     except CommonPyException as ex:
-        log('failed to communicate with orcid.org: ' + str(ex))
+        log(f'failed to get data for {orcid} from orcid.org: ' + str(ex))
         return ''
 
     # The public record JSON has no status field. If a record is deprecated or
@@ -86,11 +86,13 @@ def name_from_orcid(orcid):
         # In some societies, people only have a single name. If we get that
         # much from the name field, we assume we're done.
         if family:
+            log(f'returning "({given}, {family})" for {orcid}')
             return (given, family)
 
     # The "names" object is empty for some reason. See if there's another name.
     if other := json_dict.get('otherNames', {}):
-        # Yes, this dict has a nested dict with the same name. Don't ask me why.
+        log(f'"names" is empty in record for {orcid} but "otherNames" exists')
+        # This dict really has a nested dict with the same name. Don't ask me.
         for item in other.get('otherNames', []):
             name = item.get('content', '') or item.get('sourceName', '')
             if name:
@@ -100,5 +102,6 @@ def name_from_orcid(orcid):
             else:
                 log('found otherNames dict in ORCID data without a name')
         else:
-            log('failed to find nested otherNames dict in ORCID data')
+            log('failed to find inner otherNames dict in ORCID otherNames')
+    log(f'returning "({given}, {family})" for {orcid}')
     return (given, family)

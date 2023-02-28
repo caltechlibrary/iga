@@ -25,6 +25,7 @@ _CACHE = {}
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def reference(pub_id):
+    '''Given an id (e.g., a DOI), return a formatted APA-style reference.'''
     scheme = recognized_scheme(pub_id)
     log(f'reference {pub_id} has scheme {scheme}')
 
@@ -39,17 +40,24 @@ def reference(pub_id):
             formatted_reference = reference_from_bibtex(bibtex_string)
         else:
             # Sometimes ISBN can't be found. Not clear what can be done here.
-            log('could not find data for ISBN ' + pub_id)
+            log(f'could not find data for ISBN {pub_id}')
     else:
         # For everything other than ISBN, convert whatever ID we have to a
         # DOI, then use Crossref to get a reference as text in APA format.
-        doi = doi_for_publication(pub_id, scheme)
-        formatted_reference = reference_from_doi(doi)
+        if doi := doi_for_publication(pub_id, scheme):
+            formatted_reference = reference_from_doi(doi)
+        else:
+            log(f'could not get a DOI for {pub_id}')
     log(f'returning formatted result for {pub_id}: ' + formatted_reference)
     return formatted_reference
 
 
 def reference_from_doi(doi):
+    '''Given a DOI, return an APA-style formatted reference.
+
+    This function takes advantage of Crossref's network service for generating
+    reference strings in APA format. It cleans the result of HTML tags.
+    '''
     global _CACHE
     cache_key = doi + '-reference'
     if cache_key in _CACHE:
@@ -76,12 +84,14 @@ def reference_from_doi(doi):
 
 
 def reference_from_bibtex(bibtex_string):
+    '''Give a string containing a BibTeX entry, return an APA-style reference.'''
     # Cache the results of these plugin lookups for greater efficiency.
     global _CACHE
     if 'apa_style' in _CACHE:
         apa_style = _CACHE['apa_style']
         plain_text = _CACHE['plain_text']
     else:
+        log('loading pybtex plugins')
         from pybtex.plugin import find_plugin
         from pybtex.database import parse_string
 
@@ -101,18 +111,25 @@ def reference_from_bibtex(bibtex_string):
 
 
 def doi_for_publication(pub_id, scheme=None):
+    '''Given a publication id, try to get a corresponding DOI.'''
     scheme = recognized_scheme(pub_id) if not scheme else scheme
     if scheme == 'doi':
         return pub_id
     elif scheme == 'arxiv':
-        return '10.48550/' + pub_id.replace(':', '.')
+        # As of this time, not all publications in arXiv have DOIs, but I
+        # believe they're being back-filled, so hopefully, eventually all will.
+        doi = '10.48550/' + pub_id.replace(':', '.')
+        log(f'converting {pub_id} into DOI {doi}')
+        return doi
     elif scheme in ['pmcid', 'pmid']:
         return doi_from_pubmed(pub_id, scheme)
     else:
         log(f'DOI requested for unsupported scheme ({scheme}): ' + pub_id)
+    return ''
 
 
 def doi_from_pubmed(pub_id, scheme):
+    '''Return a DOI for a PMCID or PMID by contacting PubMed.'''
     global _CACHE
     if pub_id in _CACHE:
         cached = _CACHE[pub_id]
@@ -136,7 +153,7 @@ def doi_from_pubmed(pub_id, scheme):
                     _CACHE[pub_id] = ''
                     return ''
         except (TypeError, ValueError) as ex:
-            log('unable to parse data from NCBI: ' + str(ex))
+            log(f'unable to parse data from NCBI for {pub_id}: ' + str(ex))
             return ''
     else:
         log(f'error trying to get DOI for {pub_id}: ' + str(error))

@@ -12,6 +12,7 @@ from typing import Generator, Iterator
 
 
 def deduplicated(lst):
+    '''Return a copy of lst from which duplicate items have been removed.'''
     if not lst:
         return []
     elif isinstance(lst, Generator):
@@ -39,6 +40,11 @@ def deduplicated(lst):
 
 
 def similar_urls(url1, url2):
+    '''Return True if url1 is believed to be the same URL as url2.'''
+    # I found things like urllib's urlparse and w3lib's canonicalize_url
+    # unhelpful for this purpose. For example, for our cases we want to
+    # assume https://foo.org/bar/ is the same as https://foo.org/bar, even
+    # though by strict URL rules they're not. In the end I ended up doing this:
     return (
         url1 == url2
         or url1.removesuffix('/') == url2
@@ -53,12 +59,22 @@ def similar_urls(url1, url2):
 
 
 def listified(thing):
+    '''Return a list made out of thing.
+
+    If thing is a single object, then this returns [thing].
+    If list is a list, Iterator or Generator, this simply returns thing.
+    '''
     if not thing:
         return []
     return thing if isinstance(thing, (list, Iterator, Generator)) else [thing]
 
 
 def cleaned_text(text):
+    '''Return text that has been mildly cleaned up.
+
+    Whitespace characters are normalized to single spaces, and period
+    characters are followed by one space.
+    '''
     # Get rid of embedded newlines and related characters.
     text = ' '.join(text.splitlines())
     # Make sure periods are followed by spaces.
