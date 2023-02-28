@@ -1,45 +1,60 @@
 #!/bin/bash
+# ================================================================== -*- sh -*-
+# @file    download-sample-repo
+# @brief   Download limited subset of a GitHub repo to use for testing
+# @author  Michael Hucka <mhucka@caltech.edu>
+# @license Please see the file LICENSE in the repository containing this file.
+# @repo    https://github.com/caltechlibrary/iga
+#
+# This is a pretty simple script that downloads JSON data from the GitHub API,
+# plus some additional files like codemeta.json and CITATION.cff, for a given
+# release of a software project. It saves the results in the current directory
+# in a subdirectory named after "owner/repo". I use this to save the various
+# repo snapshots in tests/data/github-examples/.
+# =============================================================================
 
-arg=$1
-release=$2
+owner=$1
+repo=$2
+tag=$3
 
 if (( $# < 2 )); then
-    echo "Usage: get-github OWNER/REPO TAG"
+    echo "Usage: get-github OWNER REPO TAG"
     exit 1
 fi
 
-user=$(echo $arg | cut -d/ -f1)
-repo=$(echo $arg | cut -d/ -f2)
-
-mkdir -p $arg
+mkdir -p $owner/$repo
 
 API=https://api.github.com
 
-echo "Downloading files for $user/$repo ..."
+echo "Downloading files for $owner/$repo ..."
 
-curl -s $API/repos/$user/$repo > $user/$repo/repo.json
-curl -s $API/repos/$arg/releases/tags/$release > $user/$repo/release.json
-curl -s $API/users/$user > $user/$repo/user.json
+curl -s $API/repos/$owner/$repo > $owner/$repo/repo.json
+curl -s $API/repos/$owner/$repo/releases/tags/$tag > $owner/$repo/release.json
+curl -s $API/owners/$owner > $owner/$repo/owner.json
 
-default=$(jq -r .default_branch $user/$repo/repo.json)
+branch=$(jq -r .default_branch $owner/$repo/repo.json)
+treesurl="$API/repos/$owner/$repo/git/trees/$branch"
 
-echo '[' > $user/$repo/filenames.json
-curl -s $API/repos/$arg/git/trees/$default | jq '.tree[].path' | sed 's/$/,/g' >> $user/$repo/filenames.json
-echo ']' >> $user/$repo/filenames.json
+echo '[' > $owner/$repo/filenames.json
+curl -s $treesurl | jq '.tree[].path' | sed 's/$/,/g' >> $owner/$repo/filenames.json
+echo ']' >> $owner/$repo/filenames.json
 
-license=$(egrep -i licen.e $user/$repo/filenames.json | tr -d ',"')
+license=$(egrep -i licen.e $owner/$repo/filenames.json | tr -d ',"')
 
 for file in codemeta.json CITATION.cff citation.cff $license; do
-    curl -s $API/repos/$user/$repo/contents/$file |\
-        jq -r .content | base64 -D > $user/$repo/$file
+    curl -s $API/repos/$owner/$repo/contents/$file > $owner/$repo/tmp
+    if ! grep -q "Not Found" $owner/$repo/tmp; then
+       jq -r .content < $owner/$repo/tmp | base64 -D > $owner/$repo/$file
+    fi
+    rm -f $owner/$repo/tmp
 done
 
-echo "Downloading files for $user/$repo ... Done."
+echo "Downloading files for $owner/$repo ... Done."
 echo "Cleaning up..."
 
 # Delete empty files.
 
-find $arg -type f -size -4c | xargs rm
-grep -rl '"message": "Not Found"' $arg | xargs rm
+find $owner/$repo -type f -size -4c | xargs rm
+grep -rl '"message": "Not Found"' $owner/$repo | xargs rm
 
 echo "Cleaning up... Done."
