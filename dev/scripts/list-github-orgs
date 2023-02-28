@@ -1,0 +1,298 @@
+#!/usr/bin/env python3
+# =============================================================================
+# @file    list-github-orgs
+# @brief   Query GitHub using GraphQL for a list of all organization accounts
+# @author  Michael Hucka <mhucka@caltech.edu>
+# @license MIT license; please see the file LICENSE in the repo
+# @repo    https://github.com/caltechlibrary/iga
+#
+# This program is used to get a raw, unfiltered list of the names of all
+# organization accounts from GitHub. It's used in conjunction with
+# filter-github-orgs to produce the file iga/data/github-orgs.txt.
+# =============================================================================
+
+from   base64 import b64encode
+import os
+import requests.exceptions
+import rich_click as click
+from   rich_click import File
+from   sidetrack import set_debug, log
+import sys
+
+
+# Internal constants.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# The GraphQL query to GitHub is always the same. Note: although the presence
+# of "$" makes it seem like we might do Python string/format substitutions,
+# the "$" is actually part of GraphQL syntax. The text below is used as-is,
+# without further subsitution. We pass a separate keyword parameter in the
+# graphql client call that sets the value of the variable $ids.
+_QUERY = '''
+query($ids: [ID!]!) {
+    nodes(ids: $ids) {
+        ... on Organization {
+            name
+        }
+    }
+    rateLimit {
+        resetAt
+    }
+}
+'''
+
+# Style preferences for rich_click.
+click.rich_click.STYLE_HELPTEXT = ""
+click.rich_click.USE_MARKDOWN = True
+click.rich_click.STYLE_ERRORS_SUGGESTION = "bold italic"
+click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help."
+
+
+# Callback functions used in the click CLI definition.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _config_debug(ctx, param, debug_dest):
+    '''Handle the --debug option and configure debug settings as needed.'''
+    if debug_dest:
+        if debug_dest.name == '<stdout>':
+            set_debug(True, '-')
+        else:
+            set_debug(True, debug_dest.name)
+        import faulthandler
+        faulthandler.enable()
+        if os.name != 'nt':                 # Can't use next part on Windows.
+            import signal
+            from boltons.debugutils import pdb_on_signal
+            pdb_on_signal(signal.SIGUSR1)
+            log(f'installed signal handler on {signal.SIGUSR1}')
+    return debug_dest
+
+
+def _read_token(ctx, param, file_):
+    '''Read the file and set the environment variable GITHUB_TOKEN.'''
+    if ctx.params.get('args', None) == 'help':
+        _print_help_and_exit(ctx)
+    elif file_:
+        log('reading token from file')
+        os.environ['GITHUB_TOKEN'] = file_.read()
+    elif 'GITHUB_TOKEN' in os.environ:
+        log('GITHUB_TOKEN found in environment')
+    else:
+        _alert(ctx, 'Cannot proceed without an access token. (Tip: provide the'
+               ' `--token` option or set the environment variable **GITHUB_TOKEN**.)')
+        sys.exit(1)
+    return os.environ['GITHUB_TOKEN']
+
+
+def _print_help_and_exit(ctx):
+    '''Print the help text and exit with a success code.'''
+    click.echo(ctx.get_help())
+    sys.exit()
+
+
+# Main function.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+@click.command(add_help_option=False)
+@click.help_option('--help', '-h', help='Show this message and exit')
+#
+@click.option('--id-range', '-i', metavar='INT:INT', default='0:70000000',
+              help='Account id numbers to consider (_min_ ≤ id < _max_)')
+#
+@click.option('--output', '-o', metavar='DEST', type=File('w'),
+              help='Write the output to file DEST (default: stdout)')
+#
+@click.option('--token', '-t', metavar='FILE', type=File('r'), callback=_read_token,
+              help="File ('-' for stdin) containing a GitHub access token")
+#
+@click.option('--debug', '-@', metavar='OUT', type=File('w', lazy=False),
+              callback=_config_debug, help='Write debug output to destination "OUT"')
+#
+@click.pass_context
+def main(ctx, id_range=None, output=None, token=None, debug=False):
+    '''Produce a list of organization account names on GitHub.
+\r
+This uses a GraphQL query to ask GitHub for all accounts of type "org". It does
+not filter the results. Note that the overall process is very slow because of
+GitHub API rate limits. To check the nearly 60,000,000 organization account
+names on GitHub today will take at least 5 days of continuous running.
+\r
+Simple example of usage:
+```
+  list-orgs-in-github --output orgs.txt
+```
+\r
+A "classic" Personal Access Token (PAT) for making API calls to GitHub server
+must be supplied, either in a file whose path is given as the value of the
+option `--token` (use `-` for standard input), _or_ in an environment variable
+named `GITHUB_TOKEN`.
+\r
+To cope with the limitations imposed by GitHub on the maximum number of
+values returned by any given GraphQL call, this program takes an indirect
+route to obtaining the names of the millions of organization names in GitHub.
+It repeatedly constructs potential organization identifiers, then asks GitHub
+to return the name of the corresponding organization. This approach works
+because every GitHub account has an identifier consisting of a string in
+which a part of the string is an integer, and those integers are assigned
+sequentially when new accounts are created. (For example, the organization
+account for the Caltech Library has an embedded number of 15038637.) By
+constructing account identifiers up to a large number, this program will
+eventually end up asking GitHub about every organization account that exists
+in the system. At the time of this writing (early 2023), the largest id
+number is below 60,000,000, so by default, this program tries numbers up to
+60,000,000. To use a different range, you can use the option `--id-range` with
+two integers separated by a colon (`:`). For example, the following will limit
+consideration to orgs whose id's are 10000 up to, but not including, 20000:
+```
+  list-orgs-in-github --id-range 10000:20000
+```
+This program pauses when the rate limit is reached and automatically continues
+when it can. You should expect this program to need several days to get the
+name of ~60,000,000 organization accounts.
+\r
+If given the `--debug` argument, this program will output details about what it
+is doing. The debug trace will be written to the given destination path; to
+write to standard output instead, use a dash (`-`).
+\r
+Running this program with the option `--help` will make it print help text and
+exit without doing anything else.
+'''
+    # Process arguments & handle early exits ..................................
+
+    output = output or sys.stdout
+    log('writing output to ' + output.name)
+
+    from commonpy.network_utils import network_available
+    if not network_available():
+        _alert(ctx, 'No network – cannot proceed.', False)
+        sys.exit(2)
+
+    # Do the main work ........................................................
+
+    exit_code = 0
+    try:
+        import arrow
+        from python_graphql_client import GraphqlClient
+        from time import sleep
+
+        graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
+        headers = {'Authorization': f'Bearer {token}'}
+        reset_at = arrow.now()
+        start, end = (int(value) for value in id_range.split(':'))
+        while start < end:
+            log(f'batch_start = {start}')
+            vars = {'ids': _encoded_org_ids(start, start + 100)}
+            result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
+            if 'errors' in result:
+                # If we restart this program while rate limited, we won't get a
+                # resetAt (GitHub will only send the 'rate_limited' item). So,
+                # keep going around this loop, making up reset times 5 min in
+                # the future until we get out of the rate limit period.
+                if arrow.get(reset_at) <= arrow.now():
+                    reset_at = arrow.now().shift(minutes=5)
+                if result['errors'][0]['type'] == 'RATE_LIMITED':
+                    # Shift by 1 min b/c GitHub's clock might differ from ours.
+                    restart_time = arrow.get(reset_at).to('local').shift(minutes=1)
+                    time_difference = restart_time - arrow.now()
+                    sleep_duration = time_difference.seconds
+                    log(f'pausing for {sleep_duration} sec until {restart_time}')
+                    sleep(sleep_duration)
+                    log('unpausing')
+                    continue
+                elif result['errors'][0]['type'] != 'NOT_FOUND':
+                    # Ignore id's not found, but stop if get other errors.
+                    raise Exception(result['errors'])
+            for node in filter(None, result['data']['nodes']):
+                name = node['name'].strip()
+                output.write(name + '\n')
+                output.flush()
+                log('org name: ' + name)
+            # When we hit the rate limit, the results from GitHub will not have
+            # the data element. So, always remember the last reset we saw.
+            reset_at = result['data']['rateLimit']['resetAt']
+            start += 100
+    except KeyboardInterrupt:
+        # Catch it, but don't treat it as an error; just stop execution.
+        log('keyboard interrupt received')
+    except requests.exceptions.HTTPError as ex:
+        if getattr(ex, 'response') is not None and ex.response.status_code == 401:
+            _alert(ctx, 'Failed GitHub authentication.', False)
+            sys.exit(1)
+        else:
+            _alert(ctx, 'Unable to query GitHub: ' + str(ex), False)
+            sys.exit(2)
+    except Exception as ex:             # noqa: PIE786
+        exit_code = 2
+        import traceback
+        exception = sys.exc_info()
+        details = ''.join(traceback.format_exception(*exception))
+        log('exception: ' + str(ex) + '\n\n' + details)
+        _alert(ctx, 'Experienced an unrecoverable error: ' + str(ex), False)
+        breakpoint()
+    sys.exit(exit_code)
+
+
+# Miscellaneous helpers.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _encoded_org_ids(start, end):
+    '''Return a list of base64-encoded GitHub organization identifiers.'''
+    # GitHub node id's have an unobvious property. The node id of an account
+    # is a string like "MDEyOk9yZ2FuaXphdGlvbjUwOTg4Mw==", and it turns out
+    # this is a base64 encoded string which, when decoded, has the form
+    # "012:OrganizationN", where "N" is an integer. The numbers are assigned
+    # sequentially and the highest number (as of this writing, in early 2023)
+    # is somewhere between 5,500,000 and 6,000,000. So, we can construct id's
+    # for organizations by creeating "012:OrganizationN" strings for the
+    # numbers we want to try, the base64 encoding them.
+    ids = []
+    for id_ in range(start, end):
+        # The extra encode/decode's is because b64encode only works with bytes.
+        id_bytes = b64encode(f"012:Organization{id_}".encode())
+        ids.append(id_bytes.decode())
+    return ids
+
+
+def _alert(ctx, msg, print_usage=True):
+    '''Print an error message in the style of rich_click.'''
+    # The following code tries to emulate what rich_click does. It doesn't use
+    # private methods or properties, but it might break if rich_click changes.
+    log('error: ' + msg)
+    from rich.console import Console
+    from rich.markdown import Markdown
+    from rich.padding import Padding
+    from rich.panel import Panel
+    from rich.theme import Theme
+    from rich_click.rich_click import (
+        ALIGN_ERRORS_PANEL,
+        ERRORS_PANEL_TITLE,
+        STYLE_ERRORS_PANEL_BORDER,
+        STYLE_USAGE,
+        STYLE_OPTION,
+        STYLE_ARGUMENT,
+        STYLE_SWITCH,
+        OptionHighlighter,
+    )
+    highlighter = OptionHighlighter()
+    console = Console(theme=Theme({
+        "option": STYLE_OPTION,
+        "argument": STYLE_ARGUMENT,
+        "switch": STYLE_SWITCH,
+        "usage": STYLE_USAGE,
+    }), highlighter=highlighter)
+    if print_usage:
+        console.print(Padding(highlighter(ctx.get_usage()), 1))
+    console.print(
+        Panel(
+            Markdown(msg),
+            border_style=STYLE_ERRORS_PANEL_BORDER,
+            title=ERRORS_PANEL_TITLE,
+            title_align=ALIGN_ERRORS_PANEL,
+        )
+    )
+
+
+# Main invocation.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+main()
