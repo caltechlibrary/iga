@@ -65,7 +65,7 @@
   "releases_url": "https://api.github.com/repos/charlie86/spotifyr/releases{/id}",
   "deployments_url": "https://api.github.com/repos/charlie86/spotifyr/deployments",
   "created_at": "2017-09-07T03:35:05Z",
-  "updated_at": "2023-01-28T07:13:25Z",
+  "updated_at": "2023-02-11T23:11:06Z",
   "pushed_at": "2022-12-14T21:15:38Z",
   "git_url": "git://github.com/charlie86/spotifyr.git",
   "ssh_url": "git@github.com:charlie86/spotifyr.git",
@@ -73,8 +73,8 @@
   "svn_url": "https://github.com/charlie86/spotifyr",
   "homepage": "http://www.rcharlie.com/spotifyr",
   "size": 4434,
-  "stargazers_count": 334,
-  "watchers_count": 334,
+  "stargazers_count": 336,
+  "watchers_count": 336,
   "language": "R",
   "has_issues": true,
   "has_projects": true,
@@ -104,9 +104,16 @@
   "visibility": "public",
   "forks": 58,
   "open_issues": 26,
-  "watchers": 334,
+  "watchers": 336,
   "default_branch": "master",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": false,
+    "maintain": false,
+    "push": false,
+    "triage": false,
+    "pull": true
+  },
+  "temp_clone_token": "",
   "network_count": 58,
   "subscribers_count": 16
 }

@@ -110,7 +110,14 @@
   "open_issues": 80,
   "watchers": 255,
   "default_branch": "master",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": false,
+    "maintain": false,
+    "push": false,
+    "triage": false,
+    "pull": true
+  },
+  "temp_clone_token": "",
   "organization": {
     "login": "codemeta",
     "id": 15223235,
@@ -132,5 +139,5 @@
     "site_admin": false
   },
   "network_count": 74,
-  "subscribers_count": 35
+  "subscribers_count": 34
 }

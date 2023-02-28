@@ -25,6 +25,7 @@
 "notarize.js",
 "package-lock.json",
 "package.json",
+"pennsieve-io-chain.pem",
 "preload.js",
 "prettier.config.js",
 "pyflask",

@@ -105,7 +105,14 @@
   "open_issues": 11,
   "watchers": 3,
   "default_branch": "master",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": false,
+    "maintain": false,
+    "push": false,
+    "triage": false,
+    "pull": true
+  },
+  "temp_clone_token": "",
   "organization": {
     "login": "crosscite",
     "id": 756493,

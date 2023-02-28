@@ -66,13 +66,13 @@
   "deployments_url": "https://api.github.com/repos/proycon/codemeta-harvester/deployments",
   "created_at": "2022-01-05T16:21:48Z",
   "updated_at": "2022-11-16T13:47:17Z",
-  "pushed_at": "2023-01-03T10:30:35Z",
+  "pushed_at": "2023-02-28T14:53:18Z",
   "git_url": "git://github.com/proycon/codemeta-harvester.git",
   "ssh_url": "git@github.com:proycon/codemeta-harvester.git",
   "clone_url": "https://github.com/proycon/codemeta-harvester.git",
   "svn_url": "https://github.com/proycon/codemeta-harvester",
   "homepage": "",
-  "size": 276,
+  "size": 103,
   "stargazers_count": 3,
   "watchers_count": 3,
   "language": "Shell",
@@ -105,7 +105,14 @@
   "open_issues": 7,
   "watchers": 3,
   "default_branch": "master",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": false,
+    "maintain": false,
+    "push": false,
+    "triage": false,
+    "pull": true
+  },
+  "temp_clone_token": "",
   "network_count": 3,
   "subscribers_count": 1
 }

@@ -133,6 +133,7 @@
 "search.html",
 "search.md",
 "setup_and_run_demo.bash",
+"setup_and_run_simple_demo.bash",
 "simplified.go",
 "simplified_test.go",
 "sql-table-notes.html",

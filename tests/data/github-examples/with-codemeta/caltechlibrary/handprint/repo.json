@@ -86,7 +86,7 @@
   "mirror_url": null,
   "archived": false,
   "disabled": false,
-  "open_issues_count": 14,
+  "open_issues_count": 15,
   "license": {
     "key": "bsd-3-clause",
     "name": "BSD 3-Clause \"New\" or \"Revised\" License",
@@ -114,10 +114,28 @@
   ],
   "visibility": "public",
   "forks": 13,
-  "open_issues": 14,
+  "open_issues": 15,
   "watchers": 122,
   "default_branch": "main",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": true,
+    "maintain": true,
+    "push": true,
+    "triage": true,
+    "pull": true
+  },
+  "temp_clone_token": "",
+  "allow_squash_merge": true,
+  "allow_merge_commit": true,
+  "allow_rebase_merge": true,
+  "allow_auto_merge": false,
+  "delete_branch_on_merge": false,
+  "allow_update_branch": false,
+  "use_squash_pr_title_as_default": false,
+  "squash_merge_commit_message": "COMMIT_MESSAGES",
+  "squash_merge_commit_title": "COMMIT_OR_PR_TITLE",
+  "merge_commit_message": "PR_TITLE",
+  "merge_commit_title": "MERGE_MESSAGE",
   "organization": {
     "login": "caltechlibrary",
     "id": 15038637,
@@ -137,6 +155,14 @@
     "received_events_url": "https://api.github.com/users/caltechlibrary/received_events",
     "type": "Organization",
     "site_admin": false
+  },
+  "security_and_analysis": {
+    "secret_scanning": {
+      "status": "disabled"
+    },
+    "secret_scanning_push_protection": {
+      "status": "disabled"
+    }
   },
   "network_count": 13,
   "subscribers_count": 10

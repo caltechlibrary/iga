@@ -66,13 +66,13 @@
   "deployments_url": "https://api.github.com/repos/datacite/akita/deployments",
   "created_at": "2020-05-04T19:07:29Z",
   "updated_at": "2022-07-11T14:47:31Z",
-  "pushed_at": "2023-01-31T14:15:38Z",
+  "pushed_at": "2023-02-27T13:17:04Z",
   "git_url": "git://github.com/datacite/akita.git",
   "ssh_url": "git@github.com:datacite/akita.git",
   "clone_url": "https://github.com/datacite/akita.git",
   "svn_url": "https://github.com/datacite/akita",
   "homepage": "https://commons.datacite.org",
-  "size": 3961,
+  "size": 4052,
   "stargazers_count": 3,
   "watchers_count": 3,
   "language": "TypeScript",
@@ -82,11 +82,11 @@
   "has_wiki": false,
   "has_pages": false,
   "has_discussions": false,
-  "forks_count": 2,
+  "forks_count": 3,
   "mirror_url": null,
   "archived": false,
   "disabled": false,
-  "open_issues_count": 9,
+  "open_issues_count": 7,
   "license": {
     "key": "mit",
     "name": "MIT License",
@@ -101,11 +101,18 @@
 
   ],
   "visibility": "public",
-  "forks": 2,
-  "open_issues": 9,
+  "forks": 3,
+  "open_issues": 7,
   "watchers": 3,
   "default_branch": "master",
-  "temp_clone_token": null,
+  "permissions": {
+    "admin": false,
+    "maintain": false,
+    "push": false,
+    "triage": false,
+    "pull": true
+  },
+  "temp_clone_token": "",
   "organization": {
     "login": "datacite",
     "id": 411326,
@@ -126,6 +133,6 @@
     "type": "Organization",
     "site_admin": false
   },
-  "network_count": 2,
+  "network_count": 3,
   "subscribers_count": 6
 }

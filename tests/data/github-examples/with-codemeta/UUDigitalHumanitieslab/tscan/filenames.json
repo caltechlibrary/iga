@@ -14,6 +14,7 @@
 "bootstrap.sh",
 "codemeta.json",
 "configure.ac",
+"cppcheck-suppressions-list.txt",
 "data",
 "docker-compose.yaml",
 "docker",
