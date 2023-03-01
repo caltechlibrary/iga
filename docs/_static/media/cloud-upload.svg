@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="-12 -12 48 48" fill="none"
+     stroke="currentColor" stroke-width="2" stroke-linecap="round"
+     stroke-linejoin="round" style="color: #ffffff;"
+     xmlns="http://www.w3.org/2000/svg">
+  <circle style="stroke-width: 1px; fill: rgb(246, 106, 8); stroke: none;"
+           cx="12" cy="12" r="24"/>
+  <polyline points="16 16 12 12 8 16"></polyline>
+  <line x1="12" y1="12" x2="12" y2="21"></line>
+  <polyline points="16 16 12 12 8 16"></polyline>
+  <path d="M 20.39 18.39
+           A 5 5 0 0 0 18 9
+           h -1.26
+           A 8 8 0 1 0 3 16.3"></path>
+</svg>

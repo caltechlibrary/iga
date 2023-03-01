@@ -1,0 +1,5 @@
+# Colophon
+
+[Michael Hucka](https://www.cds.caltech.edu/~mhucka/) wrote the IGA documentation using the [Sphinx](https://www.sphinx-doc.org) document generator together with [MyST-flavored Markdown](https://myst-parser.readthedocs.io/en/latest/). The theme is the [Material theme for Sphinx](https://bashtage.github.io/sphinx-material/), with light customizations such as the use of Google's [Atkinson Hyperlegible](https://fonts.google.com/specimen/Atkinson+Hyperlegible) font. A [GitHub Action](https://github.com/caltechlibrary/iga/blob/main/.github/workflows/build-sphinx.yml) takes care of creating the formatted version of the documentation and hosting it on GitHub.io at https://caltechlibrary.github.io/iga. The formatted output can also be produced manually using commands implemented in the `Makefile` located in the [`docs/`](https://github.com/caltechlibrary/iga/tree/main/docs) subdirectory of the IGA source code repository.
+
+The vector artwork of an arrow pointing to a cloud, used as for the logo and icon for IGA, came from GitHub. 
