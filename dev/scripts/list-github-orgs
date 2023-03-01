@@ -18,6 +18,7 @@ import rich_click as click
 from   rich_click import File
 from   sidetrack import set_debug, log
 import sys
+from   time import sleep
 
 
 # Internal constants.
@@ -46,6 +47,9 @@ click.rich_click.STYLE_HELPTEXT = ""
 click.rich_click.USE_MARKDOWN = True
 click.rich_click.STYLE_ERRORS_SUGGESTION = "bold italic"
 click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help."
+
+# We retry network requests in certain cases.
+_MAX_RETRIES = 3
 
 
 # Callback functions used in the click CLI definition.
@@ -167,73 +171,104 @@ exit without doing anything else.
         _alert(ctx, 'No network – cannot proceed.', False)
         sys.exit(2)
 
+    start, end = (int(value) for value in id_range.split(':'))
+    if end <= start:
+        _alert(ctx, f'Start value {start} is <= end value {end}', False)
+        sys.exit(1)
+
     # Do the main work ........................................................
 
+    retry = 0
+    error = None
     exit_code = 0
-    try:
-        import arrow
-        from python_graphql_client import GraphqlClient
-        from time import sleep
-
-        graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
-        headers = {'Authorization': f'Bearer {token}'}
-        reset_at = arrow.now()
-        start, end = (int(value) for value in id_range.split(':'))
-        while start < end:
-            log(f'batch_start = {start}')
-            vars = {'ids': _encoded_org_ids(start, start + 100)}
-            result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
-            if 'errors' in result:
-                # If we restart this program while rate limited, we won't get a
-                # resetAt (GitHub will only send the 'rate_limited' item). So,
-                # keep going around this loop, making up reset times 5 min in
-                # the future until we get out of the rate limit period.
-                if arrow.get(reset_at) <= arrow.now():
-                    reset_at = arrow.now().shift(minutes=5)
-                if result['errors'][0]['type'] == 'RATE_LIMITED':
-                    # Shift by 1 min b/c GitHub's clock might differ from ours.
-                    restart_time = arrow.get(reset_at).to('local').shift(minutes=1)
-                    time_difference = restart_time - arrow.now()
-                    sleep_duration = time_difference.seconds
-                    log(f'pausing for {sleep_duration} sec until {restart_time}')
-                    sleep(sleep_duration)
-                    log('unpausing')
-                    continue
-                elif result['errors'][0]['type'] != 'NOT_FOUND':
-                    # Ignore id's not found, but stop if get other errors.
-                    raise Exception(result['errors'])
-            for node in filter(None, result['data']['nodes']):
-                name = node['name'].strip()
-                output.write(name + '\n')
-                output.flush()
-                log('org name: ' + name)
-            # When we hit the rate limit, the results from GitHub will not have
-            # the data element. So, always remember the last reset we saw.
-            reset_at = result['data']['rateLimit']['resetAt']
-            start += 100
-    except KeyboardInterrupt:
-        # Catch it, but don't treat it as an error; just stop execution.
-        log('keyboard interrupt received')
-    except requests.exceptions.HTTPError as ex:
-        if getattr(ex, 'response') is not None and ex.response.status_code == 401:
-            _alert(ctx, 'Failed GitHub authentication.', False)
-            sys.exit(1)
-        else:
-            _alert(ctx, 'Unable to query GitHub: ' + str(ex), False)
-            sys.exit(2)
-    except Exception as ex:             # noqa: PIE786
-        exit_code = 2
-        import traceback
-        exception = sys.exc_info()
-        details = ''.join(traceback.format_exception(*exception))
-        log('exception: ' + str(ex) + '\n\n' + details)
-        _alert(ctx, 'Experienced an unrecoverable error: ' + str(ex), False)
-        breakpoint()
+    while retry < _MAX_RETRIES:
+        try:
+            start, end = _write_org_names(start, end, output, token)
+        except KeyboardInterrupt:
+            log('keyboard interrupt received')
+            break
+        except requests.exceptions.HTTPError as ex:
+            response = getattr(ex, 'response', None)
+            if response is None:
+                _alert(ctx, 'Encountered an error: ' + str(ex), False)
+                exit_code = 2
+                break
+            elif response.status_code == 401:
+                _alert(ctx, 'Failed GitHub authentication.', False)
+                exit_code = 2
+                break
+            elif not error:
+                # Might be a transient problem. Remember the 1st error we get
+                # b/c subsequent errors might be about the retry.
+                error = ex
+                log('pausing 1 sec due to error: ' + str(ex))
+                sleep(1)
+                retry += 1
+            else:
+                # If we get here, we've already had one error.
+                log(f'pausing 5 sec due to error (retry #{retry}): ' + str(ex))
+                sleep(5)
+                retry += 1
+        except Exception as ex:             # noqa: PIE786
+            import traceback
+            exit_code = 2
+            exception = sys.exc_info()
+            details = ''.join(traceback.format_exception(*exception))
+            log('exception: ' + str(ex) + '\n\n' + details)
+            error = ex
+            retry = _MAX_RETRIES
+    if error and retry >= _MAX_RETRIES:
+        _alert(ctx, 'Experienced an unrecoverable error: ' + str(error), False)
     sys.exit(exit_code)
 
 
 # Miscellaneous helpers.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+def _write_org_names(start, end, output, token):
+    import arrow
+    from python_graphql_client import GraphqlClient
+
+    graphql = GraphqlClient(endpoint="https://api.github.com/graphql")
+    headers = {'Authorization': f'Bearer {token}'}
+    reset_at = arrow.now()
+    last_start = start
+    while start < end:
+        log(f'batch_start = {start}')
+        vars = {'ids': _encoded_org_ids(start, start + 100)}
+        result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
+        if 'errors' in result:
+            # If we restart this program while rate limited, we won't get a
+            # resetAt (GitHub will only send the 'rate_limited' item). So,
+            # keep going around this loop, making up reset times 5 min in
+            # the future until we get out of the rate limit period.
+            if arrow.get(reset_at) <= arrow.now():
+                reset_at = arrow.now().shift(minutes=5)
+            if result['errors'][0]['type'] == 'RATE_LIMITED':
+                # Shift by 1 min b/c GitHub's clock might differ from ours.
+                restart_time = arrow.get(reset_at).to('local').shift(minutes=1)
+                time_difference = restart_time - arrow.now()
+                sleep_duration = time_difference.seconds
+                log(f'pausing for {sleep_duration} sec until {restart_time}')
+                sleep(sleep_duration)
+                log('unpausing')
+                continue
+            elif result['errors'][0]['type'] != 'NOT_FOUND':
+                # Ignore id's not found, but stop if get other errors.
+                raise Exception(result['errors'])
+        for node in filter(None, result['data']['nodes']):
+            name = node['name'].strip()
+            output.write(name + '\n')
+            output.flush()
+            log('org name: ' + name)
+        # When we hit the rate limit, the results from GitHub will not have
+        # the data element. So, always remember the last reset we saw.
+        reset_at = result['data']['rateLimit']['resetAt']
+        last_start = start
+        start += 100
+    # Return where we're at, in case we have to restart.
+    return last_start, end
+
 
 def _encoded_org_ids(start, end):
     '''Return a list of base64-encoded GitHub organization identifiers.'''
