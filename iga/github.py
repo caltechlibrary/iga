@@ -10,6 +10,7 @@ file "LICENSE" for more information.
 
 from   commonpy.network_utils import net
 import json5
+import os
 from   sidetrack import log
 from   types import SimpleNamespace
 
@@ -108,7 +109,7 @@ def github_repo_filenames(repo):
         return repo._filenames
     log('asking GitHub for list of files at ' + repo.api_url)
     files_url = repo.api_url + '/git/trees/' + repo.default_branch
-    (response, error) = net('get', files_url)
+    (response, error) = _github_api_get(files_url)
     if error:
         log('unable to get listof files for repo: ' + str(error))
         raise error
@@ -128,7 +129,7 @@ def github_repo_file(repo, filename):
     if filename in getattr(repo, '_files_contents', {}):
         return repo._files_contents[filename]
     file = next(f for f in repo._files if f.path == filename)
-    (response, error) = net('get', file.url)
+    (response, error) = _github_api_get(file.url)
     if error:
         raise error
     json_dict = json5.loads(response.text)
@@ -147,7 +148,7 @@ def github_repo_file(repo, filename):
 def github_repo_languages(repo):
     '''Return a list of languages used in the repo according to GitHub.'''
     endpoint = repo.languages_url
-    (response, error) = net('get', endpoint)
+    (response, error) = _github_api_get(endpoint)
     if error:
         log('error trying to get GitHub languages (' + endpoint + '): ' + str(error))
         return []
@@ -158,7 +159,7 @@ def github_repo_languages(repo):
 def github_repo_contributors(repo):
     '''Return a list of GitHubAccount objects for users shown as repo contributors.'''
     endpoint = repo.contributors_url
-    (response, error) = net('get', endpoint)
+    (response, error) = _github_api_get(endpoint)
     if error:
         log('error trying to get GitHub contributors (' + endpoint + '): ' + str(error))
         return []
@@ -196,7 +197,7 @@ def valid_github_release_url(release_url):
 
 def _object_for_github(api_url, cls):
     '''Return object of class cls made from the data obtained from the API url.'''
-    (response, error) = net('get', api_url)
+    (response, error) = _github_api_get(api_url)
     if error:
         import commonpy.exceptions
         if isinstance(error, commonpy.exceptions.NoContent):
@@ -225,3 +226,10 @@ def _object_for_github(api_url, cls):
         # Something unexpected happened. We need to fix our handling.
         log('Error: ' + str(ex))
         raise InternalError('Encountered error trying to get GitHub data.')
+
+
+def _github_api_get(endpoint):
+    headers = {'Accept': 'application/vnd.github.v3+json'}
+    if 'GITHUB_TOKEN' in os.environ:
+        headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
+    return net('get', endpoint, headers=headers)
