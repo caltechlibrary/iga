@@ -82,37 +82,38 @@ class GitHubFile(SimpleNamespace):
 # Principal exported functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def github_release(account, repo, tag):
+def github_release(account_name, repo_name, tag_name):
     '''Return a Release object corresponding to the tagged release in GitHub.'''
-    endpoint = 'https://api.github.com/repos/'+account+'/'+repo+'/releases/tags/'+tag
+    endpoint = ('https://api.github.com/repos/' + account_name
+                + '/' + repo_name + '/releases/tags/' + tag_name)
     log('getting GitHub data for release at ' + endpoint)
     return _object_for_github(endpoint, GitHubRelease)
 
 
-def github_account(account):
+def github_account(account_name):
     '''Return an Account object corresponding to the GitHub user account.'''
-    endpoint = 'https://api.github.com/users/' + account
+    endpoint = 'https://api.github.com/users/' + account_name
     log('getting GitHub data for user at ' + endpoint)
     return _object_for_github(endpoint, GitHubAccount)
 
 
-def github_repo(account, repo):
-    '''Return a Repo object corresponding to the repo in GitHub.'''
-    endpoint = 'https://api.github.com/repos/' + account + '/' + repo
+def github_repo(account_name, repo_name):
+    '''Return a Repo object corresponding to the named repo in GitHub.'''
+    endpoint = 'https://api.github.com/repos/' + account_name + '/' + repo_name
     log('getting GitHub data for repo at ' + endpoint)
     return _object_for_github(endpoint, GitHubRepo)
 
 
 def github_repo_filenames(repo):
-    '''Return a list of file information objects for the given repo.'''
+    '''Return a list of file information objects for the given repo object.'''
     if getattr(repo, '_filenames', None):
         return repo._filenames
     log('asking GitHub for list of files at ' + repo.api_url)
     files_url = repo.api_url + '/git/trees/' + repo.default_branch
-    (response, error) = _github_api_get(files_url)
-    if error:
-        log('unable to get listof files for repo: ' + str(error))
-        raise error
+    response = _github_api_get(files_url)
+    if not response:
+        log(f'did not get a list of file names for {repo}')
+        return []
     json_dict = json5.loads(response.text)
     files = [GitHubFile(data) for data in json_dict['tree']]
     log(f'found {len(files)} files in repo')
@@ -123,15 +124,18 @@ def github_repo_filenames(repo):
 
 
 def github_repo_file(repo, filename):
-    '''Return the text contents of the named file in the repo.'''
+    '''Return the text contents of the named file in the repo object.'''
     if filename not in github_repo_filenames(repo):
+        log(f'{filename} not found in the files of {repo}')
         return ''
     if filename in getattr(repo, '_files_contents', {}):
+        log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
     file = next(f for f in repo._files if f.path == filename)
-    (response, error) = _github_api_get(file.url)
-    if error:
-        raise error
+    response = _github_api_get(file.url)
+    if not response:
+        log(f'got no content for file {filename} or it does not exist')
+        return ''
     json_dict = json5.loads(response.text)
     if json_dict['encoding'] != 'base64':
         log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
@@ -142,31 +146,35 @@ def github_repo_file(repo, filename):
         repo._file_contents = {}
     # Cache the file contents, so we don't have to get it from GitHub again.
     repo._file_contents[filename] = contents
+    log(f'file {filename} content length is {len(contents)}')
     return contents
 
 
 def github_repo_languages(repo):
     '''Return a list of languages used in the repo according to GitHub.'''
     endpoint = repo.languages_url
-    (response, error) = _github_api_get(endpoint)
-    if error:
-        log('error trying to get GitHub languages (' + endpoint + '): ' + str(error))
-        return []
+    response = _github_api_get(endpoint)
+    if not response:
+        log(f'got no content for list of languages for repo {repo}')
+        return ''
     json_dict = json5.loads(response.text)
-    return json_dict.keys() if json_dict else []
+    languages = json_dict.keys() if json_dict else []
+    log(f'GitHub lists {len(languages)} languages for the repo')
+    return languages
 
 
 def github_repo_contributors(repo):
     '''Return a list of GitHubAccount objects for users shown as repo contributors.'''
     endpoint = repo.contributors_url
-    (response, error) = _github_api_get(endpoint)
-    if error:
-        log('error trying to get GitHub contributors (' + endpoint + '): ' + str(error))
+    response = _github_api_get(endpoint)
+    if not response:
+        log(f'got no content for list of contributors for repo {repo}')
         return []
     # The JSON data is a list containing a kind of minimal user info dict.
     contributors = []
     for user_dict in json5.loads(response.text):
         contributors.append(github_account(user_dict['login']))
+    log(f'repo has {len(contributors)} contributors')
     return contributors
 
 
@@ -197,26 +205,10 @@ def valid_github_release_url(release_url):
 
 def _object_for_github(api_url, cls):
     '''Return object of class cls made from the data obtained from the API url.'''
-    (response, error) = _github_api_get(api_url)
-    if error:
-        import commonpy.exceptions
-        if isinstance(error, commonpy.exceptions.NoContent):
-            # The requested thing does not exist.
-            return None
-        elif isinstance(error, commonpy.exceptions.AuthenticationFailure):
-            # GitHub returns 403 when you hit the rate limit.
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
-            if 'API rate limit exceeded' in response.text:
-                raise GitHubError('Exceeded rate limit -- try again later')
-            else:
-                raise GitHubError('Permissions problem accessing ' + api_url)
-        elif isinstance(error, commonpy.exceptions.RateLimitExceeded):
-            raise GitHubError('Exceeded rate limit -- try again later')
-        elif isinstance(error, commonpy.exceptions.CommonPyException):
-            raise GitHubError(error.args[0])
-        else:
-            raise error
-    log('unpacking JSON into object structure')
+    response = _github_api_get(api_url)
+    if not response:
+        return None
+    log(f'unpacking JSON into object structure from {api_url}')
     try:
         # Create the desired object & add the api url in case it's needed later.
         obj = cls(json5.loads(response.text))
@@ -230,6 +222,30 @@ def _object_for_github(api_url, cls):
 
 def _github_api_get(endpoint):
     headers = {'Accept': 'application/vnd.github.v3+json'}
-    if 'GITHUB_TOKEN' in os.environ:
+    using_token = 'GITHUB_TOKEN' in os.environ
+    if using_token:
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
-    return net('get', endpoint, headers=headers)
+    response, error = net('get', endpoint, headers=headers)
+    if error:
+        import commonpy.exceptions
+        if isinstance(error, commonpy.exceptions.NoContent):
+            # The requested thing does not exist.
+            log(f'got no content for {endpoint}')
+            return None
+        elif isinstance(error, commonpy.exceptions.AuthenticationFailure):
+            # GitHub is unusual in returning 403 when you hit the rate limit.
+            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
+            if 'API rate limit exceeded' in response.text:
+                if using_token:
+                    raise GitHubError('Rate limit exceeded – try again later')
+                else:
+                    raise GitHubError('Rate limit exceeded – try using a'
+                                      ' personal access token, or wait some'
+                                      ' time before trying again.')
+            else:
+                raise GitHubError('Permissions problem accessing ' + endpoint)
+        elif isinstance(error, commonpy.exceptions.CommonPyException):
+            raise GitHubError(error.args[0])
+        else:
+            raise error
+    return response
