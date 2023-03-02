@@ -38,31 +38,18 @@ def name_from_orcid(orcid):
     if not orcid or not isinstance(orcid, str):
         return ('', '')
     orcid = detected_id(orcid) if orcid.startswith('http') else orcid
-    log('contacting ORCID for record for ' + orcid)
-    data_url = f'https://orcid.org/{orcid}/public-record.json'
-    try:
-        response, error = net('get', data_url)
-        if error:
-            log(f'failed to get ORCID data for {orcid}: ' + str(error))
-            return ('', '')
-        json_dict = json.loads(response.text)
-    except json.JSONDecodeError as ex:
-        log('unable to decode response from orcid.org API: ' + str(ex))
-        return ''
-    except CommonPyException as ex:
-        log(f'failed to get data for {orcid} from orcid.org: ' + str(ex))
-        return ''
+    orcid_dict = orcid_data(orcid)
 
     # The public record JSON has no status field. If a record is deprecated or
     # deactivated, there's no explicit indicator AND we have no way to find the
     # replacement even though visiting orcid.org shows it. We're stuck w/ this:
-    if 'family name deactivated' in json_dict.get('displayName', '').lower():
+    if 'family name deactivated' in orcid_dict.get('displayName', '').lower():
         log(f'{orcid} is a deactivated record')
         return ('', '')
 
     given = ''
     family = ''
-    if names := json_dict.get('names', {}):
+    if names := orcid_dict.get('names', {}):
         # The creditName value is preferred for our uses (giving credit for
         # work) and may be more complete than the givenName & familyName field
         # values, but it's a single string. Splitting names is error-prone, so
@@ -90,7 +77,7 @@ def name_from_orcid(orcid):
             return (given, family)
 
     # The "names" object is empty for some reason. See if there's another name.
-    if other := json_dict.get('otherNames', {}):
+    if other := orcid_dict.get('otherNames', {}):
         log(f'"names" is empty in record for {orcid} but "otherNames" exists')
         # This dict really has a nested dict with the same name. Don't ask me.
         for item in other.get('otherNames', []):
@@ -105,3 +92,20 @@ def name_from_orcid(orcid):
             log('failed to find inner otherNames dict in ORCID otherNames')
     log(f'returning "({given}, {family})" for {orcid}')
     return (given, family)
+
+
+def orcid_data(orcid):
+    '''Return the data from orcid.org for the given orcid id.'''
+    log('contacting ORCID for record for ' + orcid)
+    data_url = f'https://orcid.org/{orcid}/public-record.json'
+    try:
+        response, error = net('get', data_url)
+        if error:
+            log(f'failed to get ORCID data for {orcid}: ' + str(error))
+            return ('', '')
+        return json.loads(response.text)
+    except json.JSONDecodeError as ex:
+        log('unable to decode response from orcid.org API: ' + str(ex))
+    except CommonPyException as ex:
+        log(f'failed to get data for {orcid} from orcid.org: ' + str(ex))
+    return ''
