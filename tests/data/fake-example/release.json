@@ -1,0 +1,41 @@
+{
+  "url": "https://api.github.com/repos/fakeaccount/fakerepo/releases/39550191",
+  "assets_url": "https://api.github.com/repos/fakeaccount/fakerepo/releases/39550191/assets",
+  "upload_url": "https://uploads.github.com/repos/fakeaccount/fakerepo/releases/39550191/assets{?name,label}",
+  "html_url": "https://github.com/fakeaccount/fakerepo/releases/tag/faketag",
+  "id": 39550191,
+  "author": {
+    "login": "fakeaccount",
+    "id": 1450019,
+    "node_id": "MDQ6VXNlcjE0NTAwMTk=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1450019?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/mhucka",
+    "html_url": "https://github.com/mhucka",
+    "followers_url": "https://api.github.com/users/mhucka/followers",
+    "following_url": "https://api.github.com/users/mhucka/following{/other_user}",
+    "gists_url": "https://api.github.com/users/mhucka/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/mhucka/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/mhucka/subscriptions",
+    "organizations_url": "https://api.github.com/users/mhucka/orgs",
+    "repos_url": "https://api.github.com/users/mhucka/repos",
+    "events_url": "https://api.github.com/users/mhucka/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/mhucka/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "MDc6UmVsZWFzZTM5NTUwMTkx",
+  "tag_name": "faketag",
+  "target_commitish": "main",
+  "name": "Fake release faketag",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2021-03-09T22:10:25Z",
+  "published_at": "2021-03-09T22:11:49Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/fakeaccount/fakerepo/tarball/faketag",
+  "zipball_url": "https://api.github.com/repos/fakeaccount/fakerepo/zipball/faketag",
+  "body": "Fake release body.\n"
+}
