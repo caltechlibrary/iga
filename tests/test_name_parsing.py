@@ -8,32 +8,13 @@
 
 from collections import namedtuple
 from iga.name_utils import (
-    _cleaned_name,
     split_name,
-    flattened_name,
     is_person,
-    contains_cjk
 )
-
-
-def test_contains_cjk():
-    assert contains_cjk('偏右')
-    assert contains_cjk('王爵nice')
-    assert not contains_cjk('test')
-    assert not contains_cjk('éä')
-
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Name = namedtuple('Name', 'first last')
-
-RAW_NAMES = [
-    ('偏右', ''),
-    ('王爵nice', 'nice'),
-    ('勾三股四', ''),
-    ('TZ | 天猪', 'TZ'),
-    ('Mu-An ✌️ Chiou', 'Mu-An Chiou'),
-]
 
 # Some of these names came from the following gist accessed on 2023-01-17:
 # https://gist.github.com/paulmillr/2657075/a31455729440672467ada20ac10452d74a871e54
@@ -89,11 +70,6 @@ PARSED_NAMES = [
     ('ara.t.howard', Name(first='Ara T.', last='Howard')),
     # ('', Name(first='', last='')),
 ]
-
-
-def test_cleaned_name():
-    for original, cleaned in RAW_NAMES:
-        assert _cleaned_name(original) == cleaned
 
 
 def test_name_parsing():
