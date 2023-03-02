@@ -36,14 +36,14 @@ def test_mocking_repo(mocker):
     assert value.subscribers_count == 10
 
 
-def test_mocking_user(mocker):
-    user_file = path.join(HERE, 'data', 'github-examples', 'with-codemeta',
-                          'datacite', 'akita', 'user.json')
-    with open(user_file, 'r') as f:
-        user_json = json5.load(f)
+def test_mocking_account(mocker):
+    account_file = path.join(HERE, 'data', 'github-examples', 'with-codemeta',
+                             'datacite', 'akita', 'account.json')
+    with open(account_file, 'r') as f:
+        account_json = json5.load(f)
 
     mocked_function = mocker.patch("iga.github._object_for_github")
-    mocked_function.return_value = GitHubAccount(user_json)
+    mocked_function.return_value = GitHubAccount(account_json)
     value = mocked_function()
     assert isinstance(value, GitHubAccount)
     assert value.url == 'https://api.github.com/users/digitaldogsbody'
