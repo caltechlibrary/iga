@@ -1,4 +1,4 @@
-from iga.data_utils import deduplicated, similar_urls
+from iga.data_utils import deduplicated, similar_urls, without_html
 
 
 def test_deduplicated():
@@ -67,3 +67,8 @@ def test_similar_urls():
     assert similar_urls('https://foo.com/bar'  , 'https://foo.com/bar/')
     assert similar_urls('http://foo.com/bar/'  , 'https://foo.com/bar')
     assert similar_urls('http://foo.com/bar'   , 'https://foo.com/bar/')
+
+
+def test_without_html():
+    assert without_html('foo <i>bar</i>') == 'foo bar'
+    assert without_html('Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053\n') == 'Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053'
