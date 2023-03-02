@@ -37,3 +37,10 @@ __pycache__/
 .coverage
 *.tmp
 tests/*.log
+
+# Project-specific things to ignore:
+# .............................................................................
+
+build
+dist
+docs/_build
