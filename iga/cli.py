@@ -15,7 +15,7 @@ import sys
 from   sidetrack import set_debug, log
 
 from iga.exit_codes import ExitCode
-from iga.exceptions import GitHubError, InvenioRDMError, InternalError
+from iga.exceptions import GitHubError, InvenioRDMError
 from iga.github import valid_github_release_url, github_account_repo_tag
 from iga.invenio import invenio_write
 from iga.record import valid_record, record_for_release
@@ -51,7 +51,7 @@ def _config_debug(ctx, param, debug_dest):
     return debug_dest
 
 
-def _read_param_value(ctx, param, value, env_var, purpose):
+def _read_param_value(ctx, param, value, env_var, purpose, required=True):
     '''Handle reading a CLI argument.
 
     If a value is passed on the command line, the environment variable
@@ -65,25 +65,27 @@ def _read_param_value(ctx, param, value, env_var, purpose):
     program to exit.
     '''
     if ctx.params.get('url_or_tag', None) == 'help':
-        print_help_and_exit(ctx)
+        _print_help_and_exit(ctx)
     elif value:
         log(f'using {value} for the {purpose} passed on the command line')
         os.environ[env_var] = value
     elif env_var in os.environ:
         log(f'env var {env_var} is set; using it as the value for the {purpose}')
-    else:
+    elif required:
         opt = param.name.replace('_', '-')
-        alert(ctx, f'Cannot proceed without a value for the {purpose}. (Tip:'
-              f' use the `--{opt}` option or set the variable **{env_var}**.'
-              ' For more information, use the option `--help`.)')
+        _alert(ctx, f'Cannot proceed without a value for the {purpose}. (Tip:'
+               f' use the `--{opt}` option or set the variable **{env_var}**.'
+               ' For more information, use the option `--help`.)')
         sys.exit(int(ExitCode.bad_arg))
-    return os.environ[env_var]
+    else:
+        log(f'env var {env_var} not set')
+    return os.environ[env_var] if env_var in os.environ else None
 
 
 def _read_github_token(ctx, param, value):
     '''Read the file and set the environment variable GITHUB_TOKEN.'''
     return _read_param_value(ctx, param, value, 'GITHUB_TOKEN',
-                             'GitHub personal access token')
+                             'GitHub personal access token', required=False)
 
 
 def _read_invenio_token(ctx, param, value):
@@ -110,6 +112,53 @@ def _print_version_and_exit(ctx, param, value):
     sys.exit(int(ExitCode.success))
 
 
+def _print_help_and_exit(ctx):
+    '''Print the help text and exit with a success code.'''
+    click.echo(ctx.get_help())
+    sys.exit(int(ExitCode.success))
+
+
+def _alert(ctx, msg, print_usage=True):
+    '''Print an error message in the style of rich_click.
+    This is meant to be used when reporting errors involving UI options, in
+    situations where rich_click's own error reporting can't be used directly.'''
+    # The following code tries to emulate what rich_click does. It doesn't use
+    # private methods or properties, but it might break if rich_click changes.
+    log('error: ' + msg)
+    from rich.console import Console
+    from rich.markdown import Markdown
+    from rich.padding import Padding
+    from rich.panel import Panel
+    from rich.theme import Theme
+    from rich_click.rich_click import (
+        ALIGN_ERRORS_PANEL,
+        ERRORS_PANEL_TITLE,
+        STYLE_ERRORS_PANEL_BORDER,
+        STYLE_USAGE,
+        STYLE_OPTION,
+        STYLE_ARGUMENT,
+        STYLE_SWITCH,
+        OptionHighlighter,
+    )
+    highlighter = OptionHighlighter()
+    console = Console(theme=Theme({
+        "option": STYLE_OPTION,
+        "argument": STYLE_ARGUMENT,
+        "switch": STYLE_SWITCH,
+        "usage": STYLE_USAGE,
+    }), highlighter=highlighter)
+    if print_usage:
+        console.print(Padding(highlighter(ctx.get_usage()), 1))
+    console.print(
+        Panel(
+            Markdown(msg),
+            border_style=STYLE_ERRORS_PANEL_BORDER,
+            title=ERRORS_PANEL_TITLE,
+            title_align=ALIGN_ERRORS_PANEL,
+        )
+    )
+
+
 # Note #1: the default rich_click help feature does not offer a -h short form,
 # hence the need to use our own explicit help_option() definition below.
 #
@@ -129,16 +178,16 @@ def _print_version_and_exit(ctx, param, value):
 @click.option('--file', '-f', 'given_files', metavar='FILE', multiple=True,
               help='File to upload (repeat for multiple files)')
 #
-@click.option('--github-account', '-a', metavar='STR',
+@click.option('--github-account', '-a', 'account', metavar='STR',
               help='GitHub account name (if not using a release URL)')
 #
-@click.option('--github-repo', '-r', metavar='STR',
+@click.option('--github-repo', '-r', 'repo', metavar='STR',
               help='GitHub repository name (if not using a release URL)')
 #
 @click.option('--github-token', '-g', metavar='STR', callback=_read_github_token,
               help="GitHub acccess token (avoid – use variable)")
 #
-@click.option('--invenio-server', '-s', metavar='URL', callback=_read_server,
+@click.option('--invenio-server', '-s', 'server', metavar='URL', callback=_read_server,
               help='InvenioRDM server address')
 #
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
@@ -155,10 +204,10 @@ def _print_version_and_exit(ctx, param, value):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, account=None, community=None, dry_run=False,
-        given_files=None, given_record=None, repo=None, server=None,
-        github_token=None, rdm_token=None,
-        help=False, version=False, debug=False):  # noqa A002
+def cli(ctx, url_or_tag, community=None, dry_run=False, given_files=None,
+        account=None, repo=None, github_token=None,
+        server=None, invenio_token=None,
+        given_record=None, help=False, version=False, debug=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 IGA retrieves a GitHub software release and archives it in an InvenioRDM
@@ -252,12 +301,12 @@ GitHub for any information.
 \r
 _**Other options recognized by IGA**_
 \r
+Running IGA with the option `--dry-run` will make it do the work of creating
+a metadata record and only print the record to the terminal, without sending
+an archive to the InvenioRDM server.
+\r
 Running IGA with the option `--help` will make it print help text and exit
 without doing anything else.
-\r
-Running IGA with the option `--dry-run` will make it do the work of creating
-a metadata record, but instead of creating an archive in the InvenioRDM server,
-it will only print the record to the terminal.
 \r
 If given the `--version` option, this program will print its version and other
 information, and exit without doing anything else.
@@ -279,25 +328,25 @@ possible values:
   4 = encountered a problem with a file or directory  
   5 = encountered a problem interacting with GitHub  
   6 = encountered a problem interacting with InvenioRDM  
-  7 = a miscellaneous exception or fatal error occurred  
+  7 = an exception or fatal error occurred  
 '''
     # Process arguments & handle early exits ..................................
 
     if url_or_tag == 'help':  # Detect if the user typed "help" without dashes.
-        print_help_and_exit(ctx)
+        _print_help_and_exit(ctx)
     elif url_or_tag.startswith('http'):
         if any([account, repo]):
-            alert(ctx, 'The use of a URL and the use of options `--account`'
-                  " and `--repo` are mutually exclusive; can't use both.")
+            _alert(ctx, 'The use of a URL and the use of options `--account`'
+                   " and `--repo` are mutually exclusive; can't use both.")
             sys.exit(int(ExitCode.bad_arg))
         elif not valid_github_release_url(url_or_tag):
-            alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+            _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
         else:
             account, repo, tag = github_account_repo_tag(url_or_tag)
     elif not all([account, repo, url_or_tag]):
-        alert(ctx, 'When not using a release URL, all of the following must be'
-              ' provided: the options `--account`, `--repo`, and a tag name.')
+        _alert(ctx, 'When not using a release URL, all of the following must be'
+               ' provided: the options `--account`, `--repo`, and a tag name.')
         sys.exit(int(ExitCode.bad_arg))
     else:
         tag = url_or_tag
@@ -307,12 +356,12 @@ possible values:
         log('reading user-provided record from ' + path)
         given_record = given_record.read().strip()
         if not valid_record(given_record):
-            alert(ctx, 'File not in valid JSON format for InvenioRDM: ' + path)
+            _alert(ctx, 'File not in valid JSON format for InvenioRDM: ' + path)
             sys.exit(int(ExitCode.file_error))
 
     from commonpy.network_utils import network_available
     if not network_available():
-        alert(ctx, 'No network; cannot proceed further.')
+        _alert(ctx, 'No network; cannot proceed further.')
         sys.exit(int(ExitCode.no_network))
 
     # Do the main work ........................................................
@@ -320,10 +369,15 @@ possible values:
     exit_code = ExitCode.success
     try:
         record = given_record or record_for_release(account, repo, tag)
-        if dry_run:
-            report_actions(ctx, record)
+        if record is None:
+            _alert(ctx, f'Could not get release "{tag}" for repository "{repo}"'
+                   f' under GitHub account "{account}". Please check that the'
+                   ' account, repository, and release all exist on GitHub and'
+                   ' that they are publicly accessible.')
+        elif dry_run:
+            _report_actions(ctx, record)
         else:
-            invenio_write(record, server, token)
+            invenio_write(record)
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
@@ -331,9 +385,11 @@ possible values:
     except GitHubError as ex:
         log('quitting due to GitHub error: ' + str(ex))
         exit_code = ExitCode.github_error
+        _alert(ctx, 'Encountered GitHub error: ' + ex.args[0], False)
     except InvenioRDMError as ex:
         log('quitting due to InvenioRDM error: ' + str(ex))
         exit_code = ExitCode.inveniordm_error
+        _alert(ctx, 'Encountered InvenioRDM error: ' + ex.args[0], False)
     except Exception as ex:             # noqa: PIE786
         exit_code = ExitCode.exception
         import traceback
@@ -341,10 +397,10 @@ possible values:
         details = ''.join(traceback.format_exception(*exception))
         log('exception: ' + str(ex) + '\n\n' + details)
         import iga
-        alert(ctx, 'IGA experienced an unrecoverable error. Please report this'
-              f' to the developers. Your version of IGA is {iga.__version__}.'
-              f' For information about how to report errors, please see the'
-              f' project page at {iga.__url__}/.\n\nError text: {str(ex)}', False)
+        _alert(ctx, 'IGA experienced an unrecoverable error. Please report this'
+               f' to the developers. Your version of IGA is {iga.__version__}.'
+               f' For information about how to report errors, please see the'
+               f' project page at {iga.__url__}/.\n\nError text: {str(ex)}', False)
 
     # Exit with status code ...................................................
 
@@ -355,13 +411,7 @@ possible values:
 # Helper functions used above.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def print_help_and_exit(ctx):
-    '''Print the help text and exit with a success code.'''
-    click.echo(ctx.get_help())
-    sys.exit(int(ExitCode.success))
-
-
-def report_actions(ctx, record):
+def _report_actions(ctx, record):
     from rich.console import Console
     from rich.markdown import Markdown
     from rich.panel import Panel
@@ -380,44 +430,3 @@ def report_actions(ctx, record):
         )
     )
     print_json(data=record)
-
-
-def alert(ctx, msg, print_usage=True):
-    '''Print an error message in the style of rich_click.
-    This is meant to be used when reporting errors involving UI options, in
-    situations where rich_click's own error reporting can't be used directly.'''
-    # The following code tries to emulate what rich_click does. It doesn't use
-    # private methods or properties, but it might break if rich_click changes.
-    log('error: ' + msg)
-    from rich.console import Console
-    from rich.markdown import Markdown
-    from rich.padding import Padding
-    from rich.panel import Panel
-    from rich.theme import Theme
-    from rich_click.rich_click import (
-        ALIGN_ERRORS_PANEL,
-        ERRORS_PANEL_TITLE,
-        STYLE_ERRORS_PANEL_BORDER,
-        STYLE_USAGE,
-        STYLE_OPTION,
-        STYLE_ARGUMENT,
-        STYLE_SWITCH,
-        OptionHighlighter,
-    )
-    highlighter = OptionHighlighter()
-    console = Console(theme=Theme({
-        "option": STYLE_OPTION,
-        "argument": STYLE_ARGUMENT,
-        "switch": STYLE_SWITCH,
-        "usage": STYLE_USAGE,
-    }), highlighter=highlighter)
-    if print_usage:
-        console.print(Padding(highlighter(ctx.get_usage()), 1))
-    console.print(
-        Panel(
-            Markdown(msg),
-            border_style=STYLE_ERRORS_PANEL_BORDER,
-            title=ERRORS_PANEL_TITLE,
-            title_align=ALIGN_ERRORS_PANEL,
-        )
-    )
