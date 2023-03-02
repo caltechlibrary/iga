@@ -154,14 +154,20 @@ CV_NAMES = {'crr'   : 'creator-roles',
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def record_for_release(account, repo, tag):
+def record_for_release(account_name, repo_name, tag_name):
     '''Return the "metadata" part of an InvenioRDM record.
 
-    Data is gathered from the GitHub release identified by "tag" in the
-    repository "repo" of the given GitHub "account".
+    Data is gathered from the GitHub release identified by "tag_name" in the
+    repository "repo_name" of the given GitHub "account_name".
     '''
-    release = github_release(account, repo, tag)
-    repo = github_repo(account, repo)
+    repo = github_repo(account_name, repo_name)
+    if not repo:
+        log(f'could not get repo {repo_name} under account {account_name}')
+        return None
+    release = github_release(account_name, repo_name, tag_name)
+    if not release:
+        log(f'could not get release {tag_name} for repo {repo_name} of {account_name}')
+        return None
 
     # We use codemeta.json & CITATION.cff often. Get them now & augment the
     # repo object with them so that field extraction functions can access them.
