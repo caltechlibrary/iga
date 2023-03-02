@@ -9,7 +9,7 @@ file "LICENSE" for more information.
 '''
 
 from   commonpy.network_utils import net
-import json5
+import json
 import os
 from   sidetrack import log
 from   types import SimpleNamespace
@@ -24,7 +24,7 @@ class GitHubRelease(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub release JSON object.'''
     def __init__(self, release_dict):
         super().__init__(**release_dict)
-        log('GitHub release data: ' + json5.dumps(release_dict, indent=2))
+        log('GitHub release data: ' + json.dumps(release_dict, indent=2))
         self.author = GitHubAccount(release_dict['author'])
         # First, do in-place conversion of the 'uploader' field (a dict) ...
         for asset in self.assets:
@@ -43,7 +43,7 @@ class GitHubRepo(SimpleNamespace):
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
         self.owner = GitHubAccount(repo_dict['owner'])
-        log('GitHub repo data: ' + json5.dumps(repo_dict, indent=2))
+        log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
         if repo_dict.get('organization', None):
             self.organization = GitHubAccount(repo_dict['organization'])
         if repo_dict.get('license', None):
@@ -56,7 +56,7 @@ class GitHubAccount(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub user or org account.'''
     def __init__(self, user_dict):
         super().__init__(**user_dict)
-        log('GitHub user data: ' + json5.dumps(user_dict, indent=2))
+        log('GitHub user data: ' + json.dumps(user_dict, indent=2))
         # Save the original data for debugging purposes.
         self._json_dict = user_dict
 
@@ -114,7 +114,7 @@ def github_repo_filenames(repo):
     if not response:
         log(f'did not get a list of file names for {repo}')
         return []
-    json_dict = json5.loads(response.text)
+    json_dict = json.loads(response.text)
     files = [GitHubFile(data) for data in json_dict['tree']]
     log(f'found {len(files)} files in repo')
     # Cache the results on the repo object, so we don't have to recompute it.
@@ -136,7 +136,7 @@ def github_repo_file(repo, filename):
     if not response:
         log(f'got no content for file {filename} or it does not exist')
         return ''
-    json_dict = json5.loads(response.text)
+    json_dict = json.loads(response.text)
     if json_dict['encoding'] != 'base64':
         log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
         raise InternalError('Unimplemented file encoding ' + json_dict['encoding'])
@@ -157,7 +157,7 @@ def github_repo_languages(repo):
     if not response:
         log(f'got no content for list of languages for repo {repo}')
         return ''
-    json_dict = json5.loads(response.text)
+    json_dict = json.loads(response.text)
     languages = json_dict.keys() if json_dict else []
     log(f'GitHub lists {len(languages)} languages for the repo')
     return languages
@@ -172,7 +172,7 @@ def github_repo_contributors(repo):
         return []
     # The JSON data is a list containing a kind of minimal user info dict.
     contributors = []
-    for user_dict in json5.loads(response.text):
+    for user_dict in json.loads(response.text):
         contributors.append(github_account(user_dict['login']))
     log(f'repo has {len(contributors)} contributors')
     return contributors
@@ -211,7 +211,7 @@ def _object_for_github(api_url, cls):
     log(f'unpacking JSON into object structure from {api_url}')
     try:
         # Create the desired object & add the api url in case it's needed later.
-        obj = cls(json5.loads(response.text))
+        obj = cls(json.loads(response.text))
         obj.api_url = api_url
         return obj
     except Exception as ex:

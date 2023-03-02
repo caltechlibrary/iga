@@ -136,13 +136,13 @@ def doi_from_pubmed(pub_id, scheme):
         log(f'returning cached DOI for {pub_id}: ' + cached)
         return cached
 
-    import json5
+    import json
     log(f'looking up DOI for {pub_id} using NCBI idconv')
     base = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json'
     (response, error) = net('get', base + '&ids=' + pub_id)
     if not error:
         try:
-            data = json5.loads(response.text)
+            data = json.loads(response.text)
             if records := data.get('records', []):
                 if doi := records[0].get('doi', ''):
                     log(f'got DOI {doi} for {pub_id}')
