@@ -1,7 +1,25 @@
-from iga.data_utils import deduplicated, similar_urls, without_html
+# =============================================================================
+# @file    test_data_utils.py
+# @brief   Py.test cases for parts of data_utils.py
+# @created 2023-03-02
+# @license Please see the file named LICENSE in the project directory
+# @website https://github.com/caltechlibrary/iga
+# =============================================================================
+
+from typing import Generator
+from iga.data_utils import (
+    deduplicated,
+    listified,
+    similar_urls,
+    without_html,
+    cleaned_text
+)
 
 
 def test_deduplicated():
+    assert deduplicated([]) == []
+    assert deduplicated('') == []
+
     a = {'a': 1, 'b': 2, 'c': 3}
     assert deduplicated(a) == a
     assert deduplicated([a]) == [a]
@@ -69,6 +87,29 @@ def test_similar_urls():
     assert similar_urls('http://foo.com/bar'   , 'https://foo.com/bar/')
 
 
+def test_lisitifed():
+    assert listified([]) == []
+    assert listified('') == []
+    assert listified('a') == ['a']
+    assert listified('a b') == ['a b']
+    assert listified(['a']) == ['a']
+    assert listified(['a', 'b']) == ['a', 'b']
+    assert isinstance(listified(x for x in ['a', 'b']), Generator)
+
+
+def test_cleaned_text():
+    assert cleaned_text('') == ''
+    assert cleaned_text('a  b') == 'a b'
+    assert cleaned_text('a.b. jones') == 'a. b. jones'
+    assert cleaned_text('A.B. jones') == 'A. B. jones'
+    assert cleaned_text('a\nb') == 'a b'
+    assert cleaned_text('a\t b') == 'a b'
+    assert cleaned_text('some text.') == 'some text.'
+
+
 def test_without_html():
+    assert without_html('') == ''
+    assert without_html('a') == 'a'
+    assert without_html('this has no html') == 'this has no html'
     assert without_html('foo <i>bar</i>') == 'foo bar'
     assert without_html('Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053\n') == 'Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053'
