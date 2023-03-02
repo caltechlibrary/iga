@@ -11,6 +11,7 @@ file "LICENSE" for more information.
 from commonpy.network_utils import net
 from sidetrack import log
 
+from iga.doi import doi_for_publication
 from iga.id_utils import recognized_scheme
 
 
@@ -65,7 +66,7 @@ def reference_from_doi(doi):
         log(f'returning cached reference for {doi}: ' + cached)
         return cached
 
-    log(f'asking Crossref for metadata about {doi}')
+    log(f'asking Crossref for formatted reference for {doi}')
     doi_url = 'https://doi.org/' + doi
     headers = {'accept': 'text/x-bibliography; style=apa'}
     (response, error) = net('get', doi_url, headers=headers)
@@ -110,53 +111,3 @@ def reference_from_bibtex(bibtex_string):
     # only one, so just do a next() after creating an iterator out of it.
     formatted_item = next(iter(formatted_bib))
     return formatted_item.text.render(plain_text)
-
-
-def doi_for_publication(pub_id, scheme=None):
-    '''Given a publication id, try to get a corresponding DOI.'''
-    scheme = recognized_scheme(pub_id) if not scheme else scheme
-    if scheme == 'doi':
-        return pub_id
-    elif scheme == 'arxiv':
-        # As of this time, not all publications in arXiv have DOIs, but I
-        # believe they're being back-filled, so hopefully, eventually all will.
-        doi = '10.48550/' + pub_id.replace(':', '.')
-        log(f'converting {pub_id} into DOI {doi}')
-        return doi
-    elif scheme in ['pmcid', 'pmid']:
-        return doi_from_pubmed(pub_id, scheme)
-    else:
-        log(f'DOI requested for unsupported scheme ({scheme}): ' + pub_id)
-    return ''
-
-
-def doi_from_pubmed(pub_id, scheme):
-    '''Return a DOI for a PMCID or PMID by contacting PubMed.'''
-    global _CACHE
-    if pub_id in _CACHE:
-        cached = _CACHE[pub_id]
-        log(f'returning cached DOI for {pub_id}: ' + cached)
-        return cached
-
-    import json
-    log(f'looking up DOI for {pub_id} using NCBI idconv')
-    base = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json'
-    (response, error) = net('get', base + '&ids=' + pub_id)
-    if not error:
-        try:
-            data = json.loads(response.text)
-            if records := data.get('records', []):
-                if doi := records[0].get('doi', ''):
-                    log(f'got DOI {doi} for {pub_id}')
-                    _CACHE[pub_id] = doi
-                    return doi
-                elif errmsg := records[0].get('errmsg', ''):
-                    log(f'NCBI returned an error for {pub_id}: ' + errmsg)
-                    _CACHE[pub_id] = ''
-                    return ''
-        except (TypeError, ValueError) as ex:
-            log(f'unable to parse data from NCBI for {pub_id}: ' + str(ex))
-            return ''
-    else:
-        log(f'error trying to get DOI for {pub_id}: ' + str(error))
-        return ''
