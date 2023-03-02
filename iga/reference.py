@@ -85,6 +85,10 @@ def reference_from_doi(doi):
 
 def reference_from_bibtex(bibtex_string):
     '''Give a string containing a BibTeX entry, return an APA-style reference.'''
+    from pybtex.plugin import find_plugin
+    from pybtex.database import parse_string
+    import latexcodec                   # noqa F401
+
     # Cache the results of these plugin lookups for greater efficiency.
     global _CACHE
     if 'apa_style' in _CACHE:
@@ -92,8 +96,6 @@ def reference_from_bibtex(bibtex_string):
         plain_text = _CACHE['plain_text']
     else:
         log('loading pybtex plugins')
-        from pybtex.plugin import find_plugin
-        from pybtex.database import parse_string
 
         # This requires pip install pybtex-apa7-style.
         apa_style = find_plugin('pybtex.style.formatting', 'apa7')()
