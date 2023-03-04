@@ -9,6 +9,7 @@ file "LICENSE" for more information.
 '''
 
 from   commonpy.network_utils import net
+import functools
 import json
 import os
 from   sidetrack import log
@@ -202,10 +203,24 @@ def valid_github_release_url(release_url):
             and split_url[5] == 'releases'
             and split_url[6] == 'tag')
 
+
+def probable_bot(account):
+    '''Return True if this account is probably a bot.
+
+    Bot accounts on GitHub are supposed to have an explicit type value of "bot"
+    but it turns out there are bots that don't have their account type set
+    properly. This function tries to guess if an account is a bot based on
+    its type and its name.
+    '''
+    if not account:
+        return False
+    return account.type == 'Bot' or account.name.lower().endswith('bot')
+
 
 # Helper functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+@functools.cache
 def _object_for_github(api_url, cls):
     '''Return object of class cls made from the data obtained from the API url.'''
     response = _github_get(api_url)
