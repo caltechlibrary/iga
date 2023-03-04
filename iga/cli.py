@@ -51,7 +51,7 @@ def _config_debug(ctx, param, debug_dest):
     return debug_dest
 
 
-def _read_param_value(ctx, param, value, env_var, purpose, required=True):
+def _read_param_value(ctx, param, value, env_var, thing, required=True):
     '''Handle reading a CLI argument.
 
     If a value is passed on the command line, the environment variable
@@ -67,13 +67,13 @@ def _read_param_value(ctx, param, value, env_var, purpose, required=True):
     if ctx.params.get('url_or_tag', None) == 'help':
         _print_help_and_exit(ctx)
     elif value:
-        log(f'using {value} for the {purpose} passed on the command line')
+        log(f'using CLI {param} value for the {thing}')
         os.environ[env_var] = value
     elif env_var in os.environ:
-        log(f'env var {env_var} is set; using it as the value for the {purpose}')
+        log(f"using env variable {env_var}'s value as the {thing}")
     elif required:
         opt = param.name.replace('_', '-')
-        _alert(ctx, f'Cannot proceed without a value for the {purpose}. (Tip:'
+        _alert(ctx, f'Cannot proceed without a value for the {thing}. (Tip:'
                f' use the `--{opt}` option or set the variable **{env_var}**.'
                ' For more information, use the option `--help`.)')
         sys.exit(int(ExitCode.bad_arg))

@@ -28,7 +28,7 @@ them in https://github.com/citation-file-format/cff-converter-python/issues/4:
 
 Since the use of InvenioRDM is more about archiving repository code than about
 citing software, the code below looks for and uses codemeta.json first,
-followed by CITATION.cff if a codemeta file can't be found.
+followed by CITATION.cff if a CodeMeta file can't be found.
 
 Copyright (c) 2022 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
@@ -37,6 +37,7 @@ file "LICENSE" for more information.
 
 import arrow
 from   commonpy.data_structures import CaseFoldSet
+from   commonpy.data_utils import pluralized
 import json5
 from   sidetrack import log
 import sys
@@ -154,19 +155,19 @@ CV_NAMES = {'crr'   : 'creator-roles',
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def record_for_release(account_name, repo_name, tag_name):
+def record_for_release(account_name, repo_name, tag):
     '''Return the "metadata" part of an InvenioRDM record.
 
-    Data is gathered from the GitHub release identified by "tag_name" in the
+    Data is gathered from the GitHub release identified by "tag" in the
     repository "repo_name" of the given GitHub "account_name".
     '''
     repo = github_repo(account_name, repo_name)
     if not repo:
         log(f'could not get repo {repo_name} under account {account_name}')
         return None
-    release = github_release(account_name, repo_name, tag_name)
+    release = github_release(account_name, repo_name, tag)
     if not release:
-        log(f'could not get release {tag_name} for repo {repo_name} of {account_name}')
+        log(f'could not get release {tag} for repo {repo_name} of {account_name}')
         return None
 
     # We use codemeta.json & CITATION.cff often. Get them now & augment the
@@ -192,14 +193,17 @@ def record_for_release(account_name, repo_name, tag_name):
 
     _load_vocabularies()
 
-    # Make the metadata dict by iterating over the names in FIELDS and calling
-    # the function of that name defined in this (module) file.
-    module = sys.modules[__name__]
-
-    def field_function(field):
-        return getattr(module, field)(repo, release)
-
-    metadata = {field: field_function(field) for field in FIELDS}
+    # The metadata dict is created by iterating over the names in FIELDS and
+    # calling each function of that name defined in this (module) file.
+    metadata = {}
+    this_module = sys.modules[__name__]
+    for field in FIELDS:
+        log(f'constructing field "{field}"')
+        value = getattr(this_module, field)(repo, release)
+        metadata[field] = value
+        count = 1 if (value and isinstance(value, (str, dict))) else len(value)
+        log(f'finished field "{field}" with {pluralized("item", count, True)}')
+    log('done constructing metadata record')
     return {"metadata": metadata}
 
 
@@ -240,46 +244,53 @@ def additional_descriptions(repo, release):
     descriptions = []
 
     # We don't want to reuse the text that we put in the InvenioRDM description
-    # field, hence the need for the logic that follows.
-    main_desc = description(repo, release)
+    # field, hence the need to compare to this value in the code that follows.
+    main_desc = description(repo, release, internal_call=True)
 
     # Add the release notes if we didn't use that as the main description.
     rel_notes = repo.codemeta.get('releaseNotes', '').strip()
     if rel_notes and rel_notes != main_desc and not rel_notes.startswith('http'):
+        log('adding CodeMeta "releaseNotes" as additional description')
         descriptions.append({'description': rel_notes,
                              'type': {'id': 'other',
                                       'title': {'en': 'Other'}}})
 
-    # Add one of Codemeta's "description", CFF's "abstract", or the GitHub repo
+    # Add one of CodeMeta's "description", CFF's "abstract", or the GitHub repo
     # description if we didn't that as the main description. These are listed
-    # as equivalent by the Codemeta crosswalk. If more than one is set, it's
+    # as equivalent by the CodeMeta crosswalk. If more than one is set, it's
     # likely that they're all similar anyway, so add only one of them.
     #
     # Note #1: we could use a string distance measure (e.g., Levenshtein) to
     # evaluate the values really are different and add them individually if
-    # they are not too similar. However, finding a threshold that works for all
-    # cases would be difficult if not impossible, and it would still risk that
-    # the values essentially say the same thing using different words. There
-    # seems to be little value in adding all 3, especially since they describe
-    # the software as a whole and not the release per se. Adding one is enough.
+    # they are not too similar. However, finding a threshold that works for
+    # all cases would be difficult, and it would still risk that some values
+    # essentially say the same thing using different words. There seems to be
+    # little value in adding all 3 fields, especially since they describe the
+    # software as a whole and not the release per se. Adding one is enough.
     #
     # Note #2: the fact that DataCite offers a description type of "abstract"
     # makes it tempting to use that for the CFF "abstract" field, but IMHO that
     # would be wrong because CFF's definition of "abstract" is that it's "a
     # description of the software or dataset" -- in other words, the same kind
-    # of text as the other fields. Thus, we should use the same type value.
-    text = (repo.codemeta.get('description', '')
-            or repo.cff.get('abstract', '')
-            or repo.description)
+    # of text as the other fields. Thus, we should use the same type value here.
+    value_name = ''
+    if text := repo.codemeta.get('description', ''):
+        value_name = 'CodeMeta "description"'
+    elif text := repo.cff.get('abstract', ''):
+        value_name = 'CFF "abstract"'
+    elif text := repo.description:
+        value_name = 'GitHub repo "description"'
     text = text.strip()
     if text != main_desc:
+        log(f'adding {value_name} as an additional description')
         descriptions.append({'description': text,
                              'type': {'id': 'other',
                                       'title': {'en': 'Other'}}})
 
-    # Codemeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
+    # CodeMeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
     # say "For software description, this may include a readme.txt ...".)
     if readme := repo.codemeta.get('readme', '').strip():
+        log('adding CodeMeta "readme" as additional description')
         if readme.startswith('http'):
             readme = f'Additional information is available at {readme}'
         descriptions.append({'description': readme,
@@ -294,10 +305,11 @@ def additional_titles(repo, release):
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
     '''
     # The main title for the InvenioRDM record is made using the repo name
-    # and release tag. Here we add things from Codemeta and CFF.
+    # and release tag. Here we add things from CodeMeta and CFF.
 
     titles = []
     if name := repo.codemeta.get('name', ''):
+        log('adding CodeMeta "name" as additional title')
         titles.append({'title': cleaned_text(name),
                        'type': {'id': 'alternative-title',
                                 'title': {'en': 'Alternative Title'}},
@@ -306,6 +318,7 @@ def additional_titles(repo, release):
 
     title = repo.cff.get('title', '')
     if title and title.strip() != repo.codemeta.get('name', '').strip():
+        log('adding CFF "title" as additional title')
         titles.append({'title': cleaned_text(title),
                        'type': {'id': 'alternative-title',
                                 'title': {'en': 'Alternative Title'}},
@@ -322,47 +335,58 @@ def contributors(repo, release):
 
     # CFF's contact field is defined as a single object.
     if contact := repo.cff.get('contact', {}):
+        log('adding CFF "contact" value(s) as contributor(s)')
         contributors.append(_entity(contact, role='contactperson'))
 
-    # Codemeta's "sponsor" is a person or org, but people might use a list.
+    # CodeMeta's "sponsor" is a person or org, but people might use a list.
     for sponsor in listified(repo.codemeta.get('sponsor', {})):
+        log('adding CodeMeta "sponsor" value(s) as contributor(s)')
         contributors.append(_entity(sponsor, role='sponsor'))
 
-    # Codemeta's "producer" is a person or org, but people might use a list.
+    # CodeMeta's "producer" is a person or org, but people might use a list.
     for producer in listified(repo.codemeta.get('producer', {})):
+        log('adding CodeMeta "producer" value(s) as contributor(s)')
         contributors.append(_entity(producer, role='producer'))
 
-    # Codemeta's "editor" is a person or org, but people might use a list.
+    # CodeMeta's "editor" is a person or org, but people might use a list.
     for editor in listified(repo.codemeta.get('editor', {})):
+        log('adding CodeMeta "editor" value(s) as contributor(s)')
         contributors.append(_entity(editor, role='editor'))
 
-    # Codemeta's "copyrightHolder" is a person or org, but ... oh you know.
+    # CodeMeta's "copyrightHolder" is a person or org, but ... oh you know.
     for copyrightHolder in listified(repo.codemeta.get('copyrightHolder', {})):
+        log('adding CodeMeta "copyrightHolder" value(s) as contributor(s)')
         contributors.append(_entity(copyrightHolder, role='rightsholder'))
 
-    # Codemeta's "maintainer" is person or org, but people often use a list.
+    # CodeMeta's "maintainer" is person or org, but people often use a list.
     # InvenioRDM roles lack an explicit term for maintainer, so we use "other".
     for maintainer in listified(repo.codemeta.get('maintainer', {})):
+        log('adding CodeMeta "maintainer" value(s) as contributor(s)')
         contributors.append(_entity(maintainer, role='other'))
 
     # InvenioRDM lacks an explicit term for "provider", so we use "other"
     for provider in listified(repo.codemeta.get('provider', {})):
+        log('adding CodeMeta "provider" value(s) as contributor(s)')
         contributors.append(_entity(provider, role='other'))
 
-    # Both codemeta & cff files may have lists of contributors. Give priority
-    # to codemeta. Comparing names is error-prone and we can't reliably detect
+    # Both CodeMeta & cff files may have lists of contributors. Give priority
+    # to CodeMeta. Comparing names is error-prone and we can't reliably detect
     # duplicates, so use only one or the other, not both.
-    contribs = (listified(repo.codemeta.get('contributor', []))
-                or repo.cff.get('contributors', []))
+    if contribs := listified(repo.codemeta.get('contributor', [])):
+        log('adding CodeMeta "contributor" value(s) as contributor(s)')
+    elif contribs := repo.cff.get('contributors', []):
+        log('adding CFF "contributor" value(s) as contributor(s)')
     for contributor in contribs:
         role = 'other'
         if matched := _cv_match('contributor-roles', contributor.get('role', '')):
             role = matched
         contributors.append(_entity(contributor, role=role))
 
-    # If neither Codemeta nor CFF contain contributors, use the repo's, if any.
+    # If neither CodeMeta nor CFF contain contributors, use the repo's, if any.
     if not contribs:
-        for account in github_repo_contributors(repo):
+        if repo_contributors := github_repo_contributors(repo):
+            log('adding GitHub repo contributors list as contributor(s)')
+        for account in repo_contributors:
             if account.type == 'Bot':
                 continue
             contributors.append({'person_or_org': _identity_from_github(account),
@@ -393,15 +417,22 @@ def creators(repo, release):
     '''Return InvenioRDM "creators".
     https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     '''
-    # Codemeta & CFF files contain more complete author info than the GitHub
+    # CodeMeta & CFF files contain more complete author info than the GitHub
     # release data, so try them 1st.
-    if authors := (listified(repo.codemeta.get('author', []))
-                   or repo.cff.get('author', [])):
+    if authors := listified(repo.codemeta.get('author', [])):
+        log('adding CodeMeta "author" name(s) as creator(s)')
+    elif authors := repo.cff.get('author', []):
+        log('adding CFF "author" name(s) as creator(s)')
+    if authors:
         return deduplicated(_entity(x) for x in authors)
 
     # Couldn't get authors from codemeta.json or CITATION.cff. Try the release
     # author first, followed by the repo owner.
-    if identity := (_release_author(release) or _repo_owner(repo)):
+    if identity := _release_author(release):
+        log('adding GitHub release author name as creator(s)')
+    elif identity := _repo_owner(repo):
+        log('adding GitHub repo owner name as creator(s)')
+    if identity:
         return [identity]
 
     # A release in InvenioRDM can't be made without author data.
@@ -414,15 +445,21 @@ def dates(repo, release):
     '''
     dates = []
 
-    # Codemeta has a "dateCreated" field, which the codemeta crosswalk equates
+    # CodeMeta has a "dateCreated" field, which the CodeMeta crosswalk equates
     # to the GitHub repo "created_at" date.
-    created_date = repo.codemeta.get('dateCreated', '') or repo.created_at
+    if created_date := repo.codemeta.get('dateCreated', ''):
+        log('adding the CodeMeta "dateCreated" as the "created" date')
+    elif created_date := repo.created_at:
+        log('adding the GitHub repo "created_at" as the "created" date')
     dates.append({'date': arrow.get(created_date).format('YYYY-MM-DD'),
                   'type': {'id': 'created', 'title': {'en': 'Created'}}})
 
-    # Codemeta has a "dateModified" field, which the codemeta crosswalk equates
+    # CodeMeta has a "dateModified" field, which the CodeMeta crosswalk equates
     # to the GitHub repo "updated_at" date.
-    mod_date = repo.codemeta.get('dateModified', '') or repo.updated_at
+    if mod_date := repo.codemeta.get('dateModified', ''):
+        log('adding the CodeMeta "dateModified" as the "updated" date')
+    elif mod_date := repo.updated_at:
+        log('adding the GitHub repo "updated_at" date as the "updated" date')
     dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
                   'type': {'id': 'updated', 'title': {'en': 'Updated'}}})
 
@@ -431,17 +468,19 @@ def dates(repo, release):
     pub_date = publication_date(repo, release)
     github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
     if pub_date != github_date:
+        log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
                       'type': {'id': 'available', 'title': {'en': 'Available'}}})
 
-    # Codemeta has a "copyrightYear", but there's no equivalent elsewhere.
+    # CodeMeta has a "copyrightYear", but there's no equivalent elsewhere.
     if copyrighted := repo.codemeta.get('copyrightYear', ''):
+        log('adding the CodeMeta "copyrightYear" date as the "copyrighted" date')
         dates.append({'date': arrow.get(copyrighted).format('YYYY-MM-DD'),
                       'type': {'id': 'copyrighted', 'title': {'en': 'Copyrighted'}}})
     return dates
 
 
-def description(repo, release):
+def description(repo, release, internal_call=False):
     '''Return InvenioRDM "description".
     https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
     '''
@@ -452,30 +491,38 @@ def description(repo, release):
     # through the API is empty. There doesn't seem to be a way to get the text
     # shown by GitHub in those cases, so we try other alternatives after this.
     if release.body:
+        log('adding GitHub release body text as "description"')
         return release.body.strip()
 
-    # Codemeta releaseNotes can be either text or a URL. If it's a URL, it
+    # CodeMeta releaseNotes can be either text or a URL. If it's a URL, it
     # often points to a NEWS or ChangeLog or similar file in their repo.
     # Those files often describe every release ever made, and that just
     # doesn't work well for the purposes of an InvenioRDM record description.
     if rel_notes := repo.codemeta.get('releaseNotes', '').strip():
         if not rel_notes.startswith('http'):
+            log('adding CodeMeta "releaseNotes" as "description"')
             return rel_notes
         else:
-            log('codemeta has releaseNotes in the form of a URL -- skipping')
+            log('CodeMeta has releaseNotes in the form of a URL -- skipping')
 
-    # Codemeta's "description" & CFF's "abstract" (which the Codemeta crosswalk
+    # CodeMeta's "description" & CFF's "abstract" (which the CodeMeta crosswalk
     # maps as equivalent) and GitHub's repo "description" field refer to the
     # software or dataset overall, not specifically to the release. Still, if
     # there's nothing else, it seems better to use this instead of leaving an
     # empty description in the record.
-    if text := (repo.codemeta.get('description', '')
-                or repo.cff.get('abstract', '')
-                or repo.description):
+    value_name = ''
+    if text := repo.codemeta.get('description', ''):
+        value_name = 'CodeMeta "description"'
+    elif text := repo.cff.get('abstract', ''):
+        value_name = 'CFF "abstract"'
+    elif text := repo.description:
+        value_name = 'GitHub repo "description"'
+    if text:
+        log(f'adding {value_name} as "description"')
         return text.strip()
 
     # Bummer.
-    log('could not find a description')
+    log('could not find a usable value for the "description" field')
     return ''
 
 
@@ -499,7 +546,7 @@ def funding(repo, release):
     '''
     # InvenioRDM funding references must have funder; award info is optional.
 
-    # CITATION.cff doesn't have anything for funding currently.
+    # CITATION.cff doesn't have anything for funding currently, nor does GitHub.
     # codemeta.json has "funding" & "funder": https://codemeta.github.io/terms/.
     # Sometimes people mistakenly put funder info inside the "funding" items.
     funding_field = repo.codemeta.get('funding', '')
@@ -510,6 +557,7 @@ def funding(repo, release):
     not_avail = ['n/a', 'not available']
     for item in listified(funding_field):
         if isinstance(item, str) and any(t in item.lower() for t in not_avail):
+            log('CodeMeta "funding" has a value but it says "not available"')
             return []
 
     # Funder is supposed to be a single item (a dict), but I've seen people use
@@ -528,7 +576,9 @@ def funding(repo, release):
     # funding values, we have no way to match up funders to funding, so we have
     # to bail. However, InvenioRDM does allow a list of only funders.
     if len(funder_tuples) > 1:
+        log('CodeMeta "funder" has multiple values')
         if not funding_field:
+            log('using CodeMeta "funder" values to build "funding" field')
             return [_funding(funder, fid) for (funder, fid) in funder_tuples]
         else:
             log('cannot handle list of funders with separate funding values')
@@ -536,6 +586,8 @@ def funding(repo, release):
 
     # If we get here, we don't have more than one funder/funder_id.
     funder, funder_id = funder_tuples[0] if funder_tuples else ('', '')
+    if funder and funding_field:
+        log('using CodeMeta "funding" and "funder" to build "funding" field')
 
     # The correct funding data type is text. Sometimes people use lists or dict.
     results = []
@@ -566,7 +618,7 @@ def funding(repo, release):
                     item_funder = fun
                 elif isinstance(fun, dict):
                     item_funder, item_funder_id = _parsed_funder_info(fun)
-            # If there's an overall funder name in the codemeta file & this
+            # If there's an overall funder name in the CodeMeta file & this
             # item also has its own funder name, use this item's value.
             item_funder = item_funder or funder
             item_funder_id = item_funder_id or funder_id
@@ -586,10 +638,13 @@ def identifiers(repo, release):
     DataCite."
     '''
     identifiers = []
-    # Codemeta's "identifier" can be a URL, text or dict. CFF's "identifiers"
+    # CodeMeta's "identifier" can be a URL, text or dict. CFF's "identifiers"
     # can be an array of dict. Make lists out of all of them & iterate.
-    for item in (listified(repo.codemeta.get('identifier', []))
-                 + repo.cff.get('identifiers', [])):
+    if cm_ids := listified(repo.codemeta.get('identifier', [])):
+        log('using CodeMeta "identifier" value(s) for "identifiers" field')
+    if cff_ids := repo.cff.get('identifiers', []):
+        log('using CFF "identifier" value(s) for "identifiers" field')
+    for item in cm_ids + cff_ids:
         if isinstance(item, str):
             kind = recognized_scheme(item)
             if kind in CV['identifier-types']:
@@ -612,6 +667,7 @@ def languages(repo, release):
     https://inveniordm.docs.cern.ch/reference/metadata/#languages-0-n
     '''
     # GitHub doesn't provide a way to deal with any other human language.
+    log('adding "eng" to "languages"')
     return [{"id": "eng", 'title': {'en': 'English'}}]
 
 
@@ -619,6 +675,7 @@ def locations(repo, release):
     '''Return InvenioRDM "locations".
     https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
     '''
+    log('adding empty "location"')
     return []
 
 
@@ -628,11 +685,15 @@ def publication_date(repo, release):
     '''
     # InvenioRDM's publication_date is the date "when the resource was made
     # available". GitHub's release date is not necessarily the same -- someone
-    # might do a release retroactively. So instead, we first try codemeta's
+    # might do a release retroactively. So instead, we first try CodeMeta's
     # "datePublished", then CFF's "date-released", and finally the GitHub date.
-    date = (repo.codemeta.get('datePublished', '')
-            or repo.cff.get('date-released', '')
-            or release.published_at)
+    if date := repo.codemeta.get('datePublished', ''):
+        log('adding CodeMeta "datePublished" as "publication_date"')
+    elif date := repo.cff.get('date-released', ''):
+        log('adding CFF "date-released" as "publication_date"')
+    else:
+        date = release.published_at
+        log('adding GitHub repo "published_at" as "publication_date"')
     return arrow.get(date).format('YYYY-MM-DD')
 
 
@@ -640,6 +701,7 @@ def publisher(repo, release):
     '''Return InvenioRDM "publisher".
     https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
     '''
+    log('using CaltechDATA as "publisher"')
     return 'CaltechDATA'
 
 
@@ -651,10 +713,10 @@ def references(repo, release):
     # function) b/c InvenioRDM doesn't do much with "references". Still useful
     # b/c it stores free text references & provides compatibility w/ Zenodo.
 
-    # Codemeta has "referencePublication". CFF has "references" & also
+    # CodeMeta has "referencePublication". CFF has "references" & also
     # "preferred-citation". We collect what we can parse & try to make the list
     # unique. We're hampered by a lack of tools for parsing references from
-    # codemeta & CFF files (as of Feb. 2023, even cffconvert doesn't handle
+    # CodeMeta & CFF files (as of Feb. 2023, even cffconvert doesn't handle
     # "references" or "preferred-citation") & the variety of things people put
     # in. For these reasons, we currently only work with things that have
     # recognizable id's. (Otherwise, we'd have to parse multiple bib formats.)
@@ -667,10 +729,12 @@ def references(repo, release):
     # we can use for publications is "other". The tough one is the "reference"
     # value, which is free text and supposed to be a "full reference string".
 
-    ids = _codemeta_references(repo) | _cff_references(repo)
+    if cm_refs := _codemeta_references(repo):
+        log('adding CodeMeta "referencePublication" value(s) to "references"')
+    if cff_refs := _cff_references(repo):
+        log('adding CFF "preferred-citation" and/or "references" to "references"')
     refs = [{'reference': reference(id), 'identifier': id, 'scheme': 'other'}
-            for id in ids]
-    log(f'constructed a total of {len(refs)} references')
+            for id in cm_refs | cff_refs]
     return refs
 
 
@@ -683,102 +747,100 @@ def related_identifiers(repo, release):
 
     from url_normalize import url_normalize
 
-    identifiers = [{'identifier': url_normalize(release.html_url),
-                    'relation_type': {'id': 'isidenticalto',
-                                      'title': {'en': 'Is identical to'}},
-                    'resource_type': {'id': 'software',
-                                      'title': {'en': 'Software'}},
-                    'scheme': 'url'}]
+    def id_dict(url, rel_type, rel_title, res_type, res_title):
+        '''Helper function for creating a frequently-used data structure.'''
+        return {'identifier': url_normalize(url),
+                'relation_type': {'id': rel_type, 'title': {'en': rel_title}},
+                'resource_type': {'id': res_type, 'title': {'en': res_title}},
+                'scheme': 'url'}
+
+    log('adding GitHub release "html_url" to "related_identifiers"')
+    identifiers = [id_dict(release.html_url, 'isidenticalto', 'Is identical to',
+                           'software', 'Software')]
 
     # The GitHub repo is what this release is derived from. Note: you would
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
     # the CFF repository-code all to be the same value, but we can't be sure,
     # so we have to look at them, and use them in the order of priority.
-    if repo_url := (repo.codemeta.get('codeRepository', '')
-                    or repo.cff.get('repository-code', '')
-                    or repo.html_url):
-        identifiers.append({'identifier': url_normalize(repo_url),
-                            'relation_type': {'id': 'isderivedfrom',
-                                              'title': {'en': 'Is derived from'}},
-                            'resource_type': {'id': 'software',
-                                              'title': {'en': 'Software'}},
-                            'scheme': 'url'})
+    if repo_url := repo.codemeta.get('codeRepository', ''):
+        log('adding CodeMeta "codeRepository" to "related_identifiers"')
+    elif repo_url := repo.cff.get('repository-code', ''):
+        log('adding CFF "repository-code" to "related_identifiers"')
+    elif repo_url := repo.html_url:
+        log('adding GitHub repo "html_url" to "related_identifiers"')
+    if repo_url:
+        identifiers.append(id_dict(repo_url, 'isderivedfrom', 'Is derived from',
+                                   'software', 'Software'))
 
     # If releaseNotes is a URL, we will not have used it for either the
     # description or additional descriptions, so add it here.
     relnotes_url = repo.codemeta.get('releaseNotes', '').strip()
     if relnotes_url.startswith('http'):
-        identifiers.append({'identifier': url_normalize(relnotes_url),
-                            'relation_type': {'id': 'isdescribedby',
-                                              'title': {'en': 'Is described by'}},
-                            'resource_type': {'id': 'other',
-                                              'title': {'en': 'Other'}},
-                            'scheme': 'url'})
+        log('adding CodeMeta "releaseNotes" URL to "related_identifiers"')
+        identifiers.append(id_dict(relnotes_url, 'isdescribedby', 'Is described by',
+                                   'other', 'Other'))
 
     # A GitHub repo may give a homepage for the software, though users don't
     # always set it. CFF's "url" field is defined as "The URL of a landing
     # page/website for the software or dataset", which is the same concept.
-    # Codemeta's "url" field is more ambiguously defined as "URL of the item",
-    # but the codemeta crosswalk table equates it to CFF's url field.
-    if homepage_url := (repo.codemeta.get('url', '')
-                        or repo.cff.get('url', '')
-                        or repo.homepage):
-        identifiers.append({'identifier': url_normalize(homepage_url),
-                            'relation_type': {'id': 'isdescribedby',
-                                              'title': {'en': 'Is described by'}},
-                            'resource_type': {'id': 'other',
-                                              'title': {'en': 'Other'}},
-                            'scheme': 'url'})
+    # CodeMeta's "url" field is more ambiguously defined as "URL of the item",
+    # but the CodeMeta crosswalk table equates it to CFF's url field.
+    if homepage_url := repo.codemeta.get('url', ''):
+        log('adding CodeMeta "url" to "related_identifiers"')
+    elif homepage_url := repo.cff.get('url', ''):
+        log('adding CFF "url" to "related_identifiers"')
+    elif homepage_url := repo.homepage:
+        log('adding GitHub repo "homepage" to "related_identifiers"')
+    if homepage_url:
+        identifiers.append(id_dict(homepage_url, 'isdescribedby', 'Is described by',
+                                   'other', 'Other'))
 
-    # Codemeta's "sameAs" = "URL of a reference Web page that unambiguously
+    # CodeMeta's "sameAs" = "URL of a reference Web page that unambiguously
     # indicates the item’s identity." Note that relative to a release stored
     # in InvenioRDM, it is not "same as"; rather it's closer to "a version of".
     # There's no equivalent in CFF or the GitHub repo data structure.
     if sameas_url := repo.codemeta.get('sameAs', ''):
-        identifiers.append({'identifier': url_normalize(sameas_url),
-                            'relation_type': {'id': 'isversionof',
-                                              'title': {'en': 'Is version of'}},
-                            'resource_type': {'id': 'software',
-                                              'title': {'en': 'Software'}},
-                            'scheme': 'url'})
+        log('adding CodeMeta "sameAs" to "related_identifiers"')
+        identifiers.append(id_dict(sameas_url, 'isversionof', 'Is version of',
+                                   'software', 'Software'))
 
     # GitHub pages are usually used to document a given software package.
     # That's not necessarily documentation for this release of the software,
     # but it's the best we can do. We add it, but not if it's already been
     # added as one of the URLs above.
-    doc_url = repo.codemeta.get('softwareHelp', '')
-    if not doc_url and repo.has_pages:
+    value_name = ''
+    if doc_url := repo.codemeta.get('softwareHelp', ''):
+        value_name = 'CodeMeta "softwareHelp"'
+    elif repo.has_pages:
+        value_name = "the repo's GitHub Pages URL"
         doc_url = f'https://{repo.owner.login}.github.io/{repo.name}'
     doc_url = url_normalize(doc_url)
     if doc_url and not any(doc_url == item['identifier'] for item in identifiers):
-        identifiers.append({'identifier': doc_url,
-                            'relation_type': {'id': 'isdocumentedby',
-                                              'title': {'en': 'Is documented by'}},
-                            'resource_type': {'id': 'publication-softwaredocumentation',
-                                              'title': {'en': 'Software documentation'}},
-                            'scheme': 'url'})
+        log(f'adding {value_name} to "related_identifiers"')
+        identifiers.append(id_dict(doc_url, 'isdocumentedby', 'Is documented by',
+                                   'publication-softwaredocumentation',
+                                   'Software documentation'))
 
     # The issues URL is kind of a supplemental resource.
-    issues_url = repo.codemeta.get('issueTracker', '')
-    if not issues_url and repo.issues_url:
+    if issues_url := repo.codemeta.get('issueTracker', ''):
+        log('adding CodeMeta "issueTracker" to "related_identifiers"')
+    elif repo.issues_url:
+        log('adding GitHub repo "issues_url" to "related_identifiers"')
         issues_url = f'https://github.com/{repo.full_name}/issues'
     if issues_url:
-        identifiers.append({'identifier': url_normalize(issues_url),
-                            'relation_type': {'id': 'issupplementedby',
-                                              'title': {'en': 'Is supplemented by'}},
-                            'resource_type': {'id': 'other',
-                                              'title': {'en': 'Other'}},
-                            'scheme': 'url'})
+        identifiers.append(id_dict(issues_url, 'issupplementedby', 'Is supplemented by',
+                                   'other', 'Other'))
 
-    # Codemeta says "relatedLink" value is supposed to be a URL, but most files
+    # CodeMeta says "relatedLink" value is supposed to be a URL, but most files
     # use a list. The nature of the relationship is more problematic. The
-    # codemeta spec says this is "A link related to this object, e.g., related
+    # CodeMeta spec says this is "A link related to this object, e.g., related
     # web pages"; however, in the codemeta.json file, we get zero info about
     # what the links are meant to be. Worse, relatedLink has no direct
     # equivalent in the relations CV in InvenioRDM. Since the direction is
     # "this release" --> relatedLink --> "something", the closest relationship
     # term seems to be "references", as in "this release references this link".
     if links := listified(repo.codemeta.get('relatedLink', None)):
+        log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
         for url in filter(lambda x: x.startswith('http'), links):
             url = url_normalize(url)
             # We don't add URLs we've already added (possibly as another type).
@@ -789,20 +851,18 @@ def related_identifiers(repo, release):
             if any(similar_urls(url, added) for added in added_urls):
                 continue
             # There's no good way to know what the resource type actually is.
-            identifiers.append({'identifier': url,
-                                'relation_type': {'id': 'references',
-                                                  'title': {'en': 'References'}},
-                                'resource_type': {'id': 'other',
-                                                  'title': {'en': 'Other'}},
-                                'scheme': 'url'})
+            identifiers.append(id_dict(url, 'references', 'References',
+                                       'other', 'Other'))
 
-    # We already added codemeta & CFF "references" field values to InvenioRDM's
+    # We already added CodeMeta & CFF "references" field values to InvenioRDM's
     # field "references" (c.f. function references() in this file); however,
     # InvenioRDM doesn't do much with the "references" field & data.caltech.edu
     # doesn't currently show it, so we also add the items as related ids here.
-    added_identifiers = [detected_id(item['identifier']) for item in identifiers]
-    for id in (_codemeta_references(repo) | _cff_references(repo)):
-        if id not in added_identifiers:
+    if reference_ids := (_codemeta_references(repo) | _cff_references(repo)):
+        log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
+    for id in reference_ids:
+        # We're adding identifiers => must recreate this next list each loop
+        if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
                                 'relation_type': {'id': 'isreferencedby',
                                                   'title': {'en': 'Is referenced by'}},
@@ -818,8 +878,10 @@ def resource_type(repo, release):
     # The only clear source of info about whether this is software or data is
     # the CFF file field "type", so if we can't use that, default to software.
     if repo.cff.get('type', '') == 'dataset':
+        log('using CFF "type" as "resource_type" (and it is "dataset")')
         return {'id': 'dataset', 'title': {'en': 'Dataset'}}
     else:
+        log('using default value "software" as "resource_type"')
         return {'id': 'software', 'title': {'en': 'Software'}}
 
 
@@ -827,53 +889,64 @@ def rights(repo, release):
     '''Return InvenioRDM "rights (licenses)".
     https://inveniordm.docs.cern.ch/reference/metadata/#rights-licenses-0-n
     '''
-    # Strategy: look in codemeta and citation first, trying to recognize common
+    # Strategy: look in CodeMeta and citation first, trying to recognize common
     # licenses. If that fails, we look at GitHub's license info for the repo.
     # If that also fails, we go rummaging in the repo files.
 
     rights = []
 
-    # Codemeta's "license" is usually a URL, but sometimes people don't know
+    # CodeMeta's "license" is usually a URL, but sometimes people don't know
     # that and use the name of a license instead. For CFF, "license" is
     # supposed to be a name. CFF also has a separate "license-url" field.
-    if value := (repo.codemeta.get('license', '')
-                 or repo.cff.get('license', '')
-                 or repo.cff.get('license-url', '')):
+    if value := repo.codemeta.get('license', ''):
+        value_name = 'CodeMeta "license"'
+    elif value := repo.cff.get('license', ''):
+        value_name = 'CFF "license"'
+    elif value := repo.cff.get('license-url', ''):
+        value_name = 'CFF "license-url"'
+    if value:
         license_id = None
         from iga.licenses import LICENSES, LICENSE_URLS
         from url_normalize import url_normalize
         if value in LICENSES:
             # It's a common license name that we know about.
+            log(f'found {value_name} value in list of known licenses: {value}')
             license_id = value
         elif value.startswith('http'):
             # Is it a URL for a known license?
             url = url_normalize(value.lower().removesuffix('.html'))
             if url in LICENSE_URLS:
+                log(f'found {value_name} value in list of known license URLs: {url}')
                 license_id = LICENSE_URLS[url]
+            else:
+                log(f'did not recognize {value_name} value {value}')
         else:
-            log('found a license value but did not recognize it: ' + value)
+            log('{value_name} has a value but we do not recognize it: ' + value)
 
         if license_id:
-            log('license value is a recognized kind: ' + license_id)
             rights = {'id'   : license_id,
                       'title': {'en': LICENSES[license_id].title},
                       'link' : LICENSES[license_id].url}
             if LICENSES[license_id].description:
                 rights['description'] = {'en': LICENSES[license_id].description}
             return [rights]
+    log('continuing to look for any license info we can use')
 
-    # We didn't recognize license info in the codemeta or cff files.
+    # We didn't recognize license info in the CodeMeta or cff files.
     # Look into the GitHub repo data to see if GitHub identified a license.
     if repo.license and repo.license.name != 'Other':
-        log('using license info assigned by GitHub')
+        log('GitHub has provided license info for the repo – using those values')
         spdx_id = repo.license.spdx_id
         rights = {'id': spdx_id,
                   'link': repo.license.url,
                   'title': {'en': repo.license.name}}
         from iga.licenses import LICENSES
         if spdx_id in LICENSES and LICENSES[spdx_id].description:
+            log(f'adding our own description for license type {spdx_id}')
             rights['description'] = {'en': LICENSES[spdx_id].description}
         return [rights]
+    else:
+        log('GitHub did not provide license info for this repo')
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
@@ -884,7 +957,7 @@ def rights(repo, release):
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
         for ext in ['', '.txt', '.md', '.html']:
             if basename + ext in filenames:
-                log('found a license file in the repo: ' + basename + ext)
+                log('found a license file in the repo: "' + basename + ext + '"')
                 # There's no safe way to summarize arbitrary license text,
                 # so we can't provide a 'description' field value.
                 rights = {'title': {'en': 'License'},
@@ -918,9 +991,10 @@ def subjects(repo, release):
     # set to try to uniquefy the values added to this.
     subjects = CaseFoldSet(repo.topics)
 
-    # Add values from Codemeta field "keywords". If the whole value is one
+    # Add values from CodeMeta field "keywords". If the whole value is one
     # string, it may contain multiple terms separated by a comma or semicolon.
-    keywords = repo.codemeta.get('keywords', [])
+    if keywords := repo.codemeta.get('keywords', []):
+        log('adding CodeMeta "keywords" value(s) to "subjects"')
     if isinstance(keywords, str):
         # Trying the ';' first, alone, is deliberate in case the values
         # separated by semicolons have commas within them.
@@ -935,21 +1009,25 @@ def subjects(repo, release):
             if isinstance(item, str):
                 subjects.add(item)
             else:
-                log('found keywords with unrecognized format in codemeta.json')
-                break
+                log(f'skipping item with unexpected format: {item}')
 
     # In CFF, people usually write lists, but I've seen mistakes. Be safe here.
-    for keyword in listified(repo.cff.get('keywords', [])):
+    if keywords := listified(repo.cff.get('keywords', [])):
+        log('adding CFF "keywords" value(s) to "subjects"')
+    for keyword in keywords:
         if isinstance(item, str):
             subjects.add(item)
         else:
-            log('found keywords with unrecognized format in CITATION.cff')
-            break
+            log(f'skipping item with unexpected format: {item}')
 
     # Add languages as topics too.
-    for lang in github_repo_languages(repo):
+    if languages := github_repo_languages(repo):
+        log('adding GitHub repo languages to "subjects"')
+    for lang in languages:
         subjects.add(lang)
-    for item in listified(repo.codemeta.get('programmingLanguage', [])):
+    if cm_langs := listified(repo.codemeta.get('programmingLanguage', [])):
+        log('adding CodeMeta "programmingLanguage" value(s) to "subjects"')
+    for item in cm_langs:
         if isinstance(item, str):
             subjects.add(item)
         elif isinstance(item, dict):
@@ -960,13 +1038,14 @@ def subjects(repo, release):
                 ' in codemeta.json: ' + str(item))
             break
 
-    return [{'subject': x} for x in subjects]
+    return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
 
 def title(repo, release):
     '''Return InvenioRDM "title".
     https://inveniordm.docs.cern.ch/reference/metadata/#title-1
     '''
+    log('adding GitHub repo "full_name" + release "name" or "tag_name" as "title"')
     return repo.full_name + ': ' + (release.name or release.tag_name)
 
 
@@ -978,6 +1057,7 @@ def version(repo, release):
     # no version number in the GitHub release data -- there is only the tag.
     # The following does a weak heuristic to try to guess at a version number
     # from certain common tag name patterns, but that's the best we can do.
+    log('adding GitHub release "tag_name" as "version" ')
     tag = release.tag_name
     if tag.startswith('v'):
         import re
@@ -1070,7 +1150,7 @@ def _entity_from_dict(data, role):
 
     _type = data.get('@type', '') or data.get('type', '')
     if _type.lower().strip() == 'person':
-        # Deal with field name differences between codemeta & CFF.
+        # Deal with field name differences between CodeMeta & CFF.
         family = data.get('family-names', '') or data.get('familyName', '')
         given  = data.get('given-names', '') or data.get('givenName', '')
 
@@ -1109,7 +1189,7 @@ def _entity_from_dict(data, role):
             if isinstance(affiliation, str):
                 name = affiliation
             elif isinstance(affiliation, dict):
-                # In CFF, the field name is 'legalName'. In codemeta, it's 'name'.
+                # In CFF, the field name is 'legalName'. In CodeMeta, it's 'name'.
                 name = affiliation.get('legalName', '') or affiliation.get('name', '')
             else:
                 name = affiliation
@@ -1174,7 +1254,7 @@ def _funding(funder_name, funder_id, award_name=None, award_id=None):
 
 
 def _codemeta_references(repo):
-    # Codemeta's referencePublication is supposed to be a ScholarlyArticle
+    # CodeMeta's referencePublication is supposed to be a ScholarlyArticle
     # (dict), but people often make it a list, and moreover, sometimes they
     # make it a list of strings (often URLs) instead of dicts.
     identifiers = CaseFoldSet()
@@ -1203,7 +1283,7 @@ def _cff_references(repo):
     identifiers = CaseFoldSet()
     for ref in (listified(repo.cff.get('preferred-citation', []))
                 + repo.cff.get('references', [])):
-        # These are the relevant field names defined in codemeta & CFF.
+        # These are the relevant field names defined in CodeMeta & CFF.
         for field in ['doi', 'pmcid', 'isbn']:
             if value := ref.get(field, ''):
                 identifiers.add(value)
@@ -1225,6 +1305,7 @@ def _cff_references(repo):
 
 def _load_vocabularies():
     from caltechdata_api.customize_schema import get_vocabularies
+    log('loading controlled vocabularies using caltechdata_api module')
     for vocab_id, vocab in get_vocabularies().items():
         CV.update({CV_NAMES[vocab_id]: vocab})
 

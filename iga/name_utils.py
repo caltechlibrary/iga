@@ -229,6 +229,7 @@ def split_name(name):
         surname = surname.title()
     surname = surname.strip()
 
+    log(f'final name splitting result: ({given}, {surname})')
     return (given, surname)
 
 

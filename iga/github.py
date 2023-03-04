@@ -110,7 +110,7 @@ def github_repo_filenames(repo):
         return repo._filenames
     log('asking GitHub for list of files at ' + repo.api_url)
     files_url = repo.api_url + '/git/trees/' + repo.default_branch
-    response = _github_api_get(files_url)
+    response = _github_get(files_url)
     if not response:
         log(f'did not get a list of file names for {repo}')
         return []
@@ -131,8 +131,9 @@ def github_repo_file(repo, filename):
     if filename in getattr(repo, '_files_contents', {}):
         log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
+    log(f'get contents of file {filename} from GitHub repo {repo.full_name}')
     file = next(f for f in repo._files if f.path == filename)
-    response = _github_api_get(file.url)
+    response = _github_get(file.url)
     if not response:
         log(f'got no content for file {filename} or it does not exist')
         return ''
@@ -152,8 +153,9 @@ def github_repo_file(repo, filename):
 
 def github_repo_languages(repo):
     '''Return a list of languages used in the repo according to GitHub.'''
+    log(f'asking GitHub for list of languages for repo {repo.full_name}')
     endpoint = repo.languages_url
-    response = _github_api_get(endpoint)
+    response = _github_get(endpoint)
     if not response:
         log(f'got no content for list of languages for repo {repo}')
         return ''
@@ -166,7 +168,8 @@ def github_repo_languages(repo):
 def github_repo_contributors(repo):
     '''Return a list of GitHubAccount objects for users shown as repo contributors.'''
     endpoint = repo.contributors_url
-    response = _github_api_get(endpoint)
+    log(f'asking GitHub for list of contributors for repo {repo.full_name}')
+    response = _github_get(endpoint)
     if not response:
         log(f'got no content for list of contributors for repo {repo}')
         return []
@@ -205,7 +208,7 @@ def valid_github_release_url(release_url):
 
 def _object_for_github(api_url, cls):
     '''Return object of class cls made from the data obtained from the API url.'''
-    response = _github_api_get(api_url)
+    response = _github_get(api_url)
     if not response:
         return None
     log(f'unpacking JSON into object structure from {api_url}')
@@ -220,7 +223,7 @@ def _object_for_github(api_url, cls):
         raise InternalError('Encountered error trying to get GitHub data.')
 
 
-def _github_api_get(endpoint):
+def _github_get(endpoint):
     headers = {'Accept': 'application/vnd.github.v3+json'}
     using_token = 'GITHUB_TOKEN' in os.environ
     if using_token:
