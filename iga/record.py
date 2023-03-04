@@ -38,6 +38,7 @@ file "LICENSE" for more information.
 import arrow
 from   commonpy.data_structures import CaseFoldSet
 from   commonpy.data_utils import pluralized
+from   itertools import filterfalse
 import json5
 from   sidetrack import log
 import sys
@@ -52,6 +53,7 @@ from iga.github import (
     github_repo_file,
     github_repo_filenames,
     github_repo_languages,
+    probable_bot,
 )
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
@@ -386,9 +388,8 @@ def contributors(repo, release):
     if not contribs:
         if repo_contributors := github_repo_contributors(repo):
             log('adding GitHub repo contributors list as contributor(s)')
-        for account in repo_contributors:
-            if account.type == 'Bot':
-                continue
+        # Skip bot accounts.
+        for account in filterfalse(probable_bot, repo_contributors):
             contributors.append({'person_or_org': _identity_from_github(account),
                                  'role': {'id': 'other'}})
 
