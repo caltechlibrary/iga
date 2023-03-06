@@ -9,8 +9,8 @@ file "LICENSE" for more information.
 '''
 
 import sys
-if sys.version_info <= (3, 8):
-    print('IGA requires Python version 3.8 or higher,')
+if sys.version_info <= (3, 9):
+    print('IGA requires Python version 3.9 or higher,')
     print('but the current version of Python is ' + str(sys.version_info.major)
           + '.' + str(sys.version_info.minor) + '.')
     sys.exit(1)
