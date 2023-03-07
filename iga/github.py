@@ -25,7 +25,8 @@ class GitHubRelease(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub release JSON object.'''
     def __init__(self, release_dict):
         super().__init__(**release_dict)
-        log('GitHub release data: ' + json.dumps(release_dict, indent=2))
+        if os.environ.get('IGA_RUN_MODE', 'normal') == 'debug':
+            log('GitHub release data: ' + json.dumps(release_dict, indent=2))
         self.author = GitHubAccount(release_dict['author'])
         # First, do in-place conversion of the 'uploader' field (a dict) ...
         for asset in self.assets:
@@ -44,7 +45,8 @@ class GitHubRepo(SimpleNamespace):
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
         self.owner = GitHubAccount(repo_dict['owner'])
-        log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
+        if os.environ.get('IGA_RUN_MODE', 'normal') == 'debug':
+            log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
         if repo_dict.get('organization', None):
             self.organization = GitHubAccount(repo_dict['organization'])
         if repo_dict.get('license', None):
@@ -57,7 +59,8 @@ class GitHubAccount(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub user or org account.'''
     def __init__(self, user_dict):
         super().__init__(**user_dict)
-        log('GitHub user data: ' + json.dumps(user_dict, indent=2))
+        if os.environ.get('IGA_RUN_MODE', 'normal') == 'debug':
+            log('GitHub user data: ' + json.dumps(user_dict, indent=2))
         # Save the original data for debugging purposes.
         self._json_dict = user_dict
 
