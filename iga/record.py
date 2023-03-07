@@ -180,16 +180,14 @@ def record_for_release(account_name, repo_name, tag):
     if 'codemeta.json' in filenames:
         try:
             repo.codemeta = json5.loads(github_repo_file(repo, 'codemeta.json'))
-            log('found and read codemeta.json file')
-        except Exception as ex:
+        except Exception as ex:         # noqa PIE786
             log('ignoring codemeta.json file because of error: ' + str(ex))
     for name in ['CITATION.cff', 'CITATION.CFF', 'citation.cff']:
         if name in filenames:
             import yaml
             try:
                 repo.cff = yaml.safe_load(github_repo_file(repo, name))
-                log(f'found and read {name} file')
-            except Exception as ex:
+            except Exception as ex:     # noqa PIE786
                 log(f'ignoring {name} file because of error: ' + str(ex))
             break
 
@@ -209,24 +207,35 @@ def record_for_release(account_name, repo_name, tag):
     return {"metadata": metadata}
 
 
-def valid_record(data):
-    '''Perform basic validation on the "metadata" part of the given record.
+def record_from_file(file):
+    '''Read a metadata record from the file and apply some basic validation.
 
     The validation process currently on tests that the record has the
     minimum fields; it does not currently check the field values or types.
     '''
-    if metadata := data.get('metadata', {}):
+    record = None
+    try:
+        log(f'reading record provided in file {str(file)}')
+        content = file.read().strip()
+        record = json5.loads(content)
+    except KeyboardInterrupt as ex:
+        raise ex
+    except Exception as ex:             # noqa PIE786
+        log(f'problem trying to read record from {str(file)}: ' + str(ex))
+        return False
+
+    if metadata := record.get('metadata', {}):
         # This could be done by a simple 1-liner, but we want to log failures.
         for field in REQUIRED_FIELDS:
             if field not in metadata:
-                log('record metadata lacks required field "' + field + '"')
-                return False
+                log(f'record metadata lacks required field "{field}"')
+                return None
         else:
             log('record metadata validated to have minimum fields')
-            return True
+            return record
     else:
         log('record lacks a "metadata" field')
-    return False
+        return None
 
 
 # Field value functions.
@@ -271,8 +280,8 @@ def additional_descriptions(repo, release):
     # software as a whole and not the release per se. Adding one is enough.
     #
     # Note #2: the fact that DataCite offers a description type of "abstract"
-    # makes it tempting to use that for the CFF "abstract" field, but IMHO that
-    # would be wrong because CFF's definition of "abstract" is that it's "a
+    # makes it tempting to use that type for the CFF "abstract" field, but IMHO
+    # that would be wrong because CFF's definition of "abstract" is "a
     # description of the software or dataset" -- in other words, the same kind
     # of text as the other fields. Thus, we should use the same type value here.
     value_name = ''
