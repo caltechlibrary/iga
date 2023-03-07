@@ -122,8 +122,13 @@ def _read_invenio_token(ctx, param, value):
 
 def _read_server(ctx, param, value):
     '''Read the server address and set the environment variable INVENIO_SERVER.'''
-    return _read_param_value(ctx, param, value, 'INVENIO_SERVER',
-                             'InvenioRDM server address')
+    result = _read_param_value(ctx, param, value, 'INVENIO_SERVER',
+                               'InvenioRDM server address')
+    # Make sure we have a URL.
+    server_address = os.environ.get('INVENIO_SERVER', '')
+    if not server_address.startswith('https://'):
+        os.environ['INVENIO_SERVER'] = 'https://' + server_address
+    return result
 
 
 def _print_version_and_exit(ctx, param, value):
@@ -251,6 +256,8 @@ _**Specification of the InvenioRDM server and access token**_
 \r
 The server address must be provided either as the value of the option
 `--invenio-server` _or_ in an environment variable named `INVENIO_SERVER`.
+If the server address does not begin with "https://", it will be prepended
+automatically.
 \r
 A Personal Access Token (PAT) for making API calls to the InvenioRDM server
 must be also supplied when invoking IGA. The preferred way of doing that is to
