@@ -93,10 +93,10 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
     if ctx.params.get('url_or_tag', None) == 'help':
         _print_help_and_exit(ctx)
     elif value:
-        log(f'using CLI {param} value for the {thing}')
+        log(f'using CLI option "--{param.name} {value}" for the {thing}')
         os.environ[env_var] = value
     elif env_var in os.environ:
-        log(f"using env variable {env_var}'s value as the {thing}")
+        log(f"using value of environment variable {env_var} as the {thing}")
     elif required:
         opt = param.name.replace('_', '-')
         _alert(ctx, f'Cannot proceed without a value for the {thing}. (Tip:'
@@ -104,7 +104,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
                ' For more information, use the option `--help`.)')
         sys.exit(int(ExitCode.bad_arg))
     else:
-        log(f'env var {env_var} not set')
+        log(f'environment variable {env_var} not set')
     return os.environ[env_var] if env_var in os.environ else None
 
 
@@ -121,13 +121,24 @@ def _read_invenio_token(ctx, param, value):
 
 
 def _read_server(ctx, param, value):
-    '''Read the server address and set the environment variable INVENIO_SERVER.'''
+    '''Read the server address & set the environment variable INVENIO_SERVER.'''
     result = _read_param_value(ctx, param, value, 'INVENIO_SERVER',
                                'InvenioRDM server address')
-    # Make sure we have a URL.
-    server_address = os.environ.get('INVENIO_SERVER', '')
-    if not server_address.startswith('https://'):
-        os.environ['INVENIO_SERVER'] = 'https://' + server_address
+    server = os.environ.get('INVENIO_SERVER', '')
+    # Do some basic checks on the value to prevent possibly misleading errors
+    # later if we blindly tried to do an http 'post' on the given destination.
+    if not server.startswith('http'):
+        from iptools import ipv4, ipv6
+        if not ipv4.validate_ip(server) and not ipv6.validate_ip(server):
+            from validators import domain
+            if domain(server):
+                os.environ['INVENIO_SERVER'] = 'https://' + server
+                log(f'modifying the supplied InvenioRDM server address'
+                    f' ({server}) to prepend https://')
+            else:
+                _alert(ctx, f'The given InvenioRDM server address ({server})'
+                       ' does not appear to be a valid host or IP address.')
+                sys.exit(int(ExitCode.bad_arg))
     return result
 
 
@@ -225,10 +236,10 @@ def _alert(ctx, msg, print_usage=True):
               help="InvenioRDM access token (avoid – use variable)")
 #
 @click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
-              expose_value=False, callback=_config_log,
+              expose_value=False, callback=_config_log, is_eager=True,
               help='Send log output to DEST (use "-" for stdout)')
 #
-@click.option('--mode', '-m', metavar='STR', callback=_config_mode,
+@click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               help='Run mode: "quiet", "normal", "verbose", or "debug"')
 #
 @click.option('--record', '-r', 'given_record', metavar='FILE', type=File('r'),
