@@ -117,7 +117,7 @@ def github_repo_filenames(repo):
         return []
     json_dict = json.loads(response.text)
     files = [GitHubFile(data) for data in json_dict['tree']]
-    log(f'found {len(files)} files in repo')
+    log(f'GitHub returned a list of {len(files)} files in repo')
     # Cache the results on the repo object, so we don't have to recompute it.
     repo._files = files
     repo._filenames = [file.path for file in files]
@@ -132,7 +132,7 @@ def github_repo_file(repo, filename):
     if filename in getattr(repo, '_files_contents', {}):
         log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
-    log(f'get contents of file {filename} from GitHub repo {repo.full_name}')
+    log(f'getting contents of file {filename} from GitHub repo {repo.full_name}')
     file = next(f for f in repo._files if f.path == filename)
     response = _github_get(file.url)
     if not response:
@@ -148,7 +148,7 @@ def github_repo_file(repo, filename):
         repo._file_contents = {}
     # Cache the file contents, so we don't have to get it from GitHub again.
     repo._file_contents[filename] = contents
-    log(f'file {filename} content length is {len(contents)}')
+    log(f'got contents for {filename} (length = {len(contents)} chars)')
     return contents
 
 
@@ -195,11 +195,12 @@ def github_file_url(repo, filename):
     return repo.html_url + '/blob/' + repo.default_branch + '/' + filename
 
 
-def valid_github_release_url(release_url):
+def valid_github_release_url(url):
     '''Return True if the given URL appears to be a valid GitHub release URL.'''
-    split_url = release_url.split('/')
-    return (release_url.startswith('https://github.com')
-            and len(split_url) == 8
+    split_url = url.split('/')
+    return (len(split_url) == 8
+            and split_url[0] in ['http:', 'https:']
+            and split_url[2] in ['github.com', 'www.github.com']
             and split_url[5] == 'releases'
             and split_url[6] == 'tag')
 
@@ -235,7 +236,7 @@ def _object_for_github(api_url, cls):
     except Exception as ex:
         # Something unexpected happened. We need to fix our handling.
         log('Error: ' + str(ex))
-        raise InternalError('Encountered error trying to get GitHub data.')
+        raise InternalError('Encountered error trying to unpack GitHub data.')
 
 
 def _github_get(endpoint):
