@@ -8,6 +8,7 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+import bdb
 import os
 import rich_click as click
 from   rich_click import File
@@ -18,7 +19,7 @@ from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError
 from iga.github import valid_github_release_url, github_account_repo_tag
 from iga.invenio import invenio_write
-from iga.record import valid_record, record_for_release
+from iga.record import record_for_release, record_from_file
 
 
 # Main command-line interface.
@@ -34,21 +35,46 @@ click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help.
 
 # Callback functions used in click interface ..................................
 
-def _config_debug(ctx, param, debug_dest):
-    '''Handle the --debug option and configure debug settings as needed.'''
-    if debug_dest:
-        if debug_dest.name == '<stdout>':
-            set_debug(True, '-')
-        else:
-            set_debug(True, debug_dest.name)
+def _config_mode(ctx, param, mode):
+    '''Handle the --mode option and configure the run mode as needed.'''
+    mode = 'normal' if mode is None else mode.lower()
+    if mode not in ['quiet', 'normal', 'verbose', 'debug']:
+        _alert(ctx, f'Unrecognized mode: "{mode}". The mode value must be'
+               ' chosen from `quiet`, `normal`, `verbose`, or `debug`. Please'
+               ' use `--help` for more information.')
+        sys.exit(int(ExitCode.bad_arg))
+    os.environ['IGA_RUN_MODE'] = mode
+    if mode in ['verbose', 'debug']:
+        set_debug(True)
+    if mode == 'debug':
         import faulthandler
         faulthandler.enable()
         if os.name != 'nt':                 # Can't use next part on Windows.
             import signal
             from boltons.debugutils import pdb_on_signal
             pdb_on_signal(signal.SIGUSR1)
-            log(f'installed signal handler on {signal.SIGUSR1}')
-    return debug_dest
+            log(f'installed signal handler on SIGUSR1 ({signal.SIGUSR1})')
+    return mode
+
+
+def _config_log(ctx, param, log_dest):
+    '''Handle the --log option and configure settings as needed.'''
+    if not log_dest:
+        return None
+
+    if log_dest.name == 'og':
+        # The user almost certainly typed "-log" instead of "--log".
+        _alert(ctx, 'No such option: `-log`. Did you mean `--log`?')
+        sys.exit(int(ExitCode.bad_arg))
+    elif log_dest.name == '<stdout>':
+        dest = '-'
+    else:
+        dest = log_dest.name
+
+    if os.environ.get('IGA_RUN_MODE', 'normal') in ['verbose', 'debug']:
+        set_debug(True, dest)
+        os.environ['IGA_LOG_DEST'] = dest
+    return dest
 
 
 def _read_param_value(ctx, param, value, env_var, thing, required=True):
@@ -167,8 +193,6 @@ def _alert(ctx, msg, print_usage=True):
 # which I hate.  This use of `\r` assumes the use of Markdown (as set above).
 
 @click.command(add_help_option=False)
-@click.help_option('--help', '-h', help='Show this message and exit')
-#
 @click.option('--community', '-c', metavar='STR',
               help='ID of RDM community to update with item')
 #
@@ -187,27 +211,34 @@ def _alert(ctx, msg, print_usage=True):
 @click.option('--github-token', '-g', metavar='STR', callback=_read_github_token,
               help="GitHub acccess token (avoid – use variable)")
 #
+@click.help_option('--help', '-h', help='Show this message and exit')
+#
 @click.option('--invenio-server', '-s', 'server', metavar='URL', callback=_read_server,
               help='InvenioRDM server address')
 #
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (avoid – use variable)")
 #
-@click.option('--record', '-R', 'given_record', metavar='FILE', type=File('r'),
+@click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
+              expose_value=False, callback=_config_log,
+              help='Send log output to DEST (use "-" for stdout)')
+#
+@click.option('--mode', '-m', metavar='STR', callback=_config_mode,
+              help='Run mode: "quiet", "normal", "verbose", or "debug"')
+#
+@click.option('--record', '-r', 'given_record', metavar='FILE', type=File('r'),
               help='Metadata record to use for the InvenioRDM entry')
 #
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
               help='Print version info and exit', expose_value=False, is_eager=True)
-#
-@click.option('--debug'  , '-@', metavar='DEST', type=File('w', lazy=False),
-              callback=_config_debug, help='Write debug output to destination "DEST"')
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
 def cli(ctx, url_or_tag, community=None, dry_run=False, given_files=None,
         account=None, repo=None, github_token=None,
         server=None, invenio_token=None,
-        given_record=None, help=False, version=False, debug=False):  # noqa A002
+        log_dest=None, mode='normal',
+        given_record=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 IGA retrieves a GitHub software release and archives it in an InvenioRDM
@@ -305,15 +336,27 @@ Running IGA with the option `--dry-run` will make it do the work of creating
 a metadata record and only print the record to the terminal, without sending
 an archive to the InvenioRDM server.
 \r
-Running IGA with the option `--help` will make it print help text and exit
-without doing anything else.
+The `--mode` option can be used to change the run mode. Four run modes are
+available: `quiet`, `normal`, `verbose`, and `debug`. The default mode is
+`normal`, in which IGA prints a few messages while it's working. The mode
+`quiet` will make it avoid printing anything unless an error occurs, the mode
+`verbose` will make it print a detailed trace of what it is doing, and the
+mode `debug` will make IGA even more verbose. In addition, in `debug` mode,
+IGA will drop into the `pdb` debugger if it encounters an exception during
+execution. On Linux and macOS, debug mode also installs a signal handler on
+signal USR1 that causes IGA to drop into the `pdb` debugger if the signal
+USR1 is received. (Use `kill -USR1 NNN`, where NNN is the IGA process id.)
+\r
+By default, the output of the `verbose` and `debug` run modes is sent to the
+standard output (normally the terminal console). The option `--log-dest` can
+be used to send the output to the given destination. The value can be `-` to
+indicate console output, or a file path to send the output to the file.
 \r
 If given the `--version` option, this program will print its version and other
 information, and exit without doing anything else.
 \r
-If given the `--debug` argument, IGA will output details about what it is
-doing. The debug trace will be sent to the given destination, which can be `-`
-to indicate console output, or a file path to send the debug output to a file.
+Running IGA with the option `--help` will make it print help text and exit
+without doing anything else.
 \r
 _**Return values**_
 \r
@@ -351,14 +394,6 @@ possible values:
     else:
         tag = url_or_tag
 
-    if given_record:
-        path = given_record.name
-        log('reading user-provided record from ' + path)
-        given_record = given_record.read().strip()
-        if not valid_record(given_record):
-            _alert(ctx, 'File not in valid JSON format for InvenioRDM: ' + path)
-            sys.exit(int(ExitCode.file_error))
-
     from commonpy.network_utils import network_available
     if not network_available():
         _alert(ctx, 'No network; cannot proceed further.')
@@ -368,39 +403,62 @@ possible values:
 
     exit_code = ExitCode.success
     try:
-        record = given_record or record_for_release(account, repo, tag)
-        if record is None:
-            _alert(ctx, f'Could not get release "{tag}" for repository "{repo}"'
-                   f' under GitHub account "{account}". Please check that the'
-                   ' account, repository, and release all exist on GitHub and'
-                   ' that they are publicly accessible.')
-        elif dry_run:
-            _report_actions(ctx, record)
+        if given_record:
+            record = record_from_file(given_record)
+            if record is None:
+                _alert(ctx, 'Record not in valid format: ' + given_record.name)
+                sys.exit(int(ExitCode.file_error))
+            inform(f'Using {given_record.name} instead of building a record.')
         else:
+            inform(f'Building record for release "{tag}" in repository "{repo}"'
+                   f' of GitHub account "{account}" ...')
+            record = record_for_release(account, repo, tag)
+            if record is None:
+                _alert(ctx, f'Failed to construct record for release "{tag}"'
+                       f' in repository "{repo}" of GitHub account "{account}".')
+                sys.exit(int(ExitCode.github_error))
+            inform('Finished building record.')
+
+        if dry_run:
+            comment = (f'Option `--dry-run` is in effect. The following is the'
+                       f' record that _would_ have been sent to the server at'
+                       f' **{os.environ["INVENIO_SERVER"]}** if `--dry-run`'
+                       ' were _not_ in effect.')
+            display_json(record, comment)
+        else:
+            inform(f'Sending record to {os.environ["INVENIO_SERVER"]} ...')
             invenio_write(record)
+            inform('Done.')
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt
-    except GitHubError as ex:
-        log('quitting due to GitHub error: ' + str(ex))
-        exit_code = ExitCode.github_error
-        _alert(ctx, 'Encountered GitHub error: ' + ex.args[0], False)
-    except InvenioRDMError as ex:
-        log('quitting due to InvenioRDM error: ' + str(ex))
-        exit_code = ExitCode.inveniordm_error
-        _alert(ctx, 'Encountered InvenioRDM error: ' + ex.args[0], False)
+    except bdb.BdbQuit:
+        # Exiting the debugger will do this. Ignore it.
+        pass
     except Exception as ex:             # noqa: PIE786
         exit_code = ExitCode.exception
-        import traceback
-        exception = sys.exc_info()
-        details = ''.join(traceback.format_exception(*exception))
-        log('exception: ' + str(ex) + '\n\n' + details)
-        import iga
-        _alert(ctx, 'IGA experienced an unrecoverable error. Please report this'
-               f' to the developers. Your version of IGA is {iga.__version__}.'
-               f' For information about how to report errors, please see the'
-               f' project page at {iga.__url__}/.\n\nError text: {str(ex)}', False)
+        if isinstance(ex, GitHubError):
+            exit_code = ExitCode.github_error
+        elif isinstance(ex, InvenioRDMError):
+            exit_code = ExitCode.inveniordm_error
+
+        if os.environ.get('IGA_DEBUG_MODE', 'False') == 'True':
+            import rich
+            import traceback
+            exception = sys.exc_info()
+            details = ''.join(traceback.format_exception(*exception))
+            log(f'{ex.__class__.__name__}: ' + str(ex) + '\n\n' + details)
+            rich.console.Console().print_exception(show_locals=True)
+            import pdb
+            pdb.post_mortem(exception[2])
+        else:
+            import iga
+            error_type = ex.__class__.__name__
+            _alert(ctx, 'IGA experienced an error. Please report this to the'
+                   f' developers. This version of IGA is {iga.__version__}.'
+                   f' For information about how to report errors, please see'
+                   f' {iga.__url__}/.\n\n{error_type}: {str(ex)}', False)
 
     # Exit with status code ...................................................
 
@@ -408,25 +466,37 @@ possible values:
     sys.exit(int(exit_code))
 
 
-# Helper functions used above.
+# Helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def _report_actions(ctx, record):
+def display_json(record, comment=None):
     from rich.console import Console
     from rich.markdown import Markdown
     from rich.panel import Panel
     from rich import print_json
-
-    comment = (f'Option `--dry-run` is in effect. The following is the record'
-               f' that _would_ have been sent to **{os.environ["INVENIO_SERVER"]}**'
-               f' if `--dry-run` were _not_ in effect.')
     console = Console()
-    console.print(
-        Panel(
-            Markdown(comment),
-            style='yellow',
-            border_style='yellow',
-            title='Note'
+    if comment:
+        console.print(
+            Panel(
+                Markdown(comment),
+                style='yellow',
+                border_style='yellow',
+                title='Note'
+            )
         )
-    )
     print_json(data=record)
+
+
+def print_text(text, color):
+    import shutil
+    from rich.console import Console
+    from textwrap import wrap
+    width = (shutil.get_terminal_size().columns - 2) or 78
+    console = Console(width=width)
+    console.print('\n'.join(wrap(text, width=width)), style=color)
+
+
+def inform(text):
+    log('[inform] ' + text)
+    if os.environ.get('IGA_RUN_MODE') != 'quiet':
+        print_text(text, 'green')
