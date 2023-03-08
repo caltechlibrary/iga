@@ -36,7 +36,7 @@ file "LICENSE" for more information.
 '''
 
 import arrow
-from   commonpy.data_structures import CaseFoldSet
+from   commonpy.data_structures import CaseFoldSet, CaseFoldDict
 from   commonpy.data_utils import pluralized
 from   itertools import filterfalse
 import json5
@@ -152,6 +152,11 @@ CV_NAMES = {'crr'   : 'creator-roles',
             'rlt'   : 'relation-types',
             'ttyp'  : 'title-types;',
             'idt'   : 'identifier-types'}
+
+# This vocabulary variable is only populated if record_for_release(...) is
+# called. It's a dict of licenses id's & urls recognized by this Invenio server.
+
+INVENIO_LICENSES = CaseFoldDict()
 
 
 # Exported module functions.
@@ -923,16 +928,15 @@ def rights(repo, release):
     if value:
         license_id = None
         from iga.licenses import LICENSES, LICENSE_URLS
-        from url_normalize import url_normalize
         if value in LICENSES:
-            # It's a common license name that we know about.
             log(f'found {value_name} value in list of known licenses: {value}')
             license_id = value
         elif value.startswith('http'):
             # Is it a URL for a known license?
+            from url_normalize import url_normalize
             url = url_normalize(value.lower().removesuffix('.html'))
             if url in LICENSE_URLS:
-                log(f'found {value_name} value in list of known license URLs: {url}')
+                log(f'found {value_name} value among known license URLs: {url}')
                 license_id = LICENSE_URLS[url]
             else:
                 log(f'did not recognize {value_name} value {value}')
@@ -940,9 +944,10 @@ def rights(repo, release):
             log('{value_name} has a value but we do not recognize it: ' + value)
 
         if license_id:
-            rights = {'id'   : license_id.lower(),
-                      'title': {'en': LICENSES[license_id].title},
+            rights = {'title': {'en': LICENSES[license_id].title},
                       'link' : LICENSES[license_id].url}
+            if license_id in INVENIO_LICENSES:
+                rights['id'] = license_id.lower()
             if LICENSES[license_id].description:
                 rights['description'] = {'en': LICENSES[license_id].description}
             return [rights]
@@ -951,12 +956,13 @@ def rights(repo, release):
     # We didn't recognize license info in the CodeMeta or cff files.
     # Look into the GitHub repo data to see if GitHub identified a license.
     if repo.license and repo.license.name != 'Other':
-        log('GitHub has provided license info for the repo – using those values')
-        spdx_id = repo.license.spdx_id
-        rights = {'id': spdx_id.lower(),
-                  'link': repo.license.url,
-                  'title': {'en': repo.license.name}}
         from iga.licenses import LICENSES
+        log('GitHub has provided license info for the repo – using those values')
+        rights = {'link': repo.license.url,
+                  'title': {'en': repo.license.name}}
+        spdx_id = repo.license.spdx_id
+        if spdx_id in INVENIO_LICENSES:
+            rights['id'] = spdx_id.lower()
         if spdx_id in LICENSES and LICENSES[spdx_id].description:
             log(f'adding our own description for license type {spdx_id}')
             rights['description'] = {'en': LICENSES[spdx_id].description}
@@ -1030,7 +1036,7 @@ def subjects(repo, release):
     # In CFF, people usually write lists, but I've seen mistakes. Be safe here.
     if keywords := listified(repo.cff.get('keywords', [])):
         log('adding CFF "keywords" value(s) to "subjects"')
-    for keyword in keywords:
+    for item in keywords:
         if isinstance(item, str):
             subjects.add(item)
         else:
@@ -1340,9 +1346,13 @@ def _cff_references(repo):
 
 def _load_vocabularies():
     from caltechdata_api.customize_schema import get_vocabularies
+    from iga.invenio import invenio_vocabulary
     log('loading controlled vocabularies using caltechdata_api module')
     for vocab_id, vocab in get_vocabularies().items():
         CV.update({CV_NAMES[vocab_id]: vocab})
+    log('asking InvenioRDM server for its list of software & data licenses')
+    for item in invenio_vocabulary('licenses'):
+        INVENIO_LICENSES[item['id']] = item['props']['url']
 
 
 def _cv_match(vocab, term):
