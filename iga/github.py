@@ -118,7 +118,7 @@ def github_repo_filenames(repo):
     if not response:
         log(f'did not get a list of file names for {repo}')
         return []
-    json_dict = json.loads(response.text)
+    json_dict = response.json()
     files = [GitHubFile(data) for data in json_dict['tree']]
     log(f'GitHub returned a list of {len(files)} files in repo')
     # Cache the results on the repo object, so we don't have to recompute it.
@@ -141,7 +141,7 @@ def github_repo_file(repo, filename):
     if not response:
         log(f'got no content for file {filename} or it does not exist')
         return ''
-    json_dict = json.loads(response.text)
+    json_dict = response.json()
     if json_dict['encoding'] != 'base64':
         log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
         raise InternalError('Unimplemented file encoding ' + json_dict['encoding'])
@@ -163,7 +163,7 @@ def github_repo_languages(repo):
     if not response:
         log(f'got no content for list of languages for repo {repo}')
         return ''
-    json_dict = json.loads(response.text)
+    json_dict = response.json()
     languages = json_dict.keys() if json_dict else []
     log(f'GitHub lists {len(languages)} languages for the repo')
     return languages
@@ -179,7 +179,7 @@ def github_repo_contributors(repo):
         return []
     # The JSON data is a list containing a kind of minimal user info dict.
     contributors = []
-    for user_dict in json.loads(response.text):
+    for user_dict in response.json():
         contributors.append(github_account(user_dict['login']))
     log(f'repo has {len(contributors)} contributors')
     return contributors
@@ -233,7 +233,7 @@ def _object_for_github(api_url, cls):
     log(f'unpacking JSON into object structure from {api_url}')
     try:
         # Create the desired object & add the api url in case it's needed later.
-        obj = cls(json.loads(response.text))
+        obj = cls(response.json())
         obj.api_url = api_url
         return obj
     except Exception as ex:

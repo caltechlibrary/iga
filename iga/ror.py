@@ -81,7 +81,7 @@ def ror_data(rorid):
         if error:
             log(f'failed to get ROR data for {rorid}: ' + str(error))
             return ''
-        return json.loads(response.text)
+        return response.json()
     except json.JSONDecodeError as ex:
         log('unable to decode response from ror.org API: ' + str(ex))
     except CommonPyException as ex:

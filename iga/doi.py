@@ -45,13 +45,12 @@ def _doi_for_pubmed(pub_id, scheme):
     '''Return a DOI for a PMCID or PMID by contacting PubMed.'''
     if not pub_id:
         return ''
-    import json
     log(f'looking up DOI for {pub_id} using NCBI idconv')
     base = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json'
     (response, error) = net('get', base + '&ids=' + pub_id)
     if not error:
         try:
-            data = json.loads(response.text)
+            data = response.json()
             if records := data.get('records', []):
                 if doi := records[0].get('doi', ''):
                     log(f'got DOI {doi} for {pub_id}')
