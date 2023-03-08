@@ -315,22 +315,28 @@ def additional_titles(repo, release):
     '''Return InvenioRDM "additional titles".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
     '''
-    # The main title for the InvenioRDM record is made using the repo name
-    # and release tag. Here we add things from CodeMeta and CFF.
+    # The main title will use CodeMeta name, CFF title, or repo full_name.
+    # Here we add the ones that didn't get used.
+
+    have_cm_name   = bool(repo.codemeta.get('name', ''))
+    have_cff_title = bool(repo.cff.get('title', ''))
+
+    # CodeMeta name has a value => we won't have used CFF title yet. Use it now.
+    add_cff_title = have_cm_name and have_cff_title
+    # No CodeMeta name => we'll have used repo name if have no CFF title.
+    add_repo_name = have_cm_name or have_cff_title
 
     titles = []
-    if name := repo.codemeta.get('name', ''):
-        log('adding CodeMeta "name" as additional title')
-        titles.append({'title': cleaned_text(name),
+    if add_cff_title:
+        log('adding CFF "title" as additional title')
+        titles.append({'title': cleaned_text(repo.cff.get('title', '')),
                        'type': {'id': 'alternative-title',
                                 'title': {'en': 'Alternative Title'}},
                        'lang': {'id': 'eng'},
                        })
-
-    title = repo.cff.get('title', '')
-    if title and title.strip() != repo.codemeta.get('name', '').strip():
-        log('adding CFF "title" as additional title')
-        titles.append({'title': cleaned_text(title),
+    if add_repo_name:
+        log('adding GitHub repo "full_name" as additional title')
+        titles.append({'title': cleaned_text(repo.full_name),
                        'type': {'id': 'alternative-title',
                                 'title': {'en': 'Alternative Title'}},
                        'lang': {'id': 'eng'},
@@ -934,7 +940,7 @@ def rights(repo, release):
             log('{value_name} has a value but we do not recognize it: ' + value)
 
         if license_id:
-            rights = {'id'   : license_id,
+            rights = {'id'   : license_id.lower(),
                       'title': {'en': LICENSES[license_id].title},
                       'link' : LICENSES[license_id].url}
             if LICENSES[license_id].description:
@@ -947,7 +953,7 @@ def rights(repo, release):
     if repo.license and repo.license.name != 'Other':
         log('GitHub has provided license info for the repo – using those values')
         spdx_id = repo.license.spdx_id
-        rights = {'id': spdx_id,
+        rights = {'id': spdx_id.lower(),
                   'link': repo.license.url,
                   'title': {'en': repo.license.name}}
         from iga.licenses import LICENSES
@@ -1055,8 +1061,27 @@ def title(repo, release):
     '''Return InvenioRDM "title".
     https://inveniordm.docs.cern.ch/reference/metadata/#title-1
     '''
-    log('adding GitHub repo "full_name" + release "name" or "tag_name" as "title"')
-    return repo.full_name + ': ' + (release.name or release.tag_name)
+    title = ''
+    if text := repo.codemeta.get('name', ''):
+        title += text
+        field = 'CodeMeta "name"'
+    elif text := repo.cff.get('title', ''):
+        title += text
+        field = 'CFF "title"'
+    else:
+        title += repo.full_name
+        field = 'GitHub repo "full_name"'
+
+    # Note: better not to use a colon here. A lot of CodeMeta files use a name
+    # like "title: short description", which would then lead to 2 colons here.
+    title += ' – '
+    if release.name:
+        log(f'using {field} + GitHub release name for "title"')
+        title += release.name
+    else:
+        log(f'using {field} + GitHub release "tag_name" for "title"')
+        title += release.tag_name
+    return cleaned_text(title)
 
 
 def version(repo, release):
