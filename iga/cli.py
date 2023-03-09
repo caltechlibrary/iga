@@ -431,6 +431,13 @@ possible values:
     else:
         tag = url_or_tag
 
+    if given_files and not record_dest:
+        from commonpy.file_utils import readable
+        for file in given_files:
+            if not readable(file):
+                _alert(ctx, f'Unable to read file: {file}')
+                sys.exit(int(ExitCode.file_error))
+
     from commonpy.network_utils import network_available
     if not network_available():
         _alert(ctx, 'No network; cannot proceed further.')
@@ -461,9 +468,13 @@ possible values:
             record_dest.write('\n')
             _inform(f'Wrote metadata record to {record_dest.name}')
         else:
-            _inform(f'Sending record to {os.environ["INVENIO_SERVER"]} ...')
-            invenio_write(record)
-            _inform('Done.')
+            if given_files:
+                _inform('The following files will be included as assets:')
+                for file in given_files:
+                    _inform(f'  - {file}')
+            _inform(f'Sending record to {os.environ["INVENIO_SERVER"]}', end='...')
+            invenio_write(record, given_files, community)
+            _inform(' done.')
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
