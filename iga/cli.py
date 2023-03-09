@@ -53,7 +53,6 @@ def _config_mode(ctx, param, mode):
             import signal
             from boltons.debugutils import pdb_on_signal
             pdb_on_signal(signal.SIGUSR1)
-            log(f'installed signal handler on SIGUSR1 ({signal.SIGUSR1})')
     return mode
 
 
@@ -160,6 +159,15 @@ def _print_help_and_exit(ctx):
     sys.exit(int(ExitCode.success))
 
 
+def _print_text(text, color, end='\n'):
+    import shutil
+    from rich.console import Console
+    from textwrap import wrap
+    width = (shutil.get_terminal_size().columns - 2) or 78
+    console = Console(width=width)
+    console.print('\n'.join(wrap(text, width=width)), style=color, end=end)
+
+
 def _alert(ctx, msg, print_usage=True):
     '''Print an error message in the style of rich_click.
     This is meant to be used when reporting errors involving UI options, in
@@ -201,6 +209,12 @@ def _alert(ctx, msg, print_usage=True):
     )
 
 
+def _inform(text, end='\n'):
+    log('[inform] ' + text)
+    if os.environ.get('IGA_RUN_MODE') != 'quiet':
+        _print_text(text, 'green', end=end)
+
+
 # Note #1: the default rich_click help feature does not offer a -h short form,
 # hence the need to use our own explicit help_option() definition below.
 #
@@ -210,10 +224,7 @@ def _alert(ctx, msg, print_usage=True):
 
 @click.command(add_help_option=False)
 @click.option('--community', '-c', metavar='STR',
-              help='ID of RDM community to update with item')
-#
-@click.option('--dry-run', '-n', is_flag=True,
-              help='Print what would be created but do not create it')
+              help='Send record to the RDM community with the given ID')
 #
 @click.option('--file', '-f', 'given_files', metavar='FILE', multiple=True,
               help='File to upload (repeat for multiple files)')
@@ -229,7 +240,7 @@ def _alert(ctx, msg, print_usage=True):
 #
 @click.help_option('--help', '-h', help='Show this message and exit')
 #
-@click.option('--invenio-server', '-s', 'server', metavar='URL', callback=_read_server,
+@click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
               help='InvenioRDM server address')
 #
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
@@ -237,46 +248,49 @@ def _alert(ctx, msg, print_usage=True):
 #
 @click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
               expose_value=False, callback=_config_log, is_eager=True,
-              help='Send log output to DEST (use "-" for stdout)')
+              help='Send log output to FILE (use "-" for stdout)')
 #
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               help='Run mode: "quiet", "normal", "verbose", or "debug"')
 #
-@click.option('--record', '-r', 'given_record', metavar='FILE', type=File('r'),
-              help='Metadata record to use for the InvenioRDM entry')
+@click.option('--record-dest', '-o', metavar='FILE', type=File('w', lazy=False),
+              help='Save the metadata record to FILE; don\'t upload it')
+#
+@click.option('--source-record', '-u', 'source', metavar='FILE', type=File('r'),
+              help='Use the given metadata record; don\'t build one')
 #
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
               help='Print version info and exit', expose_value=False, is_eager=True)
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, community=None, dry_run=False, given_files=None,
+def cli(ctx, url_or_tag, community=None, given_files=None,
         account=None, repo=None, github_token=None,
         server=None, invenio_token=None,
-        log_dest=None, mode='normal',
-        given_record=None, help=False, version=False):  # noqa A002
+        log_dest=None, mode='normal', record_dest=None, source=None,
+        help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
-IGA retrieves a GitHub software release and archives it in an InvenioRDM
-server. The release can be specified using _either_ a full URL, _or_ a GitHub
-account + repository + tag combination (see below). By default, IGA constructs
-a record based on information extracted from the GitHub repository; this can be
-overriden by command-line options described below.
+By default, IGA creates a metadata record for a GitHub software release
+and uploads it along with the release assets to a designated InvenioRDM server.
+The GitHub release can be specified using _either_ a full release URL, _or_ a
+combination of GitHub account + repository + tag. Different command-line
+options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
 \r
 The server address must be provided either as the value of the option
 `--invenio-server` _or_ in an environment variable named `INVENIO_SERVER`.
-If the server address does not begin with "https://", it will be prepended
+If the server address does not begin with "https://", IGA will prepended it
 automatically.
 \r
 A Personal Access Token (PAT) for making API calls to the InvenioRDM server
-must be also supplied when invoking IGA. The preferred way of doing that is to
-set the value of the environment variable `INVENIO_TOKEN`. Alternatively, you
-can use the option `--invenio-token` to pass the token on the command line, but
-**you are strongly advised to avoid this practice because it is insecure**.
-The option is provided for convenience during testing but should not be used
-in production.
+must be also supplied when invoking IGA. The preferred method is to set the
+value of the environment variable `INVENIO_TOKEN`. Alternatively, you can use
+the option `--invenio-token` to pass the token on the command line, but **you
+are strongly advised to avoid this practice because it is insecure**.  The
+option is provided for convenience during testing but should never be used in
+production.
 \r
 To obtain a PAT from an InvenioRDM server, first log in to the server, then
 visit the page at `/account/settings/applications` and use the interface there
@@ -314,11 +328,11 @@ token. The preferred way of doing that is to set the value of the environment
 variable `GITHUB_TOKEN`. Alternatively, you can use the option
 `--github-token` to pass the token on the command line, but **you are
 strongly advised to avoid this practice because it is insecure**.  The option
-is provided for convenience during testing but should not be used in
+is provided for convenience during testing but should never be used in
 production.
 \r
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
-and look for instructions about creating a "classic" personal access token.
+and follow the instructions for creating a "classic" personal access token.
 \r
 _**Construction of an InvenioRDM record**_
 \r
@@ -331,10 +345,10 @@ information includes the following:
  * (if one exists) a `CITATION.cff` file
  * the file assets associated with the release
 \r
-To override the auto-created record, use the option `--record` followed by the
-path to a JSON file structured according to the InvenioRDM schema used by
-the destination server. When `--record` is provided, IGA does _not_ extract
-the data above, but still obtains the file assets from GitHub.
+To override the auto-created record, use the option `--source-record` followed
+by the path to a JSON file structured according to the InvenioRDM schema used
+by the destination server. When `--source-record` is provided, IGA does _not_
+extract the data above, but still obtains the file assets from GitHub.
 \r
 _**Specification of GitHub file assets**_
 \r
@@ -343,16 +357,21 @@ with the software release in GitHub. To override which file assets are attached
 to the InvenioRDM record, you can use the option `--file` followed by a path to
 a file to be uploaded. The option `--file` can be repeated to upload multiple
 file assets. Note that if `--file` is provided, then IGA does not use any
-file assets from GitHub.
+file assets from GitHub; it is the user's responsibility to supply all the
+files that should be uploaded.
 \r
-If _both_ `--record` and `--file` are used, then IGA does not actually contact
-GitHub for any information.
+If _both_ `--source-record` and `--file` are used, then IGA does not actually
+contact GitHub for any information.
 \r
 _**Other options recognized by IGA**_
 \r
-Running IGA with the option `--dry-run` will make it do the work of creating
-a metadata record and only print the record to the terminal, without sending
-an archive to the InvenioRDM server.
+Running IGA with the option `--record-dest` will make it create a metadata
+record, but instead of uploading the record (and any assets) to the InvenioRDM
+server, IGA will output the result to the given destination. This can be useful
+not only for debugging but also for creating a starting point for a custom
+metadata record: first run IGA with `--record-dest` to save a record to a file,
+edit the result, then finally run IGA with the `--source-record` option to use
+the modified record to create a release in the InvenioRDM server.
 \r
 The `--mode` option can be used to change the run mode. Four run modes are
 available: `quiet`, `normal`, `verbose`, and `debug`. The default mode is
@@ -367,8 +386,8 @@ USR1 is received. (Use `kill -USR1 NNN`, where NNN is the IGA process id.)
 \r
 By default, the output of the `verbose` and `debug` run modes is sent to the
 standard output (normally the terminal console). The option `--log-dest` can
-be used to send the output to the given destination. The value can be `-` to
-indicate console output, or a file path to send the output to the file.
+be used to send the output to the given destination instead. The value can be
+`-` to indicate console output, or a file path to send the output to the file.
 \r
 If given the `--version` option, this program will print its version and other
 information, and exit without doing anything else.
@@ -421,32 +440,30 @@ possible values:
 
     exit_code = ExitCode.success
     try:
-        if given_record:
-            record = record_from_file(given_record)
+        if source:
+            record = record_from_file(source)
             if record is None:
-                _alert(ctx, 'Record not in valid format: ' + given_record.name)
+                _alert(ctx, 'Record not in valid format: ' + source.name)
                 sys.exit(int(ExitCode.file_error))
-            inform(f'Using {given_record.name} instead of building a record.')
+            _inform(f'Using {source.name} instead of building a record.')
         else:
-            inform(f'Building record for release "{tag}" in repository "{repo}"'
-                   f' of GitHub account "{account}" ...')
+            _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
             record = record_for_release(account, repo, tag)
             if record is None:
                 _alert(ctx, f'Failed to construct record for release "{tag}"'
                        f' in repository "{repo}" of GitHub account "{account}".')
                 sys.exit(int(ExitCode.github_error))
-            inform('Finished building record.')
+            _inform(' done.')
 
-        if dry_run:
-            comment = (f'Option `--dry-run` is in effect. The following is the'
-                       f' record that _would_ have been sent to the server at'
-                       f' **{os.environ["INVENIO_SERVER"]}** if `--dry-run`'
-                       ' were _not_ in effect.')
-            display_json(record, comment)
+        if record_dest:
+            import json
+            record_dest.write(json.dumps(record, indent=2))
+            record_dest.write('\n')
+            _inform(f'Wrote metadata record to {record_dest.name}')
         else:
-            inform(f'Sending record to {os.environ["INVENIO_SERVER"]} ...')
+            _inform(f'Sending record to {os.environ["INVENIO_SERVER"]} ...')
             invenio_write(record)
-            inform('Done.')
+            _inform('Done.')
     except KeyboardInterrupt:
         # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
@@ -482,39 +499,3 @@ possible values:
 
     log(f'exiting with exit code {int(exit_code)}.')
     sys.exit(int(exit_code))
-
-
-# Helper functions.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-def display_json(record, comment=None):
-    from rich.console import Console
-    from rich.markdown import Markdown
-    from rich.panel import Panel
-    from rich import print_json
-    console = Console()
-    if comment:
-        console.print(
-            Panel(
-                Markdown(comment),
-                style='yellow',
-                border_style='yellow',
-                title='Note'
-            )
-        )
-    print_json(data=record)
-
-
-def print_text(text, color):
-    import shutil
-    from rich.console import Console
-    from textwrap import wrap
-    width = (shutil.get_terminal_size().columns - 2) or 78
-    console = Console(width=width)
-    console.print('\n'.join(wrap(text, width=width)), style=color)
-
-
-def inform(text):
-    log('[inform] ' + text)
-    if os.environ.get('IGA_RUN_MODE') != 'quiet':
-        print_text(text, 'green')
