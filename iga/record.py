@@ -268,8 +268,7 @@ def additional_descriptions(repo, release):
     if rel_notes and rel_notes != main_desc and not rel_notes.startswith('http'):
         log('adding CodeMeta "releaseNotes" as additional description')
         descriptions.append({'description': rel_notes,
-                             'type': {'id': 'other',
-                                      'title': {'en': 'Other'}}})
+                             'type': {'id': 'other'}})
 
     # Add one of CodeMeta's "description", CFF's "abstract", or the GitHub repo
     # description if we didn't that as the main description. These are listed
@@ -300,8 +299,7 @@ def additional_descriptions(repo, release):
     if text != main_desc:
         log(f'adding {value_name} as an additional description')
         descriptions.append({'description': text,
-                             'type': {'id': 'other',
-                                      'title': {'en': 'Other'}}})
+                             'type': {'id': 'other'}})
 
     # CodeMeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
     # say "For software description, this may include a readme.txt ...".)
@@ -310,8 +308,7 @@ def additional_descriptions(repo, release):
         if readme.startswith('http'):
             readme = f'Additional information is available at {readme}'
         descriptions.append({'description': readme,
-                             'type': {'id': 'technical-info',
-                                      'title': {'en': 'Technical Info'}}})
+                             'type': {'id': 'technical-info'}})
 
     return descriptions
 
@@ -335,15 +332,13 @@ def additional_titles(repo, release):
     if add_cff_title:
         log('adding CFF "title" as additional title')
         titles.append({'title': cleaned_text(repo.cff.get('title', '')),
-                       'type': {'id': 'alternative-title',
-                                'title': {'en': 'Alternative Title'}},
+                       'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
     if add_repo_name:
         log('adding GitHub repo "full_name" as additional title')
         titles.append({'title': cleaned_text(repo.full_name),
-                       'type': {'id': 'alternative-title',
-                                'title': {'en': 'Alternative Title'}},
+                       'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
     return titles
@@ -473,7 +468,7 @@ def dates(repo, release):
     elif created_date := repo.created_at:
         log('adding the GitHub repo "created_at" as the "created" date')
     dates.append({'date': arrow.get(created_date).format('YYYY-MM-DD'),
-                  'type': {'id': 'created', 'title': {'en': 'Created'}}})
+                  'type': {'id': 'created'}})
 
     # CodeMeta has a "dateModified" field, which the CodeMeta crosswalk equates
     # to the GitHub repo "updated_at" date.
@@ -482,7 +477,7 @@ def dates(repo, release):
     elif mod_date := repo.updated_at:
         log('adding the GitHub repo "updated_at" date as the "updated" date')
     dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
-                  'type': {'id': 'updated', 'title': {'en': 'Updated'}}})
+                  'type': {'id': 'updated'}})
 
     # If we used a different date for the publication_date value than the
     # release date in GitHub, we add the GitHub date as another type of date.
@@ -491,13 +486,13 @@ def dates(repo, release):
     if pub_date != github_date:
         log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
-                      'type': {'id': 'available', 'title': {'en': 'Available'}}})
+                      'type': {'id': 'available'}})
 
     # CodeMeta has a "copyrightYear", but there's no equivalent elsewhere.
     if copyrighted := repo.codemeta.get('copyrightYear', ''):
         log('adding the CodeMeta "copyrightYear" date as the "copyrighted" date')
         dates.append({'date': arrow.get(copyrighted).format('YYYY-MM-DD'),
-                      'type': {'id': 'copyrighted', 'title': {'en': 'Copyrighted'}}})
+                      'type': {'id': 'copyrighted'}})
     return dates
 
 
@@ -505,6 +500,8 @@ def description(repo, release, internal_call=False):
     '''Return InvenioRDM "description".
     https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
     '''
+    from iga.markdown_utils import html_from_md
+
     # The description that a user provides for a release in GitHub is stored
     # in the release data as "body". If the user omits the text, GitHub
     # automatically (sometimes? always?  not sure) displays text pulled from
@@ -513,7 +510,7 @@ def description(repo, release, internal_call=False):
     # shown by GitHub in those cases, so we try other alternatives after this.
     if release.body:
         log('adding GitHub release body text as "description"')
-        return release.body.strip()
+        return html_from_md(release.body.strip())
 
     # CodeMeta releaseNotes can be either text or a URL. If it's a URL, it
     # often points to a NEWS or ChangeLog or similar file in their repo.
@@ -522,7 +519,7 @@ def description(repo, release, internal_call=False):
     if rel_notes := repo.codemeta.get('releaseNotes', '').strip():
         if not rel_notes.startswith('http'):
             log('adding CodeMeta "releaseNotes" as "description"')
-            return rel_notes
+            return html_from_md(rel_notes)
         else:
             log('CodeMeta has releaseNotes in the form of a URL -- skipping')
 
@@ -540,7 +537,7 @@ def description(repo, release, internal_call=False):
         value_name = 'GitHub repo "description"'
     if text:
         log(f'adding {value_name} as "description"')
-        return text.strip()
+        return html_from_md(text.strip())
 
     # Bummer.
     log('could not find a usable value for the "description" field')
@@ -689,15 +686,15 @@ def languages(repo, release):
     '''
     # GitHub doesn't provide a way to deal with any other human language.
     log('adding "eng" to "languages"')
-    return [{"id": "eng", 'title': {'en': 'English'}}]
+    return [{"id": "eng"}]
 
 
 def locations(repo, release):
     '''Return InvenioRDM "locations".
     https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
     '''
-    log('adding empty "location"')
-    return []
+    log('adding empty "locations"')
+    return {}
 
 
 def publication_date(repo, release):
@@ -754,9 +751,8 @@ def references(repo, release):
         log('adding CodeMeta "referencePublication" value(s) to "references"')
     if cff_refs := _cff_references(repo):
         log('adding CFF "preferred-citation" and/or "references" to "references"')
-    refs = [{'reference': reference(id), 'identifier': id, 'scheme': 'other'}
-            for id in cm_refs | cff_refs]
-    return refs
+    return [{'reference': reference(r), 'identifier': r, 'scheme': 'other'}
+            for r in cm_refs | cff_refs]
 
 
 def related_identifiers(repo, release):
@@ -768,16 +764,15 @@ def related_identifiers(repo, release):
 
     from url_normalize import url_normalize
 
-    def id_dict(url, rel_type, rel_title, res_type, res_title):
+    def id_dict(url, rel_type, res_type):
         '''Helper function for creating a frequently-used data structure.'''
         return {'identifier': url_normalize(url),
-                'relation_type': {'id': rel_type, 'title': {'en': rel_title}},
-                'resource_type': {'id': res_type, 'title': {'en': res_title}},
+                'relation_type': {'id': rel_type},
+                'resource_type': {'id': res_type},
                 'scheme': 'url'}
 
     log('adding GitHub release "html_url" to "related_identifiers"')
-    identifiers = [id_dict(release.html_url, 'isidenticalto', 'Is identical to',
-                           'software', 'Software')]
+    identifiers = [id_dict(release.html_url, 'isidenticalto', 'software')]
 
     # The GitHub repo is what this release is derived from. Note: you would
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
@@ -790,16 +785,14 @@ def related_identifiers(repo, release):
     elif repo_url := repo.html_url:
         log('adding GitHub repo "html_url" to "related_identifiers"')
     if repo_url:
-        identifiers.append(id_dict(repo_url, 'isderivedfrom', 'Is derived from',
-                                   'software', 'Software'))
+        identifiers.append(id_dict(repo_url, 'isderivedfrom', 'software'))
 
     # If releaseNotes is a URL, we will not have used it for either the
     # description or additional descriptions, so add it here.
     relnotes_url = repo.codemeta.get('releaseNotes', '').strip()
     if relnotes_url.startswith('http'):
         log('adding CodeMeta "releaseNotes" URL to "related_identifiers"')
-        identifiers.append(id_dict(relnotes_url, 'isdescribedby', 'Is described by',
-                                   'other', 'Other'))
+        identifiers.append(id_dict(relnotes_url, 'isdescribedby', 'other'))
 
     # A GitHub repo may give a homepage for the software, though users don't
     # always set it. CFF's "url" field is defined as "The URL of a landing
@@ -813,8 +806,7 @@ def related_identifiers(repo, release):
     elif homepage_url := repo.homepage:
         log('adding GitHub repo "homepage" to "related_identifiers"')
     if homepage_url:
-        identifiers.append(id_dict(homepage_url, 'isdescribedby', 'Is described by',
-                                   'other', 'Other'))
+        identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
 
     # CodeMeta's "sameAs" = "URL of a reference Web page that unambiguously
     # indicates the item’s identity." Note that relative to a release stored
@@ -822,8 +814,7 @@ def related_identifiers(repo, release):
     # There's no equivalent in CFF or the GitHub repo data structure.
     if sameas_url := repo.codemeta.get('sameAs', ''):
         log('adding CodeMeta "sameAs" to "related_identifiers"')
-        identifiers.append(id_dict(sameas_url, 'isversionof', 'Is version of',
-                                   'software', 'Software'))
+        identifiers.append(id_dict(sameas_url, 'isversionof', 'software'))
 
     # GitHub pages are usually used to document a given software package.
     # That's not necessarily documentation for this release of the software,
@@ -838,9 +829,8 @@ def related_identifiers(repo, release):
     doc_url = url_normalize(doc_url)
     if doc_url and not any(doc_url == item['identifier'] for item in identifiers):
         log(f'adding {value_name} to "related_identifiers"')
-        identifiers.append(id_dict(doc_url, 'isdocumentedby', 'Is documented by',
-                                   'publication-softwaredocumentation',
-                                   'Software documentation'))
+        identifiers.append(id_dict(doc_url, 'isdocumentedby',
+                                   'publication-softwaredocumentation'))
 
     # The issues URL is kind of a supplemental resource.
     if issues_url := repo.codemeta.get('issueTracker', ''):
@@ -849,8 +839,7 @@ def related_identifiers(repo, release):
         log('adding GitHub repo "issues_url" to "related_identifiers"')
         issues_url = f'https://github.com/{repo.full_name}/issues'
     if issues_url:
-        identifiers.append(id_dict(issues_url, 'issupplementedby', 'Is supplemented by',
-                                   'other', 'Other'))
+        identifiers.append(id_dict(issues_url, 'issupplementedby', 'other'))
 
     # CodeMeta says "relatedLink" value is supposed to be a URL, but most files
     # use a list. The nature of the relationship is more problematic. The
@@ -872,8 +861,7 @@ def related_identifiers(repo, release):
             if any(similar_urls(url, added) for added in added_urls):
                 continue
             # There's no good way to know what the resource type actually is.
-            identifiers.append(id_dict(url, 'references', 'References',
-                                       'other', 'Other'))
+            identifiers.append(id_dict(url, 'references', 'other'))
 
     # We already added CodeMeta & CFF "references" field values to InvenioRDM's
     # field "references" (c.f. function references() in this file); however,
@@ -885,8 +873,7 @@ def related_identifiers(repo, release):
         # We're adding identifiers => must recreate this next list each loop
         if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
-                                'relation_type': {'id': 'isreferencedby',
-                                                  'title': {'en': 'Is referenced by'}},
+                                'relation_type': {'id': 'isreferencedby'},
                                 'scheme': recognized_scheme(id)})
 
     return identifiers
@@ -900,10 +887,10 @@ def resource_type(repo, release):
     # the CFF file field "type", so if we can't use that, default to software.
     if repo.cff.get('type', '') == 'dataset':
         log('using CFF "type" as "resource_type" (and it is "dataset")')
-        return {'id': 'dataset', 'title': {'en': 'Dataset'}}
+        return {'id': 'dataset'}
     else:
         log('using default value "software" as "resource_type"')
-        return {'id': 'software', 'title': {'en': 'Software'}}
+        return {'id': 'software'}
 
 
 def rights(repo, release):
