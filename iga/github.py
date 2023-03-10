@@ -218,7 +218,7 @@ def probable_bot(account):
     '''
     if not account:
         return False
-    return account.type == 'Bot' or account.name.lower().endswith('bot')
+    return account.type == 'Bot' or account.name.lower().split()[-1] == 'bot'
 
 
 # Helper functions
