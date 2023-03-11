@@ -17,9 +17,18 @@ from   sidetrack import set_debug, log
 
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError
-from iga.github import valid_github_release_url, github_account_repo_tag
-from iga.invenio import invenio_write
-from iga.record import record_for_release, record_from_file
+from iga.github import (
+    github_account_repo_tag,
+    github_release_assets,
+    valid_github_release_url,
+)
+from iga.invenio import (
+    invenio_create,
+    invenio_upload,
+    invenio_publish,
+    invenio_communities,
+)
+from iga.metadata import metadata_for_release, metadata_from_file
 
 
 # Main command-line interface.
@@ -70,7 +79,7 @@ def _config_log(ctx, param, log_dest):
     else:
         dest = log_dest.name
 
-    if os.environ.get('IGA_RUN_MODE', 'normal') in ['verbose', 'debug']:
+    if os.environ.get('IGA_RUN_MODE') in ['verbose', 'debug']:
         set_debug(True, dest)
         os.environ['IGA_LOG_DEST'] = dest
     return dest
@@ -226,7 +235,7 @@ def _inform(text, end='\n'):
 @click.option('--community', '-c', metavar='STR',
               help='Send record to the RDM community with the given ID')
 #
-@click.option('--file', '-f', 'given_files', metavar='FILE', multiple=True,
+@click.option('--file', '-f', 'files_to_upload', metavar='FILE', multiple=True,
               help='File to upload (repeat for multiple files)')
 #
 @click.option('--github-account', '-a', 'account', metavar='STR',
@@ -264,7 +273,7 @@ def _inform(text, end='\n'):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, community=None, given_files=None,
+def cli(ctx, url_or_tag, community=None, files_to_upload=None,
         account=None, repo=None, github_token=None,
         server=None, invenio_token=None,
         log_dest=None, mode='normal', record_dest=None, source=None,
@@ -431,57 +440,59 @@ possible values:
     else:
         tag = url_or_tag
 
-    if given_files and not record_dest:
+    if files_to_upload and not record_dest:
         from commonpy.file_utils import readable
-        for file in given_files:
+        for file in files_to_upload:
             if not readable(file):
                 _alert(ctx, f'Unable to read file: {file}')
                 sys.exit(int(ExitCode.file_error))
-
-    from commonpy.network_utils import network_available
-    if not network_available():
-        _alert(ctx, 'No network; cannot proceed further.')
-        sys.exit(int(ExitCode.no_network))
 
     # Do the main work ........................................................
 
     exit_code = ExitCode.success
     try:
+        github_assets = []
         if source:
-            record = record_from_file(source)
-            if record is None:
-                _alert(ctx, 'Record not in valid format: ' + source.name)
-                sys.exit(int(ExitCode.file_error))
             _inform(f'Using {source.name} instead of building a record.')
+            metadata = metadata_from_file(source)
+            if metadata is None:
+                _alert(ctx, f'The metadata structure in {source.name} is not valid.')
+                sys.exit(int(ExitCode.file_error))
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
-            record = record_for_release(account, repo, tag)
-            if record is None:
-                _alert(ctx, f'Failed to construct record for release "{tag}"'
-                       f' in repository "{repo}" of GitHub account "{account}".')
-                sys.exit(int(ExitCode.github_error))
+            metadata = metadata_for_release(account, repo, tag)
+            github_assets = github_release_assets(account, repo, tag)
             _inform(' done.')
 
         if record_dest:
             import json
-            record_dest.write(json.dumps(record, indent=2))
+            record_dest.write(json.dumps(metadata, indent=2))
             record_dest.write('\n')
-            _inform(f'Wrote metadata record to {record_dest.name}')
+            _inform(f'Wrote metadata to {record_dest.name}.')
         else:
-            if given_files:
-                _inform('The following files will be included as assets:')
-                for file in given_files:
-                    _inform(f'  - {file}')
-            _inform(f'Sending record to {os.environ["INVENIO_SERVER"]}', end='...')
-            invenio_write(record, given_files, community)
+            _inform('Sending record metadata to InvenioRDM server', end='...')
+            record = invenio_create(metadata)
             _inform(' done.')
+            _inform('Uploading files to InvenioRDM server', end='...')
+            for item in files_to_upload or github_assets:
+                invenio_upload(record, item)
+            _inform(' done.')
+            invenio_publish(record, community)
+            _inform(f'The new record can be found at {record.record_url}')
     except KeyboardInterrupt:
-        # Catch it, but don't treat it as an error; just stop execution.
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt
     except bdb.BdbQuit:
-        # Exiting the debugger will do this. Ignore it.
+        # Exiting the debugger. Not a real exception.
         pass
+    except GitHubError as ex:
+        _alert(ctx, f'Failed to get data for release "{tag}" in repository'
+               f' "{repo}" of GitHub account "{account}": {ex}')
+        exit_code = ExitCode.github_error
+    except InvenioRDMError as ex:
+        _alert(ctx, 'The creation of a record in the InvenioRDM server failed'
+               f' due to the following: {ex}')
+        exit_code = ExitCode.invenio_error
     except Exception as ex:             # noqa: PIE786
         exit_code = ExitCode.exception
         if isinstance(ex, GitHubError):
@@ -489,18 +500,19 @@ possible values:
         elif isinstance(ex, InvenioRDMError):
             exit_code = ExitCode.inveniordm_error
 
-        if os.environ.get('IGA_DEBUG_MODE', 'False') == 'True':
-            import rich
+        if os.environ.get('IGA_RUN_MODE') == 'debug':
+            import pdb
+            from rich.console import Console
             import traceback
             exception = sys.exc_info()
             details = ''.join(traceback.format_exception(*exception))
             log(f'{ex.__class__.__name__}: ' + str(ex) + '\n\n' + details)
-            rich.console.Console().print_exception(show_locals=True)
-            import pdb
+            Console().print_exception()
             pdb.post_mortem(exception[2])
         else:
             import iga
             error_type = ex.__class__.__name__
+            _inform('')
             _alert(ctx, 'IGA experienced an error. Please report this to the'
                    f' developers. This version of IGA is {iga.__version__}.'
                    f' For information about how to report errors, please see'
