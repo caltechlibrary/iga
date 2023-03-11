@@ -1,9 +1,9 @@
 '''
-record.py: record structure creation & manipulation
+metadata.py: metadata creation & manipulation
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-The code in this file constructs a metadata record in the format expected by
+The code in this file constructs a metadata structure in the format expected by
 InvenioRDM. It uses data provided in a GitHub release as well as the repository
 (and files in the repository), but because GitHub releases and repos don't
 directly contain the information needed, we have to resort to looking for and
@@ -44,7 +44,7 @@ from   sidetrack import log
 import sys
 
 from iga.data_utils import deduplicated, similar_urls, listified, cleaned_text
-from iga.exceptions import MissingData
+from iga.exceptions import MissingData, GitHubError
 from iga.github import (
     github_account,
     github_release,
@@ -63,7 +63,7 @@ from iga.reference import reference
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# It's useful to understand the context of what's going on. A record stored
+# It's useful to understand the context of what's going on. The record stored
 # in InvenioRDM may have these top-level fields (but might not contain all):
 #
 # {
@@ -139,7 +139,7 @@ REQUIRED_FIELDS = [
     "title"
 ]
 
-# Vocabularies variable CV gets loaded only if record_for_release(...) is
+# Vocabularies variable CV gets loaded only if metadata_for_release(...) is
 # called. The name mapping is to map the values from caltechdata_api's
 # get_vocabularies to something more self-explanatory when used in this file.
 
@@ -153,7 +153,7 @@ CV_NAMES = {'crr'   : 'creator-roles',
             'ttyp'  : 'title-types;',
             'idt'   : 'identifier-types'}
 
-# This vocabulary variable is only populated if record_for_release(...) is
+# This vocabulary variable is only populated if metadata_for_release(...) is
 # called. It's a dict of licenses id's & urls recognized by this Invenio server.
 
 INVENIO_LICENSES = CaseFoldDict()
@@ -162,20 +162,14 @@ INVENIO_LICENSES = CaseFoldDict()
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def record_for_release(account_name, repo_name, tag):
+def metadata_for_release(account_name, repo_name, tag):
     '''Return the "metadata" part of an InvenioRDM record.
 
     Data is gathered from the GitHub release identified by "tag" in the
     repository "repo_name" of the given GitHub "account_name".
     '''
     repo = github_repo(account_name, repo_name)
-    if not repo:
-        log(f'could not get repo {repo_name} under account {account_name}')
-        return None
     release = github_release(account_name, repo_name, tag)
-    if not release:
-        log(f'could not get release {tag} for repo {repo_name} of {account_name}')
-        return None
 
     # We use codemeta.json & CITATION.cff often. Get them now & augment the
     # repo object with them so that field extraction functions can access them.
@@ -208,39 +202,37 @@ def record_for_release(account_name, repo_name, tag):
         metadata[field] = value
         count = 1 if (value and isinstance(value, (str, dict))) else len(value)
         log(f'finished field "{field}" with {pluralized("item", count, True)}')
-    log('done constructing metadata record')
+    log('done constructing metadata')
     return {"metadata": metadata}
 
 
-def record_from_file(file):
+def metadata_from_file(file):
     '''Read a metadata record from the file and apply some basic validation.
 
     The validation process currently on tests that the record has the
     minimum fields; it does not currently check the field values or types.
     '''
-    record = None
     try:
-        log(f'reading record provided in file {str(file)}')
+        log(f'reading metadata provided in file {str(file)}')
         content = file.read().strip()
-        record = json5.loads(content)
+        metadata = json5.loads(content)
     except KeyboardInterrupt as ex:
         raise ex
     except Exception as ex:             # noqa PIE786
-        log(f'problem trying to read record from {str(file)}: ' + str(ex))
+        log(f'problem trying to read metadata from {str(file)}: ' + str(ex))
         return False
 
-    if metadata := record.get('metadata', {}):
-        # This could be done by a simple 1-liner, but we want to log failures.
-        for field in REQUIRED_FIELDS:
-            if field not in metadata:
-                log(f'record metadata lacks required field "{field}"')
-                return None
-        else:
-            log('record metadata validated to have minimum fields')
-            return record
-    else:
+    if not metadata.get('metadata', {}):
         log('record lacks a "metadata" field')
         return None
+
+    for field in REQUIRED_FIELDS:
+        if field not in metadata.get('metadata', {}):
+            log(f'metadata structure lacks required field "{field}"')
+            return None
+    else:
+        log(f'metadata in {file} validated to have minimum fields')
+        return metadata
 
 
 # Field value functions.
@@ -931,12 +923,13 @@ def rights(repo, release):
             log('{value_name} has a value but we do not recognize it: ' + value)
 
         if license_id:
-            rights = {'title': {'en': LICENSES[license_id].title},
-                      'link' : LICENSES[license_id].url}
             if license_id in INVENIO_LICENSES:
-                rights['id'] = license_id.lower()
-            if LICENSES[license_id].description:
-                rights['description'] = {'en': LICENSES[license_id].description}
+                rights = {'id': license_id.lower()}
+            else:
+                rights = {'title': {'en': LICENSES[license_id].title},
+                          'link' : LICENSES[license_id].url}
+                if LICENSES[license_id].description:
+                    rights['description'] = {'en': LICENSES[license_id].description}
             return [rights]
     log('continuing to look for any license info we can use')
 
@@ -945,14 +938,15 @@ def rights(repo, release):
     if repo.license and repo.license.name != 'Other':
         from iga.licenses import LICENSES
         log('GitHub has provided license info for the repo – using those values')
-        rights = {'link': repo.license.url,
-                  'title': {'en': repo.license.name}}
         spdx_id = repo.license.spdx_id
         if spdx_id in INVENIO_LICENSES:
-            rights['id'] = spdx_id.lower()
-        if spdx_id in LICENSES and LICENSES[spdx_id].description:
-            log(f'adding our own description for license type {spdx_id}')
-            rights['description'] = {'en': LICENSES[spdx_id].description}
+            rights = {'id': spdx_id.lower()}
+        else:
+            rights = {'link': repo.license.url,
+                      'title': {'en': repo.license.name}}
+            if spdx_id in LICENSES and LICENSES[spdx_id].description:
+                log(f'adding our own description for license type {spdx_id}')
+                rights['description'] = {'en': LICENSES[spdx_id].description}
         return [rights]
     else:
         log('GitHub did not provide license info for this repo')
