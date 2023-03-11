@@ -91,21 +91,42 @@ def github_release(account_name, repo_name, tag_name):
     endpoint = ('https://api.github.com/repos/' + account_name
                 + '/' + repo_name + '/releases/tags/' + tag_name)
     log('getting GitHub data for release at ' + endpoint)
-    return _object_for_github(endpoint, GitHubRelease)
-
-
-def github_account(account_name):
-    '''Return an Account object corresponding to the GitHub user account.'''
-    endpoint = 'https://api.github.com/users/' + account_name
-    log('getting GitHub data for user at ' + endpoint)
-    return _object_for_github(endpoint, GitHubAccount)
+    result = _object_for_github(endpoint, GitHubRelease)
+    if not result:
+        raise GitHubError(f'Can\'t get GitHub release data for {tag_name} in'
+                          f' repository {repo_name} of account {account_name}')
+    return result
 
 
 def github_repo(account_name, repo_name):
     '''Return a Repo object corresponding to the named repo in GitHub.'''
     endpoint = 'https://api.github.com/repos/' + account_name + '/' + repo_name
     log('getting GitHub data for repo at ' + endpoint)
-    return _object_for_github(endpoint, GitHubRepo)
+    result = _object_for_github(endpoint, GitHubRepo)
+    if not result:
+        raise GitHubError('Can\'t get GitHub repository data for'
+                          f' {account_name}/{repo_name}')
+    return result
+
+
+def github_account(account_name):
+    '''Return an Account object corresponding to the GitHub user account.'''
+    endpoint = 'https://api.github.com/users/' + account_name
+    log('getting GitHub data for user at ' + endpoint)
+    result = _object_for_github(endpoint, GitHubAccount)
+    if not result:
+        raise GitHubError(f'Can\'t get GitHub account data for {account_name}')
+    return result
+
+
+def github_release_assets(account_name, repo_name, tag_name):
+    '''Return a list of URLs for all the assets associated with the release.'''
+    release = github_release(account_name, repo_name, tag_name)
+    assets = [release.tarball_url, release.zipball_url]
+    for asset in release.assets:
+        assets.append(asset.browser_download_url)
+    log(f'found {len(assets)} assets for release "{tag_name}"')
+    return assets
 
 
 def github_repo_filenames(repo):
