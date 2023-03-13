@@ -23,6 +23,7 @@ from iga.github import (
     valid_github_release_url,
 )
 from iga.invenio import (
+    invenio_api_available,
     invenio_create,
     invenio_upload,
     invenio_publish,
@@ -147,6 +148,11 @@ def _read_server(ctx, param, value):
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
+    # Check that the server really looks like an InvenioRDM server.
+    if not invenio_api_available():
+        _alert(ctx, f'The given server address ({server}) does not appear to be'
+               ' reacheable or does not support the InvenioRDM API.')
+        sys.exit(int(ExitCode.bad_arg))
     return result
 
 
@@ -470,7 +476,7 @@ possible values:
             record_dest.write('\n')
             _inform(f'Wrote metadata to {record_dest.name}.')
         else:
-            _inform('Sending record metadata to InvenioRDM server', end='...')
+            _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata)
             _inform(' done.')
             _inform('Uploading files to InvenioRDM server', end='...')
