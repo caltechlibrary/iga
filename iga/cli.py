@@ -241,6 +241,9 @@ def _inform(text, end='\n'):
 @click.option('--community', '-c', metavar='STR',
               help='Send record to the RDM community with the given ID')
 #
+@click.option('--draft', '-d', is_flag=True,
+              help='Mark the record as a draft; don\'t publish it')
+#
 @click.option('--file', '-f', 'files_to_upload', metavar='FILE', multiple=True,
               help='File to upload (repeat for multiple files)')
 #
@@ -279,7 +282,7 @@ def _inform(text, end='\n'):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, community=None, files_to_upload=None,
+def cli(ctx, url_or_tag, community=None, draft=False, files_to_upload=None,
         account=None, repo=None, github_token=None,
         server=None, invenio_token=None,
         log_dest=None, mode='normal', record_dest=None, source=None,
@@ -379,6 +382,10 @@ If _both_ `--source-record` and `--file` are used, then IGA does not actually
 contact GitHub for any information.
 \r
 _**Other options recognized by IGA**_
+\r
+By default, IGA will finalize and publish the record if all the steps are
+successful. To make it stop short and leave the record as a draft instead, use
+the option `--draft`.
 \r
 Running IGA with the option `--record-dest` will make it create a metadata
 record, but instead of uploading the record (and any assets) to the InvenioRDM
@@ -483,8 +490,11 @@ possible values:
             for item in files_to_upload or github_assets:
                 invenio_upload(record, item)
             _inform(' done.')
-            invenio_publish(record, community)
-            _inform(f'The new record can be found at {record.record_url}')
+            if draft:
+                _inform(f'The draft record can be found at {record.draft_url}')
+            else:
+                invenio_publish(record, community)
+                _inform(f'The new record can be found at {record.record_url}')
     except KeyboardInterrupt:
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt
