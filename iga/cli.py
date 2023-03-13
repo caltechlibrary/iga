@@ -485,20 +485,23 @@ possible values:
     except bdb.BdbQuit:
         # Exiting the debugger. Not a real exception.
         pass
-    except GitHubError as ex:
-        _alert(ctx, f'Failed to get data for release "{tag}" in repository'
-               f' "{repo}" of GitHub account "{account}": {ex}')
-        exit_code = ExitCode.github_error
-    except InvenioRDMError as ex:
-        _alert(ctx, 'The creation of a record in the InvenioRDM server failed'
-               f' due to the following: {ex}')
-        exit_code = ExitCode.invenio_error
     except Exception as ex:             # noqa: PIE786
-        exit_code = ExitCode.exception
         if isinstance(ex, GitHubError):
+            _alert(ctx, f'Failed to get data for release "{tag}" in repository'
+                   f' "{repo}" of GitHub account "{account}": {ex}')
             exit_code = ExitCode.github_error
         elif isinstance(ex, InvenioRDMError):
+            _alert(ctx, 'The creation of a record in the InvenioRDM server'
+                   f' failed due to the following: {ex}')
             exit_code = ExitCode.inveniordm_error
+        else:
+            import iga
+            error_type = ex.__class__.__name__
+            _alert(ctx, 'IGA experienced an error. Please report this to the'
+                   f' developers. This version of IGA is {iga.__version__}.'
+                   f' For information about how to report errors, please see'
+                   f' {iga.__url__}/.\n\n{error_type}: {str(ex)}', False)
+            exit_code = ExitCode.exception
 
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             import pdb
@@ -509,14 +512,6 @@ possible values:
             log(f'{ex.__class__.__name__}: ' + str(ex) + '\n\n' + details)
             Console().print_exception()
             pdb.post_mortem(exception[2])
-        else:
-            import iga
-            error_type = ex.__class__.__name__
-            _inform('')
-            _alert(ctx, 'IGA experienced an error. Please report this to the'
-                   f' developers. This version of IGA is {iga.__version__}.'
-                   f' For information about how to report errors, please see'
-                   f' {iga.__url__}/.\n\n{error_type}: {str(ex)}', False)
 
     # Exit with status code ...................................................
 
