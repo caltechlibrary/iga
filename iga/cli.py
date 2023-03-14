@@ -29,7 +29,6 @@ from iga.invenio import (
     invenio_publish,
     invenio_communities,
 )
-from iga.metadata import metadata_for_release, metadata_from_file
 
 
 # Main command-line interface.
@@ -492,6 +491,8 @@ possible values:
                 sys.exit(int(ExitCode.file_error))
 
     # Do the main work ........................................................
+
+    from iga.metadata import metadata_for_release, metadata_from_file
 
     exit_code = ExitCode.success
     try:
