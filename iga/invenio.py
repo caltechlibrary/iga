@@ -8,12 +8,14 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import net
+from   commonpy.network_utils import net, netloc
 from   commonpy.data_utils import pluralized
 from   dataclasses import dataclass
 from   functools import partial
+import httpx
 import json
 from   sidetrack import log
+import socket
 import os
 from   os import path
 
@@ -28,8 +30,8 @@ class InvenioRecord():
     '''Represents the record created in InvenioRDM.
 
     Used internally in IGA to make certain values directly accessible and to
-    make it easy to pass a record around between functions. This is not exactly
-    what InvenioRDM returns, but it contains values returned by InvenioRDM.
+    make it easy to pass a record around between functions. This is not what
+    InvenioRDM returns directly, but it contains values returned by InvenioRDM.
     '''
     data        : dict                  # The complete record returned by RDM.
     draft_url   : str                   # links 'self'
@@ -42,9 +44,38 @@ class InvenioRecord():
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+def invenio_api_available():
+    '''Return True if the INVENIO_SERVER responds to API calls.'''
+    server_url = os.environ.get('INVENIO_SERVER')
+    server_host = netloc(server_url)
+    test_endpoint = '/api/records?size=1'
+    try:
+        log(f'testing if we can reach {server_url} in 5 sec or less')
+        socket.setdefaulttimeout(5)
+        # If this can't reach the host, it'll throw an exception.
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server_host, 443))
+        # If we can reach the host, now check that the API endpoint works.
+        response, error = net('get', server_url + test_endpoint)
+        if not error:
+            log(f'we can reach {server_url} and its API endpoint')
+            return True
+        else:
+            log(f'{server_url} is reachable but it doesn\'t respond to /api/records')
+    except KeyboardInterrupt as ex:
+        raise ex
+    except Exception as ex:
+        log(f'failed to reach server {server_url}: {str(ex)}')
+    return False
+
+
 def invenio_create(metadata):
-    '''Use the given metadata to create a record in the InvenioRDM server.'''
-    log('sending metadata record to InvenioRDM server')
+    '''Create a record in the InvenioRDM server using the given metadata.
+
+    This only creates a record, and returns an InvenioRecord data class; it
+    does not upload file attachments, which is something handled by a separate
+    function, invenio_upload(...).
+    '''
+    log('sending metadata to InvenioRDM server')
     if os.environ.get('IGA_RUN_MODE') == 'debug':
         log(json.dumps(metadata, indent=2))
 
@@ -63,74 +94,77 @@ def invenio_create(metadata):
         log('record created successfully with no errors')
 
     record = InvenioRecord(data=result,
-                           draft_url=result['links']['self'],
+                           draft_url=result['links']['self_html'],
                            record_url=result['links']['record_html'],
                            publish_url=result['links']['publish'],
                            files_url=result['links']['files'],
                            assets=[])
-    log(f'new record record_html = {record}')
+    log(f'new record record_html = {record.record_url}')
     return record
 
 
 def invenio_upload(record, asset):
-    # Assets can be in 2 forms: a URL (to a github location) or a local file.
-    # Read them 1st so we are sure we have the content before trying to upload.
+    '''Upload a file asset to InvenioRDM and attach it to the record.
+
+    Assets can be in one of 2 forms: a URL (a github location) or a local file.
+    This will read the file into memory, then send it to the InvenioRDM server
+    and commit the upload.
+    '''
+    # Start by reading the assets to be sure we can actually get them, *before*
+    # trying to upload them to InvenioRDM.
     if asset.startswith('http'):
-        # GH tarball & zipball URLs end in the tag name, not a meaningful name.
-        parts = asset.split('/')
-        if 'zipball' in asset:
-            filename = f'{parts[-3]}_{parts[-1]}.zip'
-        elif 'tarball' in asset:
-            filename = f'{parts[-3]}_{parts[-1]}.tar.gz'
-        else:
-            filename = parts[-1]
+        filename = _filename_from_asset_url(asset)
         log(f'downloading {asset} ...')
         response, error = net('get', asset)
-        log(f'downloading {asset} ... done.')
-        if not error:
-            content = response.content
+        if error:
+            log(f'failed to download {asset}')
+            return
+        content = response.content
+        log(f'downloaded {len(content)} bytes of {asset}')
     else:
-        filename = asset
+        filename = path.basename(asset)
         content = None
         log(f'reading file {filename} ...')
         with open(asset, 'rb') as file:
             content = file.read()
-        log(f'reading file {filename} ... done.')
+        log(f'read {len(content)} bytes of file {filename}')
 
-    # Create a file upload link.
-    log(f'asking InvenioRDM for a file upload link for {filename}')
-    file_key = [{'key': filename}]
-    response, error = _invenio('post', url=record.files_url, data=file_key)
-    if error:
-        log(f'failed to get upload link for {filename}')
-        raise error
+    # Define a helper function for the remaining steps.
+    def action(op, url, thing, **kwargs):
+        log(f'doing {op} to InvenioRDM server for {filename} {thing}')
+        result, error = _invenio(op, url=url, **kwargs)
+        if error:
+            log(f'failed {op} for {filename} {thing}')
+            raise error
+        elif os.environ.get('IGA_RUN_MODE') == 'debug':
+            log(f'response from server for {url}:')
+            log(json.dumps(result, indent=2))
+        log(f'successfully did {op} for {filename} {thing}')
+        return result
 
-    for entry in response['entries']:
+    # Get a file upload link from the server, then using that, do a 'put' to
+    # write the content followed with a 'post' to commit the new file.
+    key = [{'key': filename}]
+    result = action('post', record.files_url, 'file upload link', data=key)
+    for entry in result['entries']:
         if entry['key'] == filename:
             content_url = entry['links']['content']
             commit_url = entry['links']['commit']
             break
     else:
-        log(f'response does not contain an entry for {filename} -- bailing')
+        log(f'server data did not contain an entry for {filename} -- bailing')
         raise InternalError('Data mismatch in result from InvenioRDM')
 
-    log(f'uploading content of {filename} to InvenioRDM server')
-    result, error = _invenio('put', url=content_url, data=content)
-    if error:
-        log(f'failed to upload content of {filename}')
-        raise error
-
-    log(f'committing {filename}')
-    result, error = _invenio('post', url=commit_url)
-    if error:
-        log(f'failed to commit {filename}')
-        raise error
+    action('put', content_url, 'upload', data=content)
+    action('post', commit_url, 'commit')
 
 
 def invenio_publish(record, community):
-    log('asking InvenioRDM server to publish the record')
-    response, error = _invenio('post', url=record.publish_url)
-    breakpoint()
+    '''Tell the InvenioRDM server to publish the record.'''
+    log('telling the server to publish the record')
+    result, error = _invenio('post', url=record.publish_url)
+    if error:
+        raise error
 
 
 def invenio_vocabulary(vocab_name):
@@ -166,19 +200,35 @@ def invenio_communities():
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def _invenio(action, endpoint='', url='', data=None):
+def _invenio(action, endpoint='', url='', data=''):
     '''Do HTTP action on the given endpoint with the given data & return json.'''
     assert endpoint or url, 'must provide a value for either endpoint or url'
     if endpoint:
         url = os.environ.get('INVENIO_SERVER') + endpoint
     data_type = 'json' if isinstance(data, (dict, list)) else 'octet-stream'
-    headers = {'Accept': 'application/json',
-               "Content-type": 'application/' + data_type,
+    headers = {'Content-type': 'application/' + data_type,
                'Authorization': 'Bearer ' + os.environ.get('INVENIO_TOKEN')}
-    api_call = partial(net, action, url, headers=headers)
-    if data_type == 'json':
-        data = json.dumps(data)
-    response, error = api_call(data=data) if action == 'post' else api_call()
+
+    # Construct a Python partial to gather most of the args for calling net().
+    client = None
+    if action == 'put':
+        # A 'put' means data being uploaded, so we need longer timeouts.
+        write_timeout = min(300, 60*max(1, len(data)//1_000_000))
+        timeout = httpx.Timeout(60, connect=15, read=15, write=write_timeout)
+        client = httpx.Client(timeout=timeout, http2=True, verify=False)
+    api_call = partial(net, action, url, client=client, headers=headers)
+
+    # Now perform the actual network api call.
+    if data:
+        log(f'data payload size = {len(data)}')
+        if data_type == 'json':
+            response, error = api_call(json=data)
+        else:
+            response, error = api_call(content=data)
+    else:
+        response, error = api_call()
+
+    # Interpret the results.
     if error:
         import commonpy.exceptions
         if isinstance(error, commonpy.exceptions.NoContent):
@@ -189,3 +239,18 @@ def _invenio(action, endpoint='', url='', data=None):
         return response.json(), None
     else:
         return response, None
+
+
+def _filename_from_asset_url(asset):
+    '''Return a file name based on a GitHub asset URL.
+
+    This function exists because GitHub tarball & zipball URLs end in the tag
+    name, not a meaningful name, so we have to make up our own.
+    '''
+    parts = asset.split('/')
+    if 'zipball' in asset:
+        return f'{parts[-3]}_{parts[-1]}.zip'
+    elif 'tarball' in asset:
+        return f'{parts[-3]}_{parts[-1]}.tar.gz'
+    else:
+        return parts[-1]
