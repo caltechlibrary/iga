@@ -430,10 +430,12 @@ execution. On Linux and macOS, debug mode also installs a signal handler on
 signal USR1 that causes IGA to drop into the `pdb` debugger if the signal
 USR1 is received. (Use `kill -USR1 NNN`, where NNN is the IGA process id.)
 \r
-Networks latencies are unpredicatable. If IGA needs to upload large assets,
-read and/or write operations may time out. IGA automatically scales its
-network timeouts based on file sizes; to override them and set an explicit
-timeout, use the option `--timeout` with a value in seconds.
+Networks latencies are unpredicatable. Reading and writing large files may take
+a long time; on the other hand, IGA should not wait forever before reporting an
+error if a server or network becomes unresponsive. To balance these conflicting
+needs, IGA automatically scales its network timeout based on file sizes. To
+override its adaptive algorithm and set an explicit timeout value, use the
+option `--timeout` with a value in seconds.
 \r
 By default, the output of the `verbose` and `debug` run modes is sent to the
 standard output (normally the terminal console). The option `--log-dest` can
