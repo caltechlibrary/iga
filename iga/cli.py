@@ -256,7 +256,7 @@ def _inform(text, end='\n'):
 
 @click.command(add_help_option=False)
 @click.option('--community', '-c', metavar='STR',
-              help='Send record to the RDM community with the given ID')
+              help='Send record to the RDM community')
 #
 @click.option('--draft', '-d', is_flag=True,
               help='Mark the record as a draft; don\'t publish it')
@@ -265,37 +265,37 @@ def _inform(text, end='\n'):
               help='File to upload (repeat for multiple files)')
 #
 @click.option('--github-account', '-a', 'account', metavar='STR',
-              help='GitHub account name (if not using a release URL)')
+              help='GitHub account name, if not using release URL')
 #
 @click.option('--github-repo', '-r', 'repo', metavar='STR',
-              help='GitHub repository name (if not using a release URL)')
+              help='GitHub repository name, if not using release URL')
 #
 @click.option('--github-token', '-g', metavar='STR', callback=_read_github_token,
-              help="GitHub acccess token (avoid – use variable)")
+              help="GitHub acccess token (**avoid – use variable**)")
 #
-@click.help_option('--help', '-h', help='Show this message and exit')
+@click.help_option('--help', '-h', help='Show this help message and exit')
 #
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
               help='InvenioRDM server address')
 #
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
-              help="InvenioRDM access token (avoid – use variable)")
+              help="InvenioRDM access token (**avoid – use variable**)")
 #
 @click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
               expose_value=False, callback=_config_log, is_eager=True,
-              help='Send log output to FILE (use "-" for stdout)')
+              help='Send log output to _FILE_ (use `-` for stdout)')
 #
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
-              help='Run mode: "quiet", "normal", "verbose", or "debug"')
+              help='Run mode: `quiet`, `normal`, `verbose`, `debug`')
 #
 @click.option('--record-dest', '-o', metavar='FILE', type=File('w', lazy=False),
-              help='Save the metadata record to FILE; don\'t upload it')
+              help='Save metadata record to _FILE_; don\'t upload it')
 #
 @click.option('--source-record', '-u', 'source', metavar='FILE', type=File('r'),
-              help='Use the given metadata record; don\'t build one')
+              help='Use metadata record from _FILE_; don\'t build one')
 #
 @click.option('--timeout', '-T', metavar='INT', type=INT, callback=_read_timeout,
-              help='Max time (in seconds) to wait on network operations')
+              help='Max time (in sec) to wait on network operations')
 #
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
               help='Print version info and exit', expose_value=False, is_eager=True)
