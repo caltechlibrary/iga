@@ -147,10 +147,10 @@ def _read_server(ctx, param, value):
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
-    # Check that the server really looks like an InvenioRDM server.
+    # Check that the given address really looks like an InvenioRDM server.
     if not invenio_api_available():
-        _alert(ctx, f'The given server address ({server}) does not appear to be'
-               ' reacheable or does not support the InvenioRDM API.')
+        _alert(ctx, f'The given server address ({server}) does not appear'
+               ' to be reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
     return result
 
@@ -247,6 +247,33 @@ def _inform(text, end='\n'):
         _print_text(text, 'green', end=end)
 
 
+def _list_communities(ctx, param, value):
+    if not value:
+        return
+    from rich import box
+    from rich.console import Console
+    from rich.table import Table
+    server = os.environ.get('INVENIO_SERVER', '')
+    table = Table(title=f'Communities available at server {server}',
+                  pad_edge=True, box=box.MINIMAL_DOUBLE_HEAD, expand=True)
+    table.add_column('Name', style='sky_blue2', no_wrap=True)
+    table.add_column('Title', style='medium_turquoise')
+    table.add_column('Web page', style='light_cyan3', no_wrap=False)
+    try:
+        for community in sorted(invenio_communities().values()):
+            table.add_row(community.name, community.title,
+                          f'[link={community.url}]{community.url}[/]')
+        Console().print()
+        Console().print(table)
+    except Exception as ex:
+        log('exception trying to list communities: ' + str(ex))
+        _alert(ctx, 'Unable to get a list of communitities from the InvenioRDM'
+               f' server at {server}. Please check the server address and the'
+               ' condition of the network.')
+        sys.exit(int(ExitCode.exception))
+    sys.exit(int(ExitCode.success))
+
+
 # Note #1: the default rich_click help feature does not offer a -h short form,
 # hence the need to use our own explicit help_option() definition below.
 #
@@ -276,10 +303,13 @@ def _inform(text, end='\n'):
 @click.help_option('--help', '-h', help='Show this help message and exit')
 #
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
-              help='InvenioRDM server address')
+              help='InvenioRDM server address', is_eager=True)
 #
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (**avoid – use variable**)")
+#
+@click.option('--list-communities', '-i', is_flag=True, callback=_list_communities,
+              help='List communities available for `--community`')
 #
 @click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
               expose_value=False, callback=_config_log, is_eager=True,
@@ -304,7 +334,7 @@ def _inform(text, end='\n'):
 @click.pass_context
 def cli(ctx, url_or_tag, community=None, draft=False, files_to_upload=None,
         account=None, repo=None, github_token=None,
-        server=None, invenio_token=None,
+        server=None, invenio_token=None, list_communities=False,
         log_dest=None, mode='normal', record_dest=None, source=None,
         timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
@@ -489,6 +519,12 @@ possible values:
             if not readable(file):
                 _alert(ctx, f'Unable to read file: {file}')
                 sys.exit(int(ExitCode.file_error))
+
+    if community and community not in invenio_communities():
+        _alert(ctx, f'"{community}" is not the name of a known community in'
+               ' the InvenioRDM server. The known communities can be obtained'
+               ' by using the option `--list-communities`.')
+        sys.exit(int(ExitCode.file_error))
 
     # Do the main work ........................................................
 

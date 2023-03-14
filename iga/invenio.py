@@ -11,7 +11,7 @@ file "LICENSE" for more information.
 from   commonpy.network_utils import net, netloc
 from   commonpy.data_utils import pluralized
 from   dataclasses import dataclass
-from   functools import partial
+from   functools import partial, cache
 import json
 from   sidetrack import log
 import socket
@@ -39,6 +39,16 @@ class InvenioRecord():
     files_url   : str                   # links 'files'
     assets      : list                  # List of file names or URLs
 
+
+@dataclass
+class InvenioCommunity():
+    '''Represents information about an Invenio community in InvenioRDM.'''
+    data  : dict                       # The complete record returned by RDM.
+    name  : str                        # The slug field value
+    url   : str                        # The links['self_html'] field value
+    id    : str                        # The id field value
+    title : str                        # The metadata['title'] value
+
 
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,7 +66,7 @@ def invenio_api_available():
         # If we can reach the host, now check that the API endpoint works.
         response, error = net('get', server_url + test_endpoint)
         if not error:
-            log(f'we can reach {server_url} and its API endpoint')
+            log(f'yes, we can reach {server_url} and its API endpoint')
             return True
         else:
             log(f'{server_url} is reachable but it doesn\'t respond to /api/records')
@@ -92,6 +102,7 @@ def invenio_create(metadata):
     else:
         log('record created successfully with no errors')
 
+    breakpoint()
     record = InvenioRecord(data=result,
                            draft_url=result['links']['self_html'],
                            record_url=result['links']['record_html'],
@@ -164,8 +175,13 @@ def invenio_publish(record, community):
     result, error = _invenio('post', url=record.publish_url)
     if error:
         raise error
+    if community:
+        # cli() will have checked that the given community exists.
+        communities = invenio_communities()
+        community_id = communities[community]
 
 
+@cache
 def invenio_vocabulary(vocab_name):
     '''Return a controlled vocabulary from this server.
 
@@ -192,8 +208,29 @@ def invenio_vocabulary(vocab_name):
     return []
 
 
+@cache
 def invenio_communities():
-    pass
+    '''Return a dict of communities available in this InvenioRDM server.'''
+    log('getting the list of communities from the server')
+    result, error = _invenio('get', endpoint='/api/communities')
+    if error:
+        raise error
+    communities = {}
+    for community in result.get('hits', {}).get('hits', []):
+        name = community['slug']
+        metadata = community['metadata']
+        title = metadata.get('title', '')
+        access = community['access']
+        if access['visibility'] != 'public':
+            log(f'community {name} is not publicly visible; skipping')
+            continue
+        communities[name] = InvenioCommunity(data=community,
+                                             name=name,
+                                             url=community['links']['self_html'],
+                                             id=community['id'],
+                                             title=title)
+    log(f'we got back {pluralized("community", communities, True)}')
+    return communities
 
 
 # Miscellaneous helper functions.
@@ -209,8 +246,9 @@ def _invenio(action, endpoint='', url='', data=''):
     if endpoint:
         url = os.environ.get('INVENIO_SERVER') + endpoint
     data_type = 'json' if isinstance(data, (dict, list)) else 'octet-stream'
-    headers = {'Content-type': 'application/' + data_type,
-               'Authorization': 'Bearer ' + os.environ.get('INVENIO_TOKEN')}
+    headers = {'Content-type': 'application/' + data_type}
+    if token := os.environ.get('INVENIO_TOKEN'):
+        headers['Authorization'] = 'Bearer ' + token
 
     # Construct a Python partial to gather most of the args for calling net().
     client = None
@@ -220,9 +258,9 @@ def _invenio(action, endpoint='', url='', data=''):
         tmout = _network_timeout(data)
         timeout = httpx.Timeout(tmout, connect=10, read=tmout, write=tmout)
         client = httpx.Client(timeout=timeout, http2=True, verify=False)
-    api_call = partial(net, action, url, client=client, headers=headers)
 
     # Now perform the actual network api call.
+    api_call = partial(net, action, url, client=client, headers=headers)
     if data:
         log(f'data payload size = {len(data)}')
         if data_type == 'json':
