@@ -12,7 +12,6 @@ from   commonpy.network_utils import net, netloc
 from   commonpy.data_utils import pluralized
 from   dataclasses import dataclass
 from   functools import partial
-import httpx
 import json
 from   sidetrack import log
 import socket
@@ -201,8 +200,12 @@ def invenio_communities():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def _invenio(action, endpoint='', url='', data=''):
-    '''Do HTTP action on the given endpoint with the given data & return json.'''
-    assert endpoint or url, 'must provide a value for either endpoint or url'
+    '''Do HTTP action on the given endpoint with the given data & return json.
+
+    Either (but not both) the full url, or the endpoint part, must be given as
+    an argument. The data is optional, and can be a JSON dict or a binary
+    string.
+    '''
     if endpoint:
         url = os.environ.get('INVENIO_SERVER') + endpoint
     data_type = 'json' if isinstance(data, (dict, list)) else 'octet-stream'
@@ -212,9 +215,10 @@ def _invenio(action, endpoint='', url='', data=''):
     # Construct a Python partial to gather most of the args for calling net().
     client = None
     if action == 'put':
-        # A 'put' means data being uploaded, so we need longer timeouts.
-        write_timeout = min(300, 60*max(1, len(data)//1_000_000))
-        timeout = httpx.Timeout(60, connect=15, read=15, write=write_timeout)
+        # 'put' => data is being uploaded, so we need to set longer timeouts.
+        import httpx
+        tmout = _network_timeout(data)
+        timeout = httpx.Timeout(tmout, connect=10, read=tmout, write=tmout)
         client = httpx.Client(timeout=timeout, http2=True, verify=False)
     api_call = partial(net, action, url, client=client, headers=headers)
 
@@ -239,6 +243,27 @@ def _invenio(action, endpoint='', url='', data=''):
         return response.json(), None
     else:
         return response, None
+
+
+def _network_timeout(data):
+    '''Return a timeout value (in seconds) for writing the given data string.
+
+    This uses the value in the environment variable IGA_NETWORK_TIMEOUT, if
+    given. If no explicit timeout value has been given, this calculates an
+    adaptive timeout value based on the size of the data, using a custom
+    heuristic invented by the author based on his experiences with a
+    slowish network.
+    '''
+    if given_timeout := os.environ.get('IGA_NETWORK_TIMEOUT', None):
+        # Assume that the main cli() has done sanity-checking on the value.
+        timeout = int(given_timeout)
+    else:
+        # Calculate a value based on these principles:
+        #  - Scale by the size of the data at roughly 1 min per 5 MB
+        #  - Don't exceed 30 minutes (1800 sec)
+        timeout = min(1800, 60*max(1, len(data)//2_000_000))
+    log(f'using a network timeout of {timeout} s')
+    return timeout
 
 
 def _filename_from_asset_url(asset):

@@ -11,7 +11,7 @@ file "LICENSE" for more information.
 import bdb
 import os
 import rich_click as click
-from   rich_click import File
+from   rich_click import File, INT
 import sys
 from   sidetrack import set_debug, log
 
@@ -103,7 +103,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
         _print_help_and_exit(ctx)
     elif value:
         log(f'using CLI option "--{param.name} {value}" for the {thing}')
-        os.environ[env_var] = value
+        os.environ[env_var] = str(value)
     elif env_var in os.environ:
         log(f"using value of environment variable {env_var} as the {thing}")
     elif required:
@@ -153,6 +153,24 @@ def _read_server(ctx, param, value):
         _alert(ctx, f'The given server address ({server}) does not appear to be'
                ' reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
+    return result
+
+
+def _read_timeout(ctx, param, value):
+    '''Read the timeout value and perform some basic checks on it.'''
+    if result := _read_param_value(ctx, param, value, 'IGA_NETWORK_TIMEOUT',
+                                   'network timeout (in seconds)', required=False):
+        # Allow Python-style thousands separators.
+        result = result.replace('_', '')
+        os.environ['IGA_NETWORK_TIMEOUT'] = result
+        # Do some sanity-checking on the input.
+        if not result.isdigit():
+            _alert(ctx, 'The timeout value must be given as an integer.')
+            sys.exit(int(ExitCode.bad_arg))
+        result = int(result)
+        if result < 0 or result > 6000:
+            _alert(ctx, 'The timeout value must be in the range 0-6000.')
+            sys.exit(int(ExitCode.bad_arg))
     return result
 
 
@@ -277,6 +295,9 @@ def _inform(text, end='\n'):
 @click.option('--source-record', '-u', 'source', metavar='FILE', type=File('r'),
               help='Use the given metadata record; don\'t build one')
 #
+@click.option('--timeout', '-T', metavar='INT', type=INT, callback=_read_timeout,
+              help='Max time (in seconds) to wait on network operations')
+#
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
               help='Print version info and exit', expose_value=False, is_eager=True)
 #
@@ -286,7 +307,7 @@ def cli(ctx, url_or_tag, community=None, draft=False, files_to_upload=None,
         account=None, repo=None, github_token=None,
         server=None, invenio_token=None,
         log_dest=None, mode='normal', record_dest=None, source=None,
-        help=False, version=False):  # noqa A002
+        timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 By default, IGA creates a metadata record for a GitHub software release
@@ -381,11 +402,14 @@ files that should be uploaded.
 If _both_ `--source-record` and `--file` are used, then IGA does not actually
 contact GitHub for any information.
 \r
-_**Other options recognized by IGA**_
+_**Draft versus published records**_
 \r
 By default, IGA will finalize and publish the record if all the steps are
 successful. To make it stop short and leave the record as a draft instead, use
-the option `--draft`.
+the option `--draft`. IGA will print the record URL to the terminal when it
+finishes, be it the draft or the final URL, as appropriate.
+\r
+_**Other options recognized by IGA**_
 \r
 Running IGA with the option `--record-dest` will make it create a metadata
 record, but instead of uploading the record (and any assets) to the InvenioRDM
@@ -405,6 +429,11 @@ IGA will drop into the `pdb` debugger if it encounters an exception during
 execution. On Linux and macOS, debug mode also installs a signal handler on
 signal USR1 that causes IGA to drop into the `pdb` debugger if the signal
 USR1 is received. (Use `kill -USR1 NNN`, where NNN is the IGA process id.)
+\r
+Networks latencies are unpredicatable. If IGA needs to upload large assets,
+read and/or write operations may time out. IGA automatically scales its
+network timeouts based on file sizes; to override them and set an explicit
+timeout, use the option `--timeout` with a value in seconds.
 \r
 By default, the output of the `verbose` and `debug` run modes is sent to the
 standard output (normally the terminal console). The option `--log-dest` can
