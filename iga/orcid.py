@@ -103,7 +103,7 @@ def orcid_data(orcid):
         if error:
             log(f'failed to get ORCID data for {orcid}: ' + str(error))
             return ('', '')
-        return json.loads(response.text)
+        return response.json()
     except json.JSONDecodeError as ex:
         log('unable to decode response from orcid.org API: ' + str(ex))
     except CommonPyException as ex:

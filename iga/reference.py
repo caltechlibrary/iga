@@ -69,7 +69,7 @@ def reference_from_doi(doi):
     log(f'asking Crossref for formatted reference for {doi}')
     doi_url = 'https://doi.org/' + doi
     headers = {'accept': 'text/x-bibliography; style=apa'}
-    (response, error) = net('get', doi_url, headers=headers)
+    response, error = net('get', doi_url, headers=headers)
     if not error:
         from iga.data_utils import without_html
         log('received response from Crossref: ' + response.text)

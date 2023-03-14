@@ -47,7 +47,7 @@ def _doi_for_pubmed(pub_id, scheme):
         return ''
     log(f'looking up DOI for {pub_id} using NCBI idconv')
     base = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json'
-    (response, error) = net('get', base + '&ids=' + pub_id)
+    response, error = net('get', base + '&ids=' + pub_id)
     if not error:
         try:
             data = response.json()
