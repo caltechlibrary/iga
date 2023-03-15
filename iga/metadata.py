@@ -44,7 +44,7 @@ from   sidetrack import log
 import sys
 
 from iga.data_utils import deduplicated, similar_urls, listified, cleaned_text
-from iga.exceptions import MissingData, GitHubError
+from iga.exceptions import MissingData
 from iga.github import (
     github_account,
     github_release,
@@ -397,8 +397,7 @@ def contributors(repo, release):
             log('adding GitHub repo contributors list as contributor(s)')
         # Skip bot accounts.
         for account in filterfalse(probable_bot, repo_contributors):
-            contributors.append({'person_or_org': _identity_from_github(account),
-                                 'role': {'id': 'other'}})
+            contributors.append(_identity_from_github(account, 'other'))
 
     # We're getting data from multiple sources & we might have duplicates.
     # Deduplicate based on names & roles only.
@@ -541,10 +540,10 @@ def formats(repo, release):
     https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
     '''
     formats = []
-    if release.tarball_url:
-        formats.append("application/x-tar-gz")
     if release.zipball_url:
         formats.append("application/zip")
+    if release.tarball_url:
+        formats.append("application/x-tar-gz")
     for asset in release.assets:
         formats.append(asset.content_type)
     return formats
@@ -1110,50 +1109,41 @@ def _entity_from_string(data, role):
     #  - a person's name, like "Michael Hucka"
     #  - an organization's name, like "California Institute of Technology"
 
-    structure = {}
+    result = {}
     scheme = recognized_scheme(data)
     if scheme == 'orcid':
         from iga.orcid import name_from_orcid
         orcid = detected_id(data)
         (given, family) = name_from_orcid(orcid)
         if family or given:
-            structure = {'family_name': flattened_name(family),
-                         'given_name': flattened_name(given),
-                         'identifiers': [{'identifier': orcid,
-                                          'scheme': 'orcid'}],
-                         'type': 'personal'}
+            result = {'person_or_org': {'family_name': flattened_name(family),
+                                        'given_name': flattened_name(given),
+                                        'identifiers': [{'identifier': orcid,
+                                                         'scheme': 'orcid'}],
+                                        'type': 'personal'}}
     elif scheme == 'ror':
         from iga.ror import name_from_ror
         name = name_from_ror(data)
         if name:
-            structure = {'name': name,
-                         'type': 'organizational'}
-    elif data.startswith('https://github.com'):
-        # Might be the URL to an account page on GitHub.
-        tail = data.replace('https://github.com/', '')
-        if '/' not in tail and (account := github_account(tail)):
-            structure = _identity_from_github(account)
-        else:
-            log('{data} is not interpretable as a GitHub account')
-    elif len(data.split()) == 1 and (account := github_account(data)):
-        # This is the name of an account in GitHub.
-        structure = _identity_from_github(account)
+            result = {'person_or_org': {'name': name,
+                                        'type': 'organizational'}}
+    elif account := _parsed_github_account(data):
+        # It's the name of an account in GitHub.
+        result = _identity_from_github(account)
     else:
         # We're getting into expensive heuristic guesswork now.
         from iga.name_utils import is_person
         if is_person(data):
             (given, family) = split_name(data)
             if family or given:
-                structure = {'family_name': flattened_name(family),
-                             'given_name': flattened_name(given),
-                             'type': 'personal'}
+                result = {'person_or_org': {'family_name': flattened_name(family),
+                                            'given_name': flattened_name(given),
+                                            'type': 'personal'}}
             else:
                 log(f'guessing "{data}" is a person but failed to split name')
         else:
-            structure = {'name': data,
-                         'type': 'organizational'}
-
-    result = {'person_or_org': structure} if structure else {}
+            result = {'person_or_org': {'name': data,
+                                        'type': 'organizational'}}
     if result and role:
         result['role'] = {'id': role}
     return result
@@ -1209,7 +1199,7 @@ def _entity_from_dict(data, role):
             else:
                 name = affiliation
             if name:
-                result.update({'affiliations': [{'name': flattened_name(name)}]})
+                result['affiliations'] = [{'name': flattened_name(name)}]
         if role:
             result['role'] = {'id': role}
     return result
@@ -1228,18 +1218,43 @@ def _repo_owner(repo):
     return _identity_from_github(account)
 
 
-def _identity_from_github(account):
+def _identity_from_github(account, role=None):
     if account.type == 'User':
         (given, family) = split_name(account.name)
-        result = {'given_name': given,
-                  'family_name': family,
-                  'type': 'personal'}
-        if account.company:
-            result.update({'affiliations': [{'name': account.company}]})
+        person_or_org = {'given_name': given,
+                         'family_name': family,
+                         'type': 'personal'}
     else:
-        return {'name': account.name,
-                'type': 'organizational'}
+        name = account.name.strip() if account.name else ''
+        person_or_org = {'name': name,
+                         'type': 'organizational'}
+    result = {'person_or_org': person_or_org}
+    if account.company:
+        account.company = account.company.strip()
+        if account.company.startswith('@'):
+            # Some people write @foo to indicate org account "foo" in GitHub.
+            candidate = account.company[1:]
+            if org_account := github_account(candidate):
+                result['affiliations'] = [{'name': org_account.name}]
+            else:
+                # No luck. Take it as-is.
+                result['affiliations'] = [{'name': account.company}]
+        else:
+            result['affiliations'] = [{'name': account.company}]
+    if role:
+        result['role'] = {'id': role}
     return result
+
+
+def _parsed_github_account(data):
+    if data.startswith('https://github.com'):
+        # Might be the URL to an account page on GitHub.
+        tail = data.replace('https://github.com/', '')
+        if '/' not in tail and (account := github_account(tail)):
+            return account
+    elif len(data.split()) == 1 and (account := github_account(data)):
+        return account
+    return None
 
 
 def _parsed_funder_info(data):
