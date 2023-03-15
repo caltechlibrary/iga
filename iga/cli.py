@@ -192,13 +192,15 @@ def _print_help_and_exit(ctx):
     sys.exit(int(ExitCode.success))
 
 
-def _print_text(text, color='turquoise4', end='\n'):
+def _print_text(text, color='turquoise4', end='\n', wrap=True):
     import shutil
     from rich.console import Console
-    from textwrap import wrap
     width = (shutil.get_terminal_size().columns - 2) or 78
+    if wrap:
+        from textwrap import wrap
+        text = '\n'.join(wrap(text, width=width))
     console = Console(width=width)
-    console.print('\n'.join(wrap(text, width=width)), style=color, end=end)
+    console.print(text, style=color, end=end, highlight=False)
 
 
 def _alert(ctx, msg, print_usage=True):
@@ -244,8 +246,15 @@ def _alert(ctx, msg, print_usage=True):
 
 def _inform(text, end='\n'):
     log('[inform] ' + text)
+    # Detect URLs are convert them into Rich links.
+    if contains_url := ('http' in text):
+        import re
+        if match := re.search(r'(https?://\S+)', text):
+            ustart, uend = match.start(), match.end()
+            url = text[ustart:uend]
+            text = text[:ustart] + '[link=' + url + ']' + url + '[/]' + text[uend:]
     if os.environ.get('IGA_RUN_MODE') != 'quiet':
-        _print_text(text, 'turquoise4', end=end)
+        _print_text(text, 'turquoise4', end=end, wrap=(not contains_url))
 
 
 def _list_communities(ctx, param, value):
@@ -317,7 +326,7 @@ def _list_communities(ctx, param, value):
               help='Send log output to _FILE_ (use `-` for stdout)')
 #
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
-              help='Run mode: `quiet`, `normal`, `verbose`, `debug`')
+              help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
 @click.option('--record-dest', '-o', metavar='FILE', type=File('w', lazy=False),
               help='Save metadata record to _FILE_; don\'t upload it')
@@ -498,9 +507,9 @@ Otherwise, it returns a nonzero status code. The following table lists the
 possible values:
 \r
   0 = success – program completed normally  
-  1 = the user interrupted the program's execution  
+  1 = interrupted  
   2 = encountered a bad or missing value for an option  
-  3 = no network detected – cannot proceed  
+  3 = no network detected  
   4 = encountered a problem with a file or directory  
   5 = encountered a problem interacting with GitHub  
   6 = encountered a problem interacting with InvenioRDM  
