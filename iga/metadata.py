@@ -976,14 +976,7 @@ def sizes(repo, release):
     '''Return InvenioRDM "sizes".
     https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
     '''
-    sizes = []
-    # FIXME can't get size of tarball & zipball from GitHub for some reason,
-    # so need to get it after downloading the files locally.
-    sizes.append('unknown')
-    sizes.append('unknown')
-    for asset in release.assets:
-        sizes.append(f'{asset.size} bytes')
-    return sizes
+    return []
 
 
 def subjects(repo, release):
