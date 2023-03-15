@@ -24,10 +24,11 @@ from iga.github import (
 )
 from iga.invenio import (
     invenio_api_available,
-    invenio_create,
-    invenio_upload,
-    invenio_publish,
     invenio_communities,
+    invenio_community_send,
+    invenio_create,
+    invenio_publish,
+    invenio_upload,
 )
 
 
@@ -424,19 +425,32 @@ By default, IGA attaches to the InvenioRDM record all file assets associated
 with the software release in GitHub. To override which file assets are attached
 to the InvenioRDM record, you can use the option `--file` followed by a path to
 a file to be uploaded. The option `--file` can be repeated to upload multiple
-file assets. Note that if `--file` is provided, then IGA does not use any
-file assets from GitHub; it is the user's responsibility to supply all the
+file assets. Note that if `--file` is provided, then IGA does _not use any
+file assets from GitHub_; it is the user's responsibility to supply all the
 files that should be uploaded.
 \r
 If _both_ `--source-record` and `--file` are used, then IGA does not actually
 contact GitHub for any information.
 \r
+_**Handling communities**_
+\r
+The option `--list-communities` can be used to get a list of communities
+supported by the InvenioRDM server. To submit your record to a community,
+use the `--community` option together with a community name. Note that the
+submitting a record to a community means that the record will not be finalized
+and will not be publicly visible yet; instead, the record URL that you receive
+will be for a draft version, pending review by the community moderators.
+\r
 _**Draft versus published records**_
 \r
-By default, IGA will finalize and publish the record if all the steps are
-successful. To make it stop short and leave the record as a draft instead, use
-the option `--draft`. IGA will print the record URL to the terminal when it
-finishes, be it the draft or the final URL, as appropriate.
+If the `--community` option is not used, then by default, IGA will finalize and
+publish the record. To make it stop short and leave the record as a draft
+instead, use the option `--draft`. The draft option also takes precedence over
+the community option: if you use both `--draft` and `--community`, IGA will
+stop after creating the draft record and will _not_ submit it to the community.
+(You can nevertheless submit the record to a community manually once the draft
+is created, by visiting the record's web page and using the InvenioRDM
+interface there.)
 \r
 _**Other options recognized by IGA**_
 \r
@@ -559,10 +573,17 @@ possible values:
                 invenio_upload(record, item)
             _inform(' done.')
             if draft:
-                _inform(f'The draft record can be found at {record.draft_url}')
+                _inform(f'The draft record is available at {record.draft_url}')
+            elif community:
+                invenio_community_send(record, community)
+                _inform(f'The record has been submitted to community "{community}"'
+                        f' and the draft is available at {record.draft_url}')
             else:
-                invenio_publish(record, community)
-                _inform(f'The new record can be found at {record.record_url}')
+                invenio_publish(record)
+                _inform(f'The published record is available at {record.record_url}')
+        if os.environ.get('IGA_RUN_MODE') == 'quiet':
+            # In quiet mode nothing else will be printed, so we finish with this
+            click.echo(record.record_url or record.draft_url)
     except KeyboardInterrupt:
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt
@@ -571,12 +592,12 @@ possible values:
         pass
     except Exception as ex:             # noqa: PIE786
         if isinstance(ex, GitHubError):
-            _alert(ctx, f'Failed to get data for release "{tag}" in repository'
-                   f' "{repo}" of GitHub account "{account}": {ex}')
+            _alert(ctx, f'Failed to get the necessary data for release "{tag}"'
+                   f' in repository "{repo}" of GitHub account "{account}": {ex}')
             exit_code = ExitCode.github_error
         elif isinstance(ex, InvenioRDMError):
-            _alert(ctx, 'The creation of a record in the InvenioRDM server'
-                   f' failed due to the following: {ex}')
+            _alert(ctx, 'Failed to complete all the steps of creating a record'
+                   f' in the InvenioRDM server: {ex}')
             exit_code = ExitCode.inveniordm_error
         else:
             import iga

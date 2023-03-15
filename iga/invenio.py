@@ -10,6 +10,7 @@ file "LICENSE" for more information.
 
 from   commonpy.network_utils import net, netloc
 from   commonpy.data_utils import pluralized
+from   contextlib import suppress
 from   dataclasses import dataclass
 from   functools import partial, cache
 import json
@@ -34,8 +35,9 @@ class InvenioRecord():
     '''
     data        : dict                  # The complete record returned by RDM.
     draft_url   : str                   # links 'self'
-    record_url  : str                   # links 'record_html' URL
+    review_url  : str                   # links 'review'
     publish_url : str                   # links 'publish'
+    record_url  : str                   # links 'record_html' URL
     files_url   : str                   # links 'files'
     assets      : list                  # List of file names or URLs
 
@@ -102,14 +104,14 @@ def invenio_create(metadata):
     else:
         log('record created successfully with no errors')
 
-    breakpoint()
     record = InvenioRecord(data=result,
                            draft_url=result['links']['self_html'],
-                           record_url=result['links']['record_html'],
+                           review_url=result['links']['review'],
                            publish_url=result['links']['publish'],
+                           record_url='',
                            files_url=result['links']['files'],
                            assets=[])
-    log(f'new record record_html = {record.record_url}')
+    log(f'new record record_html = {record.draft_url}')
     return record
 
 
@@ -169,16 +171,47 @@ def invenio_upload(record, asset):
     action('post', commit_url, 'commit')
 
 
-def invenio_publish(record, community):
+def invenio_community_send(record, community):
+    '''Send the record to the InvenioRDM community for review.'''
+    # cli() will have checked that the given community exists so we don't
+    # need to do that here.
+    communities = invenio_communities()
+    community_id = communities[community].id
+
+    data = {
+        "receiver": {"community": community_id},
+        "type": "community-submission",
+    }
+    log(f'submitting the record to community "{community}" ({community_id})')
+    result, error = _invenio('put', url=record.review_url, data=data)
+    if error:
+        raise error
+
+    try:
+        submit_url = result['links']['actions']['submit']
+    except KeyError:
+        raise InternalError('Unexpected result in community submission step')
+    import iga
+    data = {
+        'payload': {
+            'content': 'This record is being submitted automatically using'
+            f'the InvenioRDM GitHub Archiver (IGA) version {iga.__version__}',
+            'format': 'html',
+        }
+    }
+    result, error = _invenio('post', url=submit_url, data=data)
+    if error:
+        raise error
+
+
+def invenio_publish(record):
     '''Tell the InvenioRDM server to publish the record.'''
     log('telling the server to publish the record')
     result, error = _invenio('post', url=record.publish_url)
     if error:
         raise error
-    if community:
-        # cli() will have checked that the given community exists.
-        communities = invenio_communities()
-        community_id = communities[community]
+    record.record_url = result['links']['self_html']
+    log(f'successfully published record at {record.record_url}')
 
 
 @cache
