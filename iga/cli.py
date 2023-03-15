@@ -192,7 +192,7 @@ def _print_help_and_exit(ctx):
     sys.exit(int(ExitCode.success))
 
 
-def _print_text(text, color, end='\n'):
+def _print_text(text, color='turquoise4', end='\n'):
     import shutil
     from rich.console import Console
     from textwrap import wrap
@@ -245,7 +245,7 @@ def _alert(ctx, msg, print_usage=True):
 def _inform(text, end='\n'):
     log('[inform] ' + text)
     if os.environ.get('IGA_RUN_MODE') != 'quiet':
-        _print_text(text, 'green', end=end)
+        _print_text(text, 'turquoise4', end=end)
 
 
 def _list_communities(ctx, param, value):
@@ -568,10 +568,10 @@ possible values:
             _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata)
             _inform(' done.')
-            _inform('Uploading files to InvenioRDM server', end='...')
+            _inform('Attaching assets:')
             for item in files_to_upload or github_assets:
-                invenio_upload(record, item)
-            _inform(' done.')
+                invenio_upload(record, item, _print_text)
+            _inform('Done.')
             if draft:
                 _inform(f'The draft record is available at {record.draft_url}')
             elif community:

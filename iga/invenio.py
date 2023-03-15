@@ -115,7 +115,7 @@ def invenio_create(metadata):
     return record
 
 
-def invenio_upload(record, asset):
+def invenio_upload(record, asset, print_status):
     '''Upload a file asset to InvenioRDM and attach it to the record.
 
     Assets can be in one of 2 forms: a URL (a github location) or a local file.
@@ -126,19 +126,21 @@ def invenio_upload(record, asset):
     # trying to upload them to InvenioRDM.
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
-        log(f'downloading {asset} ...')
+        print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
         response, error = net('get', asset)
         if error:
             log(f'failed to download {asset}')
             return
+        print_status('done')
         content = response.content
         log(f'downloaded {len(content)} bytes of {asset}')
     else:
         filename = path.basename(asset)
         content = None
-        log(f'reading file {filename} ...')
+        print_status(f' - Reading [bold]{filename}[/]', end='...')
         with open(asset, 'rb') as file:
             content = file.read()
+        print_status('done')
         log(f'read {len(content)} bytes of file {filename}')
 
     # Define a helper function for the remaining steps.
@@ -157,6 +159,7 @@ def invenio_upload(record, asset):
     # Get a file upload link from the server, then using that, do a 'put' to
     # write the content followed with a 'post' to commit the new file.
     key = [{'key': filename}]
+    print_status(f' - Sending [bold]{filename}[/] to InvenioRDM', end='...')
     result = action('post', record.files_url, 'file upload link', data=key)
     for entry in result['entries']:
         if entry['key'] == filename:
@@ -169,6 +172,7 @@ def invenio_upload(record, asset):
 
     action('put', content_url, 'upload', data=content)
     action('post', commit_url, 'commit')
+    print_status('done')
 
 
 def invenio_community_send(record, community):
