@@ -124,6 +124,8 @@ def invenio_upload(record, asset, print_status):
     '''
     # Start by reading the assets to be sure we can actually get them, *before*
     # trying to upload them to InvenioRDM.
+    import humanize
+    size = ''
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
@@ -133,7 +135,8 @@ def invenio_upload(record, asset, print_status):
             return
         print_status('done')
         content = response.content
-        log(f'downloaded {len(content)} bytes of {asset}')
+        size = humanize.naturalsize(len(content))
+        log(f'downloaded {size} bytes of {asset}')
     else:
         filename = path.basename(asset)
         content = None
@@ -141,7 +144,8 @@ def invenio_upload(record, asset, print_status):
         with open(asset, 'rb') as file:
             content = file.read()
         print_status('done')
-        log(f'read {len(content)} bytes of file {filename}')
+        size = humanize.naturalsize(len(content))
+        log(f'read {size} bytes of file {filename}')
 
     # Define a helper function for the remaining steps.
     def action(op, url, thing, **kwargs):
@@ -159,7 +163,7 @@ def invenio_upload(record, asset, print_status):
     # Get a file upload link from the server, then using that, do a 'put' to
     # write the content followed with a 'post' to commit the new file.
     key = [{'key': filename}]
-    print_status(f' - Sending [bold]{filename}[/] to InvenioRDM', end='...')
+    print_status(f' - Sending [bold]{filename}[/] ({size}) to InvenioRDM', end='...')
     result = action('post', record.files_url, 'file upload link', data=key)
     for entry in result['entries']:
         if entry['key'] == filename:
