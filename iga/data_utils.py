@@ -77,8 +77,6 @@ def cleaned_text(text):
     '''
     # Get rid of embedded newlines and related characters.
     text = ' '.join(text.splitlines())
-    # Make sure periods are followed by spaces.
-    text = text.replace('.', '. ')
     # Normalize runs of multiple spaces to one.
     return ' '.join(text.split())
 
