@@ -553,6 +553,7 @@ possible values:
 
     from iga.metadata import metadata_for_release, metadata_from_file
 
+    log(f'invoked with command line: {sys.argv}')
     exit_code = ExitCode.success
     try:
         github_assets = []
