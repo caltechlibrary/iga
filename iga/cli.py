@@ -113,7 +113,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
                ' For more information, use the option `--help`.)')
         sys.exit(int(ExitCode.bad_arg))
     else:
-        log(f'environment variable {env_var} not set')
+        log(f'environment variable {env_var} is not set')
     return os.environ[env_var] if env_var in os.environ else None
 
 
@@ -133,26 +133,45 @@ def _read_server(ctx, param, value):
     '''Read the server address & set the environment variable INVENIO_SERVER.'''
     result = _read_param_value(ctx, param, value, 'INVENIO_SERVER',
                                'InvenioRDM server address')
-    server = os.environ.get('INVENIO_SERVER', '')
+    server = os.environ.get('INVENIO_SERVER', '').strip()
+
     # Do some basic checks on the value to prevent possibly misleading errors
     # later if we blindly tried to do an http 'post' on the given destination.
     if not server.startswith('http'):
+        log(f'"{server}" is not a URL; will try to derive one')
         from iptools import ipv4, ipv6
-        if not ipv4.validate_ip(server) and not ipv6.validate_ip(server):
+        if ipv4.validate_ip(server):
+            server = 'https://' + server
+        elif ipv6.validate_ip(server):
+            server = 'https://[' + server + ']'
+        elif server.startswith('[') and server.endswith(']'):
+            # This would imply an IPv6 address, but is it really?
+            inner_value = server[1:-1]
+            if ipv6.validate_ip(inner_value):
+                server = 'https://' + server
+            else:
+                _alert(ctx, f'The value given to the --server option ({server})'
+                       ' looks like an IPv6 address but {inner_value} fails'
+                       ' IPv6 validation. Please check the value, or use a'
+                       ' different address for the server. If you believe this'
+                       ' is in error, please contact the developers of IGA.')
+                sys.exit(int(ExitCode.bad_arg))
+        else:
+            # Not an IP address, so maybe it's a host name?
             from validators import domain
             if domain(server):
-                os.environ['INVENIO_SERVER'] = 'https://' + server
-                log(f'modifying the supplied InvenioRDM server address'
-                    f' ({server}) to prepend https://')
+                server = 'https://' + server
             else:
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
-    # Check that the given address really looks like an InvenioRDM server.
-    if not invenio_api_available():
-        _alert(ctx, f'The given server address ({server}) does not appear'
-               ' to be reacheable or does not support the InvenioRDM API.')
+    # Check that the host actually offers an InvenioRDM API.
+    if not invenio_api_available(server):
+        _alert(ctx, f'The server address ({server}) does not appear to be'
+               ' reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
+    log(f'will use {server} as the InvenioRDM server address')
+    os.environ['INVENIO_SERVER'] = server
     return result
 
 
@@ -219,7 +238,6 @@ def _alert(ctx, msg, print_usage=True):
         ALIGN_ERRORS_PANEL,
         ERRORS_PANEL_TITLE,
         STYLE_ERRORS_PANEL_BORDER,
-        STYLE_USAGE,
         STYLE_OPTION,
         STYLE_ARGUMENT,
         STYLE_SWITCH,
@@ -230,7 +248,9 @@ def _alert(ctx, msg, print_usage=True):
         "option": STYLE_OPTION,
         "argument": STYLE_ARGUMENT,
         "switch": STYLE_SWITCH,
-        "usage": STYLE_USAGE,
+        "usage": 'gold3',
+        'markdown.link': 'dodger_blue1',
+        'markdown.link_url': 'dodger_blue3',
     }), highlighter=highlighter)
     if print_usage:
         console.print(Padding(highlighter(ctx.get_usage()), 1))
@@ -556,6 +576,7 @@ possible values:
     log(f'invoked with command line: {sys.argv}')
     exit_code = ExitCode.success
     try:
+        record = None
         github_assets = []
         if source:
             _inform(f'Using {source.name} instead of building a record.')
@@ -578,10 +599,12 @@ possible values:
             _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata)
             _inform(' done.')
+
             _inform('Attaching assets:')
             for item in files_to_upload or github_assets:
                 invenio_upload(record, item, _print_text)
             _inform('Done.')
+
             if draft:
                 _inform(f'The draft record is available at {record.draft_url}')
             elif community:
@@ -602,12 +625,17 @@ possible values:
         pass
     except Exception as ex:             # noqa: PIE786
         if isinstance(ex, GitHubError):
-            _alert(ctx, f'Failed to get the necessary data for release "{tag}"'
-                   f' in repository "{repo}" of GitHub account "{account}": {ex}')
+            _alert(ctx, f'Experienced an error interacting with GitHub: {ex}')
             exit_code = ExitCode.github_error
         elif isinstance(ex, InvenioRDMError):
-            _alert(ctx, 'Failed to complete all the steps of creating a record'
-                   f' in the InvenioRDM server: {ex}')
+            text = 'Experienced an error interacting with InvenioRDM.'
+            if record:
+                text += (' The partially-completed record can be found at'
+                         f' [{record.draft_url}]({record.draft_url}). You'
+                         ' may complete it manually, or delete it and try again.')
+            if os.environ.get('IGA_RUN_MODE') in ['verbose', 'debug']:
+                text += f'\n\nThe error is as follows: **{ex}**'
+            _alert(ctx, text)
             exit_code = ExitCode.inveniordm_error
         else:
             import iga
