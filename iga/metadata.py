@@ -47,6 +47,7 @@ from iga.data_utils import deduplicated, similar_urls, listified, cleaned_text
 from iga.exceptions import MissingData
 from iga.github import (
     github_account,
+    github_file_url,
     github_release,
     github_repo,
     github_repo_contributors,
@@ -953,7 +954,6 @@ def rights(repo, release):
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
     filenames = github_repo_filenames(repo)
-    base_url = 'https://github.com/' + repo.owner.login + '/' + repo.name
     for basename in ['LICENSE', 'License', 'license',
                      'LICENCE', 'Licence', 'licence',
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
@@ -963,7 +963,7 @@ def rights(repo, release):
                 # There's no safe way to summarize arbitrary license text,
                 # so we can't provide a 'description' field value.
                 rights = {'title': {'en': 'License'},
-                          'link': base_url + '/' + basename + ext}
+                          'link': github_file_url(repo, basename + ext)}
                 break
         else:
             continue
