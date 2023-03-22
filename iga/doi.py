@@ -8,11 +8,16 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import net
+import commonpy.exceptions
+from   commonpy.network_utils import network
+from   contextlib import suppress
 import functools
+import json
+import os
 from   sidetrack import log
 
-from iga.id_utils import recognized_scheme
+from   iga.id_utils import recognized_scheme
+from   iga.exceptions import InternalError
 
 
 # Exported module functions.
@@ -45,21 +50,24 @@ def _doi_for_pubmed(pub_id, scheme):
     '''Return a DOI for a PMCID or PMID by contacting PubMed.'''
     if not pub_id:
         return ''
-    log(f'looking up DOI for {pub_id} using NCBI idconv')
-    base = 'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json'
-    response, error = net('get', base + '&ids=' + pub_id)
-    if not error:
-        try:
-            data = response.json()
-            if records := data.get('records', []):
-                if doi := records[0].get('doi', ''):
-                    log(f'got DOI {doi} for {pub_id}')
-                    return doi
-                elif errmsg := records[0].get('errmsg', ''):
-                    log(f'NCBI returned an error for {pub_id}: ' + errmsg)
-                    return ''
-        except (TypeError, ValueError) as ex:
-            log(f'unable to parse data from NCBI for {pub_id}: ' + str(ex))
-    else:
-        log(f'error trying to get DOI for {pub_id}: ' + str(error))
+    log(f'looking up DOI for {scheme} {pub_id} using NCBI idconv')
+    url = f'https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/?format=json&ids={pub_id}'
+    try:
+        data = network('get', url).json()
+        if os.environ.get('IGA_RUN_MODE') == 'debug':
+            log(f'data received for {scheme} "{pub_id}" from NCBI:\n{str(data)}')
+        with suppress(KeyError, IndexError):
+            if doi := data['records'][0].get('doi', ''):
+                return doi
+            elif errmsg := data['records'][0].get('errmsg', ''):
+                log(f'NCBI returned an error for {pub_id}: ' + errmsg)
+            else:
+                log(f'did not get a DOI or error message for {pub_id} from NCBI')
+    except commonpy.exceptions.NoContent:
+        log(f'NBCI returned no result for "{pub_id}"')
+    except commonpy.exceptions.CommonPyException as ex:
+        log(f'could not get DOI from NCBI for "{pub_id}": ' + str(ex))
+    except json.JSONDecodeError as ex:
+        # This means we have to fix something.
+        raise InternalError('Error trying to decode JSON from NCBI: ' + str(ex))
     return ''

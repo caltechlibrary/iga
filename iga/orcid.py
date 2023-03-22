@@ -8,13 +8,16 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.exceptions import CommonPyException
-from   commonpy.network_utils import net
+import commonpy.exceptions
+from   commonpy.network_utils import network
+import functools
 import json
+import os
 from   sidetrack import log
 
-from iga.id_utils import detected_id
-from iga.name_utils import split_name
+from   iga.id_utils import detected_id
+from   iga.exceptions import InternalError
+from   iga.name_utils import split_name
 
 
 # Exported module functions.
@@ -94,18 +97,23 @@ def name_from_orcid(orcid):
     return (given, family)
 
 
+@functools.cache
 def orcid_data(orcid):
     '''Return the data from orcid.org for the given orcid id.'''
-    log('contacting ORCID for record for ' + orcid)
-    data_url = f'https://orcid.org/{orcid}/public-record.json'
+    if not orcid:
+        return ''
+    log(f'lookiing up ORCID data for "{orcid}"')
+    url = f'https://orcid.org/{orcid}/public-record.json'
     try:
-        response, error = net('get', data_url)
-        if error:
-            log(f'failed to get ORCID data for {orcid}: ' + str(error))
-            return ('', '')
-        return response.json()
+        data = network('get', url).json()
+        if os.environ.get('IGA_RUN_MODE') == 'debug':
+            log(f'data received for {orcid} from orcid.org:\n{str(data)}')
+        return data
+    except commonpy.exceptions.NoContent:
+        log(f'orcid.org returned no result for "{orcid}"')
+    except commonpy.exceptions.CommonPyException as ex:
+        log(f'could not get data from orcid.org for "{orcid}": ' + str(ex))
     except json.JSONDecodeError as ex:
-        log('unable to decode response from orcid.org API: ' + str(ex))
-    except CommonPyException as ex:
-        log(f'failed to get data for {orcid} from orcid.org: ' + str(ex))
+        # This means we have to fix something.
+        raise InternalError('Error trying to decode JSON from orcid.org: ' + str(ex))
     return ''

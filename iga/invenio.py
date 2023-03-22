@@ -8,9 +8,9 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import net, netloc
+from   commonpy.network_utils import network, netloc
 from   commonpy.data_utils import pluralized
-from   contextlib import suppress
+import commonpy.exceptions
 from   dataclasses import dataclass
 from   functools import partial, cache
 import json
@@ -19,7 +19,11 @@ import socket
 import os
 from   os import path
 
-from iga.exceptions import InvenioRDMError, InternalError
+import iga
+from   iga.exceptions import (
+    InternalError,
+    InvenioRDMError,
+)
 
 
 # Exported data structures.
@@ -55,27 +59,25 @@ class InvenioCommunity():
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def invenio_api_available():
+def invenio_api_available(server_url):
     '''Return True if the INVENIO_SERVER responds to API calls.'''
-    server_url = os.environ.get('INVENIO_SERVER')
     server_host = netloc(server_url)
     test_endpoint = '/api/records?size=1'
     try:
         log(f'testing if we can reach {server_url} in 5 sec or less')
         socket.setdefaulttimeout(5)
-        # If this can't reach the host, it'll throw an exception.
+        # If the next one can't reach the host, it'll throw an exception.
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server_host, 443))
-        # If we can reach the host, now check that the API endpoint works.
-        response, error = net('get', server_url + test_endpoint)
-        if not error:
-            log(f'yes, we can reach {server_url} and its API endpoint')
+        # If we can reach the host, check that it responds to the API endpoint.
+        if network('get', server_url + test_endpoint):
+            log(f'we can reach {server_url} and it responds to {test_endpoint}')
             return True
-        else:
-            log(f'{server_url} is reachable but it doesn\'t respond to /api/records')
     except KeyboardInterrupt as ex:
         raise ex
-    except Exception as ex:
-        log(f'failed to reach server {server_url}: {str(ex)}')
+    except (socket.error, commonpy.exceptions.CommonPyException) as ex:
+        log('error attempting to reach {server_url}{test_endpoint}: ' + str(ex))
+        return False
+    log(f'failed to reach server {server_url}')
     return False
 
 
@@ -86,16 +88,9 @@ def invenio_create(metadata):
     does not upload file attachments, which is something handled by a separate
     function, invenio_upload(...).
     '''
-    log('sending metadata to InvenioRDM server')
-    if os.environ.get('IGA_RUN_MODE') == 'debug':
-        log(json.dumps(metadata, indent=2))
-
-    result, error = _invenio('post', endpoint='/api/records', data=metadata)
-    if error:
-        raise InvenioRDMError(f'Failed to create record in InvenioRDM: {error}')
-    if os.environ.get('IGA_RUN_MODE') == 'debug':
-        log(f'got response from {os.environ.get("INVENIO_SERVER")}:')
-        log(json.dumps(result, indent=2))
+    log('creating record in InvenioRDM')
+    result = _invenio('post', endpoint='/api/records', data=metadata,
+                      msg='create new record using metadata')
     if validation_errors := result.get('errors', []):
         log(f'the server reported {pluralized("error", validation_errors, True)}:')
         for error in validation_errors:
@@ -129,10 +124,11 @@ def invenio_upload(record, asset, print_status):
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
-        response, error = net('get', asset)
-        if error:
-            log(f'failed to download {asset}')
-            return
+        try:
+            response = network('get', asset)
+        except commonpy.exceptions.CommonPyException:
+            raise InvenioRDMError(f'Failed to download GitHub asset {asset} and'
+                                  ' therefore cannot attach it to the record.')
         print_status('done')
         content = response.content
         size = humanize.naturalsize(len(content))
@@ -148,30 +144,24 @@ def invenio_upload(record, asset, print_status):
         log(f'read {size} bytes of file {filename}')
 
     # Define a helper function for the remaining steps.
-    def action(op, url, thing, **kwargs):
-        log(f'doing {op} to InvenioRDM server for {filename} {thing}')
-        result, error = _invenio(op, url=url, **kwargs)
-        if error:
-            log(f'failed {op} for {filename} {thing}')
-            raise error
-        elif os.environ.get('IGA_RUN_MODE') == 'debug':
-            log(f'response from server for {url}:')
-            log(json.dumps(result, indent=2))
-        log(f'successfully did {op} for {filename} {thing}')
+    def action(op, url, dothing, **kwargs):
+        log(f'doing {op} to InvenioRDM server to {dothing} {filename}')
+        result = _invenio(op, url=url, msg=f'{dothing} {filename}', **kwargs)
+        log(f'successfully did {op} to {dothing} {filename}')
         return result
 
     # Get a file upload link from the server, then using that, do a 'put' to
     # write the content followed with a 'post' to commit the new file.
     key = [{'key': filename}]
     print_status(f' - Sending [bold]{filename}[/] ({size}) to InvenioRDM', end='...')
-    result = action('post', record.files_url, 'file upload link', data=key)
-    for entry in result['entries']:
+    result = action('post', record.files_url, 'initialize upload of file', data=key)
+    for entry in result.get('entries', []):
         if entry['key'] == filename:
             content_url = entry['links']['content']
             commit_url = entry['links']['commit']
             break
     else:
-        log(f'server data did not contain an entry for {filename} -- bailing')
+        log(f'server data did not contain an entry for {filename} – bailing')
         raise InternalError('Data mismatch in result from InvenioRDM')
 
     action('put', content_url, 'upload', data=content)
@@ -181,82 +171,72 @@ def invenio_upload(record, asset, print_status):
 
 def invenio_community_send(record, community):
     '''Send the record to the InvenioRDM community for review.'''
-    # cli() will have checked that the given community exists so we don't
-    # need to do that here.
+    # cli() checks the given community exists so we don't need to do it here.
     communities = invenio_communities()
     community_id = communities[community].id
 
+    log(f'getting the submission link for community {community} ({community_id})')
     data = {
         "receiver": {"community": community_id},
         "type": "community-submission",
     }
-    log(f'submitting the record to community "{community}" ({community_id})')
-    result, error = _invenio('put', url=record.review_url, data=data)
-    if error:
-        raise error
-
-    try:
-        submit_url = result['links']['actions']['submit']
-    except KeyError:
-        raise InternalError('Unexpected result in community submission step')
-    import iga
-    data = {
-        'payload': {
-            'content': 'This record is being submitted automatically using'
-            f'the InvenioRDM GitHub Archiver (IGA) version {iga.__version__}',
-            'format': 'html',
+    result = _invenio('put', url=record.review_url, data=data,
+                      msg='get community submission link from InvenioRDM')
+    if submit_url := result.get('links', {}).get('actions', {}).get('submit', ''):
+        data = {
+            'payload': {
+                'format': 'html',
+                'content': 'This record is being submitted automatically using'
+                f'the InvenioRDM GitHub Archiver (IGA) version {iga.__version__}',
+            }
         }
-    }
-    result, error = _invenio('post', url=submit_url, data=data)
-    if error:
-        raise error
+        log(f'submitting the record to community {community}')
+        result = _invenio('post', url=submit_url, data=data,
+                          msg='submit record to community {community}')
+    else:
+        raise InternalError('Unexpected result in community submission step')
 
 
 def invenio_publish(record):
     '''Tell the InvenioRDM server to publish the record.'''
     log('telling the server to publish the record')
-    result, error = _invenio('post', url=record.publish_url)
-    if error:
-        raise error
-    record.record_url = result['links']['self_html']
+    result = _invenio('post', url=record.publish_url, msg='publish record')
+    record.record_url = result.get('links', {}).get('self_html', '')
     log(f'successfully published record at {record.record_url}')
 
 
 @cache
-def invenio_vocabulary(vocab_name):
+def invenio_vocabulary(vocab):
     '''Return a controlled vocabulary from this server.
 
-    The value of vocab_name must be one of "languages", "licenses", or
+    The value of vocab must be one of "languages", "licenses", or
     "resourcetypes". This uses the API endpoint described in
     https://inveniordm.docs.cern.ch/reference/rest_api_vocabularies/.
     '''
-    log(f'asking InvenioRDM server for vocabulary "{vocab_name}"')
+    log(f'asking InvenioRDM server for vocabulary "{vocab}"')
     # At the time of this writing (2023-03-08), the "languages" vocabulary has
     # 7847 entries. We currently don't use the languages vocab in IGA, but in
     # case we ever do in the future, this code tries to get everything at once.
-    endpoint = '/api/vocabularies/' + vocab_name + '?size=10000'
-    result, error = _invenio('get', endpoint=endpoint)
-    if error:
-        return []
+    endpoint = '/api/vocabularies/' + vocab + '?size=10000'
+    result = _invenio('get', endpoint=endpoint, msg=f'get vocabulary {vocab}')
     if hits := result.get('hits', {}):
         # This is not a mistake; it really is a nested 'hits' dictionary.
         num_items = len(hits['hits'])
-        log(f'received {num_items} items for vocabulary "{vocab_name}"')
+        log(f'received {num_items} items for vocabulary "{vocab}"')
         if num_items < hits['total']:
             log(f'warning: server actually has {hits["total"]} values available')
         return hits['hits']
-    log(f'got 0 items for vocabulary "{vocab_name}"')
+    else:
+        log(f'failed to get any items for vocabulary "{vocab}"')
     return []
 
 
 @cache
 def invenio_communities():
     '''Return a dict of communities available in this InvenioRDM server.'''
-    log('getting the list of communities from the server')
-    result, error = _invenio('get', endpoint='/api/communities')
-    if error:
-        raise error
+    log('asking InvenioRDM server for a list of communities')
     communities = {}
+    result = _invenio('get', endpoint='/api/communities', msg='get communities list')
     for community in result.get('hits', {}).get('hits', []):
         name = community['slug']
         metadata = community['metadata']
@@ -270,19 +250,20 @@ def invenio_communities():
                                              url=community['links']['self_html'],
                                              id=community['id'],
                                              title=title)
-    log(f'we got back {pluralized("community", communities, True)}')
+    log(f'we got {pluralized("community", communities, True)}')
     return communities
 
 
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def _invenio(action, endpoint='', url='', data=''):
+def _invenio(action, endpoint='', url='', data='', msg=''):
     '''Do HTTP action on the given endpoint with the given data & return json.
 
     Either (but not both) the full url, or the endpoint part, must be given as
     an argument. The data is optional, and can be a JSON dict or a binary
-    string.
+    string. The msg shoul describe the action being performed and will be used
+    to construct log messages and an exception message if needed.
     '''
     if endpoint:
         url = os.environ.get('INVENIO_SERVER') + endpoint
@@ -291,7 +272,11 @@ def _invenio(action, endpoint='', url='', data=''):
     if token := os.environ.get('INVENIO_TOKEN'):
         headers['Authorization'] = 'Bearer ' + token
 
-    # Construct a Python partial to gather most of the args for calling net().
+    if os.environ.get('IGA_RUN_MODE') == 'debug':
+        d = json.dumps(data, indent=2) if data_type == 'json' else ''
+        log(f'doing {action} on {url} with payload' + (f':\n{d}' if d else ''))
+
+    # Construct a Python partial to gather some args for calling network().
     client = None
     if action == 'put':
         # 'put' => data is being uploaded, so we need to set longer timeouts.
@@ -299,29 +284,27 @@ def _invenio(action, endpoint='', url='', data=''):
         tmout = _network_timeout(data)
         timeout = httpx.Timeout(tmout, connect=10, read=tmout, write=tmout)
         client = httpx.Client(timeout=timeout, http2=True, verify=False)
+    api_call = partial(network, action, url, client=client, headers=headers)
 
     # Now perform the actual network api call.
-    api_call = partial(net, action, url, client=client, headers=headers)
-    if data:
-        log(f'data payload size = {len(data)}')
-        if data_type == 'json':
-            response, error = api_call(json=data)
+    try:
+        if data:
+            log(f'data payload size = {len(data)}')
+            if data_type == 'json':
+                response = api_call(json=data)
+            else:
+                response = api_call(content=data)
         else:
-            response, error = api_call(content=data)
-    else:
-        response, error = api_call()
-
-    # Interpret the results.
-    if error:
-        import commonpy.exceptions
-        if isinstance(error, commonpy.exceptions.NoContent):
-            # The requested thing does not exist.
-            log(f'got no content for {endpoint}')
-        return {}, error
-    elif getattr(response, 'json'):
-        return response.json(), None
-    else:
-        return response, None
+            response = api_call()
+        response_json = response.json()
+        if os.environ.get('IGA_RUN_MODE') == 'debug':
+            log(f'got response:\n{json.dumps(response_json, indent=2)}')
+        return response_json
+    except commonpy.exceptions.NoContent:
+        log(f'got no content for {endpoint}')
+        return None
+    except commonpy.exceptions.CommonPyException as ex:
+        raise InvenioRDMError(f'Failed to {msg}: {str(ex)}')
 
 
 def _network_timeout(data):

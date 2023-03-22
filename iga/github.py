@@ -8,7 +8,8 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import net
+import commonpy.exceptions
+from   commonpy.network_utils import network
 from   functools import cache
 import json
 import os
@@ -44,9 +45,9 @@ class GitHubRepo(SimpleNamespace):
 
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
-        self.owner = GitHubAccount(repo_dict['owner'])
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
+        self.owner = GitHubAccount(repo_dict['owner'])
         if repo_dict.get('organization', None):
             self.organization = GitHubAccount(repo_dict['organization'])
         if repo_dict.get('license', None):
@@ -239,7 +240,9 @@ def probable_bot(account):
     '''
     if not account:
         return False
-    return account.type == 'Bot' or account.name.lower().split()[-1] == 'bot'
+    # Beware that some user accounts have "None" for account.name.
+    return (account.type == 'Bot'
+            or (account.name and account.name.lower().split()[-1] == 'bot'))
 
 
 # Helper functions
@@ -268,27 +271,22 @@ def _github_get(endpoint):
     using_token = 'GITHUB_TOKEN' in os.environ
     if using_token:
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
-    response, error = net('get', endpoint, headers=headers)
-    if error:
-        import commonpy.exceptions
-        if isinstance(error, commonpy.exceptions.NoContent):
-            # The requested thing does not exist.
-            log(f'got no content for {endpoint}')
-            return None
-        elif isinstance(error, commonpy.exceptions.AuthenticationFailure):
-            # GitHub is unusual in returning 403 when you hit the rate limit.
-            # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
-            if 'API rate limit exceeded' in response.text:
-                if using_token:
-                    raise GitHubError('Rate limit exceeded – try again later')
-                else:
-                    raise GitHubError('Rate limit exceeded – try using a'
-                                      ' personal access token, or wait some'
-                                      ' time before trying again.')
+    try:
+        response = network('get', endpoint, headers=headers)
+        return response
+    except commonpy.exceptions.NoContent:
+        log(f'got no content for {endpoint}')
+    except commonpy.exceptions.AuthenticationFailure:
+        # GitHub is unusual in returning 403 when you hit the rate limit.
+        # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
+        if 'API rate limit exceeded' in response.text:
+            if using_token:
+                raise GitHubError('Rate limit exceeded – try again later')
             else:
-                raise GitHubError('Permissions problem accessing ' + endpoint)
-        elif isinstance(error, commonpy.exceptions.CommonPyException):
-            raise GitHubError(error.args[0])
+                raise GitHubError('Rate limit exceeded – try to use a personal'
+                                  ' access token, or wait and try again later.')
         else:
-            raise error
-    return response
+            raise GitHubError('Permissions problem accessing ' + endpoint)
+    except commonpy.exceptions.CommonPyException as ex:
+        raise GitHubError(ex.args[0]) from ex
+    return None

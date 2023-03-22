@@ -8,13 +8,15 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.exceptions import CommonPyException
-from   commonpy.network_utils import net
+import commonpy.exceptions
+from   commonpy.network_utils import network
+import functools
 import json
+import os
 from   sidetrack import log
 
 from   iga.id_utils import detected_id
-
+from   iga.exceptions import InternalError
 
 # Internal module constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -72,18 +74,23 @@ def name_from_ror(rorid, recursion=0):
         return ''
 
 
+@functools.cache
 def ror_data(rorid):
     '''Return the data from ror.org for the given ROR id.'''
-    log('looking up ROR data about ' + rorid)
-    data_url = f'https://api.ror.org/organizations/{rorid}'
+    if not rorid:
+        return ''
+    log(f'looking up ROR data about "{rorid}"')
+    url = f'https://api.ror.org/organizations/{rorid}'
     try:
-        response, error = net('get', data_url)
-        if error:
-            log(f'failed to get ROR data for {rorid}: ' + str(error))
-            return ''
-        return response.json()
+        data = network('get', url).json()
+        if os.environ.get('IGA_RUN_MODE') == 'debug':
+            log(f'data received for {rorid} from ror.org:\n{str(data)}')
+        return data
+    except commonpy.exceptions.NoContent:
+        log(f'ROR.org returned no result for "{rorid}"')
+    except commonpy.exceptions.CommonPyException as ex:
+        log(f'could not get data from ROR.org for "{rorid}": ' + str(ex))
     except json.JSONDecodeError as ex:
-        log('unable to decode response from ror.org API: ' + str(ex))
-    except CommonPyException as ex:
-        log('failed to communicate with ror.org: ' + str(ex))
+        # This means we have to fix something.
+        raise InternalError('Error trying to decode JSON from ror.org: ' + str(ex))
     return ''

@@ -8,10 +8,13 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from commonpy.network_utils import net
-from sidetrack import log
+from   commonpy.network_utils import network
+import commonpy.exceptions
+import json
+from   sidetrack import log
 
 from iga.doi import doi_for_publication
+from iga.exceptions import InternalError
 from iga.id_utils import recognized_scheme
 
 
@@ -69,19 +72,21 @@ def reference_from_doi(doi):
     log(f'asking Crossref for formatted reference for {doi}')
     doi_url = 'https://doi.org/' + doi
     headers = {'accept': 'text/x-bibliography; style=apa'}
-    response, error = net('get', doi_url, headers=headers)
-    if not error:
+    try:
+        response = network('get', doi_url, headers=headers)
         from iga.data_utils import without_html
         log('received response from Crossref: ' + response.text)
         cleaned_text = without_html(response.text)
         _CACHE[cache_key] = cleaned_text
         return cleaned_text
-    else:
-        # Crossref's free API doesn't have a login but does impose rate limits.
-        # More about the limits: https://api.crossref.org/swagger-ui/index.html
-        # net(..) handles rate limits automatically, so this is something else.
-        log('failed to get metadata from Crossref: ' + error)
-        return ''
+    except commonpy.exceptions.NoContent:
+        log(f'CrossRef returned no result for "{doi}"')
+    except commonpy.exceptions.CommonPyException as ex:
+        log(f'could not get data from CrossRef for "{doi}": ' + str(ex))
+    except json.JSONDecodeError as ex:
+        # This means we have to fix something.
+        raise InternalError('Error trying to decode JSON from CrossRef: ' + str(ex))
+    return ''
 
 
 def reference_from_bibtex(bibtex_string):
