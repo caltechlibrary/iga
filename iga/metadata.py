@@ -379,23 +379,14 @@ def contributors(repo, release):
         log('adding CodeMeta "provider" value(s) as contributor(s)')
         contributors.append(_entity(provider, role='other'))
 
-    # Both CodeMeta & cff files may have lists of contributors. Give priority
-    # to CodeMeta. Comparing names is error-prone and we can't reliably detect
-    # duplicates, so use only one or the other, not both.
+    # CodeMeta has a list of contributors, but without role information.
     if contribs := listified(repo.codemeta.get('contributor', [])):
         log('adding CodeMeta "contributor" value(s) as contributor(s)')
-    elif contribs := repo.cff.get('contributors', []):
-        log('adding CFF "contributor" value(s) as contributor(s)')
-    for contributor in contribs:
-        role = 'other'
-        if matched := _cv_match('contributor-roles', contributor.get('role', '')):
-            role = matched
-        contributors.append(_entity(contributor, role=role))
-
-    # If neither CodeMeta nor CFF contain contributors, use the repo's, if any.
-    if not contribs:
-        if repo_contributors := github_repo_contributors(repo):
-            log('adding GitHub repo contributors list as contributor(s)')
+        for contributor in contribs:
+            contributors.append(_entity(contributor, role='other'))
+    elif repo_contributors := github_repo_contributors(repo):
+        # If CodeMeta doesn't contain contributors, use the repo's, if any.
+        log('adding GitHub repo contributors list as contributor(s)')
         # Skip bot accounts.
         for account in filterfalse(probable_bot, repo_contributors):
             contributors.append(_identity_from_github(account, 'other'))
