@@ -253,10 +253,10 @@ def additional_descriptions(repo, release):
     descriptions = []
 
     # We don't want to reuse the text that we put in the InvenioRDM description
-    # field, hence the need to compare to this value in the code that follows.
+    # field, so we need to compare to its value later in this function.
     main_desc = description(repo, release, internal_call=True)
 
-    # Add the release notes if we didn't use that as the main description.
+    # Add the release notes if we didn't release notes as the main description.
     rel_notes = repo.codemeta.get('releaseNotes', '').strip()
     if rel_notes and rel_notes != main_desc and not rel_notes.startswith('http'):
         log('adding CodeMeta "releaseNotes" as additional description')
@@ -297,7 +297,7 @@ def additional_descriptions(repo, release):
     # CodeMeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
     # say "For software description, this may include a readme.txt ...".)
     if readme := repo.codemeta.get('readme', '').strip():
-        log('adding CodeMeta "readme" as additional description')
+        log('adding CodeMeta "readme" as an additional description')
         if readme.startswith('http'):
             readme = f'Additional information is available at {readme}'
         descriptions.append({'description': readme,
@@ -661,12 +661,11 @@ def identifiers(repo, release):
                 identifiers.append({'identifier': item,
                                     'scheme': kind})
         elif isinstance(item, dict):
-            kind = item.get('type', '') or item.get('@type', '')
-            kind = kind.lower()
+            kind = item.get('type', '').lower() or item.get('@type', '').lower()
             value = item.get('value', '')
             if value.startswith('http') and kind != 'url':
                 value = detected_id(value) or value
-            if value and kind in CV['identifier-types']:
+            if value and (kind in CV['identifier-types']):
                 identifiers.append({'identifier': value,
                                     'scheme': kind})
     return identifiers
