@@ -1220,10 +1220,18 @@ def _repo_owner(repo):
 
 def _identity_from_github(account, role=None):
     if account.type == 'User':
-        (given, family) = split_name(account.name)
-        person_or_org = {'given_name': given,
-                         'family_name': family,
-                         'type': 'personal'}
+        if account.name:
+            (given, family) = split_name(account.name)
+            person_or_org = {'given_name': given,
+                             'family_name': family,
+                             'type': 'personal'}
+        else:
+            # The GitHub account record has no name, and InvenioRDM won't pass
+            # a record without a family name. All we have is the login name.
+            person_or_org = {'given_name': '',
+                             'family_name': account.login,
+                             'type': 'personal'}
+
     else:
         name = account.name.strip() if account.name else ''
         person_or_org = {'name': name,
