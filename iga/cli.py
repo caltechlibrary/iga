@@ -47,7 +47,7 @@ click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help.
 
 def _config_mode(ctx, param, mode):
     '''Handle the --mode option and configure the run mode as needed.'''
-    mode = 'normal' if mode is None else mode.lower()
+    mode = 'normal' if mode is None else mode.strip().lower()
     if mode not in ['quiet', 'normal', 'verbose', 'debug']:
         _alert(ctx, f'Unrecognized mode: "{mode}". The mode value must be'
                ' chosen from `quiet`, `normal`, `verbose`, or `debug`. Please'
@@ -103,7 +103,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
         _print_help_and_exit(ctx)
     elif value:
         log(f'using CLI option "--{param.name} {value}" for the {thing}')
-        os.environ[env_var] = str(value)
+        os.environ[env_var] = str(value).strip()
     elif env_var in os.environ:
         log(f"using value of environment variable {env_var} as the {thing}")
     elif required:
@@ -312,14 +312,17 @@ def _list_communities(ctx, param, value):
 # which I hate.  This use of `\r` assumes the use of Markdown (as set above).
 
 @click.command(add_help_option=False)
+@click.option('--all-assets', '-A', is_flag=True,
+              help='Attach all GitHub assets, not only a source ZIP')
+#
 @click.option('--community', '-c', metavar='STR',
-              help='Send record to the RDM community')
+              help='Submit record to the designated RDM community')
 #
 @click.option('--draft', '-d', is_flag=True,
               help='Mark the record as a draft; don\'t publish it')
 #
 @click.option('--file', '-f', 'files_to_upload', metavar='FILE', multiple=True,
-              help='File to upload (repeat for multiple files)')
+              help='Upload _FILE_ (repeat for multiple files)')
 #
 @click.option('--github-account', '-a', 'account', metavar='STR',
               help='GitHub account name, if not using release URL')
@@ -338,7 +341,7 @@ def _list_communities(ctx, param, value):
 @click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (**avoid – use variable**)")
 #
-@click.option('--list-communities', '-i', is_flag=True, callback=_list_communities,
+@click.option('--list-communities', '-L', is_flag=True, callback=_list_communities,
               help='List communities available for `--community`')
 #
 @click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
@@ -351,28 +354,28 @@ def _list_communities(ctx, param, value):
 @click.option('--record-dest', '-o', metavar='FILE', type=File('w', lazy=False),
               help='Save metadata record to _FILE_; don\'t upload it')
 #
-@click.option('--source-record', '-u', 'source', metavar='FILE', type=File('r'),
+@click.option('--source-record', '-S', 'source', metavar='FILE', type=File('r'),
               help='Use metadata record from _FILE_; don\'t build one')
 #
-@click.option('--timeout', '-T', metavar='INT', type=INT, callback=_read_timeout,
-              help='Max time (in sec) to wait on network operations')
+@click.option('--timeout', '-T', metavar='NUM', type=INT, callback=_read_timeout,
+              help='Wait on network operations a max of _NUM_ seconds')
 #
 @click.option('--version', '-V', callback=_print_version_and_exit, is_flag=True,
-              help='Print version info and exit', expose_value=False, is_eager=True)
+              help='Print IGA version and exit', expose_value=False, is_eager=True)
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, community=None, draft=False, files_to_upload=None,
-        account=None, repo=None, github_token=None,
+def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
+        files_to_upload=None, account=None, repo=None, github_token=None,
         server=None, invenio_token=None, list_communities=False,
         log_dest=None, mode='normal', record_dest=None, source=None,
         timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
-By default, IGA creates a metadata record for a GitHub software release
-and uploads it along with the release assets to a designated InvenioRDM server.
-The GitHub release can be specified using _either_ a full release URL, _or_ a
-combination of GitHub account + repository + tag. Different command-line
+By default, IGA creates a metadata record for a GitHub software release in a
+designated InvenioRDM server and uploads the release source archive to it.
+The GitHub release can be specified using _either_ a full release URL, _or_
+a combination of GitHub account + repository + tag. Different command-line
 options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
@@ -413,6 +416,8 @@ and here's the equivalent using approach #2:
 ```
     iga --github-account mhucka --github-repo taupe v1.2.0
 ```
+Note that when using this form of the command, the release tag ("v1.2.0" above)
+must be the last item given on the command line.
 \r
 _**Use of a GitHub access token**_
 \r
@@ -420,13 +425,12 @@ It is possible to run IGA without providing a GitHub access token. GitHub
 allows up to 60 API calls per minute when running without credentials, and
 though IGA makes several API calls to GitHub each time it runs, for many
 repositories, IGA will not hit the limit. However, if you run IGA multiple
-times in a row or your repository has many contributors (IGA has to ask about
-each contributor individually), then you may need to supply a GitHub access
-token. The preferred way of doing that is to set the value of the environment
-variable `GITHUB_TOKEN`. Alternatively, you can use the option
-`--github-token` to pass the token on the command line, but **you are
-strongly advised to avoid this practice because it is insecure**.  The option
-is provided for convenience during testing but should never be used in
+times in a row or your repository has many contributors, then you may need to
+supply a GitHub access token. The preferred way of doing that is to set the
+value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use
+the option `--github-token` to pass the token on the command line, but **you
+are strongly advised to avoid this practice because it is insecure**.  The
+option is provided for convenience during testing but should never be used in
 production.
 \r
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
@@ -450,24 +454,26 @@ extract the data above, but still obtains the file assets from GitHub.
 \r
 _**Specification of GitHub file assets**_
 \r
-By default, IGA attaches to the InvenioRDM record all file assets associated
-with the software release in GitHub. To override which file assets are attached
-to the InvenioRDM record, you can use the option `--file` followed by a path to
-a file to be uploaded. The option `--file` can be repeated to upload multiple
-file assets. Note that if `--file` is provided, then IGA does _not use any
-file assets from GitHub_; it is the user's responsibility to supply all the
-files that should be uploaded.
+By default, IGA attaches to the InvenioRDM record _only_ the ZIP file asset
+created by GitHub for the release. To make IGA attach all assets associated
+with the GitHub release, use the option `--all-assets`.
 \r
-If _both_ `--source-record` and `--file` are used, then IGA does not actually
+To upload specific file assets and override the default selections made by IGA,
+you can use the option `--file` followed by a path to a file to be uploaded.
+You can repeat the option `--file` to upload multiple file assets. Note that if
+`--file` is provided, then IGA _does not use any file assets from GitHub_; it
+is the user's responsibility to supply all the files that should be uploaded.
+\r
+If both `--source-record` and `--file` are used, then IGA does not actually
 contact GitHub for any information.
 \r
 _**Handling communities**_
 \r
-The option `--list-communities` can be used to get a list of communities
-supported by the InvenioRDM server. To submit your record to a community,
-use the `--community` option together with a community name. Note that the
-submitting a record to a community means that the record will not be finalized
-and will not be publicly visible yet; instead, the record URL that you receive
+To submit your record to a community, use the `--community` option together
+with a community name. The option `--list-communities` can be used to get a
+list of communities supported by the InvenioRDM server. Note that submitting a
+record to a community means that the record will not be finalized and will not
+be publicly visible when IGA finishes; instead, the record URL that you receive
 will be for a draft version, pending review by the community moderators.
 \r
 _**Draft versus published records**_
@@ -556,6 +562,10 @@ possible values:
     else:
         tag = url_or_tag
 
+    if files_to_upload and all_assets:
+        _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
+        sys.exit(int(ExitCode.bad_arg))
+
     if files_to_upload and not record_dest:
         from commonpy.file_utils import readable
         for file in files_to_upload:
@@ -587,7 +597,7 @@ possible values:
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
             metadata = metadata_for_release(account, repo, tag)
-            github_assets = github_release_assets(account, repo, tag)
+            github_assets = github_release_assets(account, repo, tag, all_assets)
             _inform(' done.')
 
         if record_dest:

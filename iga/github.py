@@ -120,12 +120,15 @@ def github_account(account_name):
     return result
 
 
-def github_release_assets(account_name, repo_name, tag_name):
+def github_release_assets(account_name, repo_name, tag_name, get_all):
     '''Return a list of URLs for all the assets associated with the release.'''
     release = github_release(account_name, repo_name, tag_name)
-    assets = [release.tarball_url, release.zipball_url]
-    for asset in release.assets:
-        assets.append(asset.browser_download_url)
+    assets = [release.zipball_url]
+    if get_all:
+        log('option to get all assets is in effect')
+        assets.append(release.tarball_url)
+        for asset in release.assets:
+            assets.append(asset.browser_download_url)
     log(f'found {len(assets)} assets for release "{tag_name}"')
     return assets
 
