@@ -315,6 +315,9 @@ def _list_communities(ctx, param, value):
 @click.option('--all-assets', '-A', is_flag=True,
               help='Attach all GitHub assets, not only a source ZIP')
 #
+@click.option('--all-metadata', '-M', 'include_all', is_flag=True,
+              help='Extract metadata more comprehensively')
+#
 @click.option('--community', '-c', metavar='STR',
               help='Submit record to the designated RDM community')
 #
@@ -330,7 +333,7 @@ def _list_communities(ctx, param, value):
 @click.option('--github-repo', '-r', 'repo', metavar='STR',
               help='GitHub repository name, if not using release URL')
 #
-@click.option('--github-token', '-g', metavar='STR', callback=_read_github_token,
+@click.option('--github-token', '-t', metavar='STR', callback=_read_github_token,
               help="GitHub acccess token (**avoid – use variable**)")
 #
 @click.help_option('--help', '-h', help='Show this help message and exit')
@@ -338,7 +341,7 @@ def _list_communities(ctx, param, value):
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
               help='InvenioRDM server address', is_eager=True)
 #
-@click.option('--invenio-token', '-t', metavar='STR', callback=_read_invenio_token,
+@click.option('--invenio-token', '-k', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (**avoid – use variable**)")
 #
 @click.option('--list-communities', '-L', is_flag=True, callback=_list_communities,
@@ -351,7 +354,7 @@ def _list_communities(ctx, param, value):
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
-@click.option('--record-dest', '-o', metavar='FILE', type=File('w', lazy=False),
+@click.option('--output', '-o', metavar='FILE', type=File('w', lazy=False),
               help='Save metadata record to _FILE_; don\'t upload it')
 #
 @click.option('--source-record', '-S', 'source', metavar='FILE', type=File('r'),
@@ -365,23 +368,22 @@ def _list_communities(ctx, param, value):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
-        files_to_upload=None, account=None, repo=None, github_token=None,
-        server=None, invenio_token=None, list_communities=False,
-        log_dest=None, mode='normal', record_dest=None, source=None,
-        timeout=None, help=False, version=False):  # noqa A002
+def cli(ctx, url_or_tag, all_assets=False, community=None, include_all=False,
+        draft=False, files_to_upload=None, account=None, repo=None,
+        github_token=None, server=None, invenio_token=None,
+        list_communities=False, log_dest=None, mode='normal', output=None,
+        source=None, timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
-By default, IGA creates a metadata record for a GitHub software release in a
-designated InvenioRDM server and uploads the release source archive to it.
-The GitHub release can be specified using _either_ a full release URL, _or_
-a combination of GitHub account + repository + tag. Different command-line
-options can be used to adjust this behavior.
+IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
+release archive to the record. The GitHub release can be specified using
+_either_ a full release URL, _or_ a combination of GitHub account + repository
+\+ tag. Different command-line options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
 \r
 The server address must be provided either as the value of the option
-`--invenio-server` _or_ in an environment variable named `INVENIO_SERVER`.
+`--invenio-server` or in an environment variable named `INVENIO_SERVER`.
 If the server address does not begin with "https://", IGA will prepended it
 automatically.
 \r
@@ -389,10 +391,7 @@ A Personal Access Token (PAT) for making API calls to the InvenioRDM server
 must be also supplied when invoking IGA. The preferred method is to set the
 value of the environment variable `INVENIO_TOKEN`. Alternatively, you can use
 the option `--invenio-token` to pass the token on the command line, but **you
-are strongly advised to avoid this practice because it is insecure**.  The
-option is provided for convenience during testing but should never be used in
-production.
-\r
+are strongly advised to avoid this practice because it is insecure**.
 To obtain a PAT from an InvenioRDM server, first log in to the server, then
 visit the page at `/account/settings/applications` and use the interface there
 to create a token.
@@ -429,23 +428,29 @@ times in a row or your repository has many contributors, then you may need to
 supply a GitHub access token. The preferred way of doing that is to set the
 value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use
 the option `--github-token` to pass the token on the command line, but **you
-are strongly advised to avoid this practice because it is insecure**.  The
-option is provided for convenience during testing but should never be used in
-production.
-\r
+are strongly advised to avoid this practice because it is insecure**.
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
 and follow the instructions for creating a "classic" personal access token.
 \r
 _**Construction of an InvenioRDM record**_
 \r
-The record created in InvenioRDM is constructed using information extracted
-from the software release and its source repository using GitHub's API. The
-information includes the following:
+The record created in InvenioRDM is constructed using information obtained
+using GitHub's API. The information includes the following:
+ * (if one exists) a `codemeta.json` file in the repository
+ * (if one exists) a `CITATION.cff` file in the repository
  * the data available from GitHub for the release
  * the data available from GitHub for the repository
- * (if one exists) a `codemeta.json` file in the repository
- * (if one exists) a `CITATION.cff` file
  * the file assets associated with the release
+\r
+Some metadata fields in the InvenioRDM record take single values, and others
+take multiple values. For the latter, IGA generally takes the approach of
+using appropriate values from `CodeMeta.json` and `CITATION.cff` if they are
+present, and only uses GitHub repository metatadata if it can't find values in
+`CodeMeta.json` or `CITATION.cff`. The option `--all-metadata` makes IGA
+include metadata from GitHub even if it finds the comperable values in
+`CodeMeta.json` or `CITATION.cff`. This makes the result more comprehensive,
+but may introduce redundancy or even unwanted values because much of the GitHub
+metadata is computed by GitHub automatically.
 \r
 To override the auto-created record, use the option `--source-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
@@ -489,11 +494,11 @@ interface there.)
 \r
 _**Other options recognized by IGA**_
 \r
-Running IGA with the option `--record-dest` will make it create a metadata
+Running IGA with the option `--output` will make it create a metadata
 record, but instead of uploading the record (and any assets) to the InvenioRDM
 server, IGA will output the result to the given destination. This can be useful
 not only for debugging but also for creating a starting point for a custom
-metadata record: first run IGA with `--record-dest` to save a record to a file,
+metadata record: first run IGA with `--output` to save a record to a file,
 edit the result, then finally run IGA with the `--source-record` option to use
 the modified record to create a release in the InvenioRDM server.
 \r
@@ -566,7 +571,7 @@ possible values:
         _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
         sys.exit(int(ExitCode.bad_arg))
 
-    if files_to_upload and not record_dest:
+    if files_to_upload and not output:
         from commonpy.file_utils import readable
         for file in files_to_upload:
             if not readable(file):
@@ -596,15 +601,15 @@ possible values:
                 sys.exit(int(ExitCode.file_error))
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
-            metadata = metadata_for_release(account, repo, tag)
+            metadata = metadata_for_release(account, repo, tag, include_all)
             github_assets = github_release_assets(account, repo, tag, all_assets)
             _inform(' done.')
 
-        if record_dest:
+        if output:
             import json
-            record_dest.write(json.dumps(metadata, indent=2))
-            record_dest.write('\n')
-            _inform(f'Wrote metadata to {record_dest.name}.')
+            output.write(json.dumps(metadata, indent=2))
+            output.write('\n')
+            _inform(f'Wrote metadata to {output.name}.')
         else:
             _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata)
