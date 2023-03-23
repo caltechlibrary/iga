@@ -163,7 +163,7 @@ INVENIO_LICENSES = CaseFoldDict()
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def metadata_for_release(account_name, repo_name, tag, all_metadata):
+def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
     '''Return the "metadata" part of an InvenioRDM record.
 
     Data is gathered from the GitHub release identified by "tag" in the
@@ -196,7 +196,7 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     # For some fields that contain multiple values, we let the user decide if
     # we should include values from the GitHub repo. The exception is that if
     # there's no CM or CFF file, we always resort to using the repo data.
-    include_all = all_metadata or not (repo.codemeta or repo.cff)
+    include_all = not leaner_metadata or (not repo.codemeta and not repo.cff)
 
     # The metadata dict is created by iterating over the names in FIELDS and
     # calling each function of that name defined in this (module) file.
@@ -321,7 +321,8 @@ def additional_titles(repo, release, include_all):
                        'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
-    return titles
+
+    return deduplicated(titles)
 
 
 def contributors(repo, release, include_all):

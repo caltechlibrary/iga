@@ -315,9 +315,6 @@ def _list_communities(ctx, param, value):
 @click.option('--all-assets', '-A', is_flag=True,
               help='Attach all GitHub assets, not only a source ZIP')
 #
-@click.option('--all-metadata', '-M', is_flag=True,
-              help='Extract metadata more comprehensively')
-#
 @click.option('--community', '-c', metavar='STR',
               help='Submit record to the designated RDM community')
 #
@@ -344,6 +341,9 @@ def _list_communities(ctx, param, value):
 @click.option('--invenio-token', '-k', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (**avoid – use variable**)")
 #
+@click.option('--leaner-metadata', '-M', is_flag=True,
+              help='Be more selective of metadata values used')
+#
 @click.option('--list-communities', '-L', is_flag=True, callback=_list_communities,
               help='List communities available for `--community`')
 #
@@ -354,11 +354,11 @@ def _list_communities(ctx, param, value):
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
-@click.option('--output', '-o', metavar='FILE', type=File('w', lazy=False),
-              help='Save metadata record to _FILE_; don\'t upload it')
+@click.option('--read-record', '-R', 'source', metavar='FILE', type=File('r'),
+              help='Read metadata record from _FILE_; don\'t build one')
 #
-@click.option('--source-record', '-S', 'source', metavar='FILE', type=File('r'),
-              help='Use metadata record from _FILE_; don\'t build one')
+@click.option('--save-record', '-S', 'dest', metavar='FILE', type=File('w', lazy=False),
+              help='Save metadata record to _FILE_; don\'t upload it')
 #
 @click.option('--timeout', '-T', metavar='NUM', type=INT, callback=_read_timeout,
               help='Wait on network operations a max of _NUM_ seconds')
@@ -368,11 +368,11 @@ def _list_communities(ctx, param, value):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, all_assets=False, all_metadata=False, community=None,
-        draft=False, files_to_upload=None, account=None, repo=None,
-        github_token=None, server=None, invenio_token=None,
-        list_communities=False, log_dest=None, mode='normal', output=None,
-        source=None, timeout=None, help=False, version=False):  # noqa A002
+def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
+        files_to_upload=None, account=None, repo=None, github_token=None,
+        server=None, invenio_token=None, list_communities=False,
+        log_dest=None, mode='normal', leaner_metadata=False, source=None,
+        dest=None, timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
@@ -450,20 +450,17 @@ includes the following:
  * data available from spdx.org for software licenses
 \r
 Some metadata fields in the InvenioRDM record take single values, and others
-take multiple values. For the latter, IGA takes the approach of using values
-from `CodeMeta.json` and `CITATION.cff` if they are present, and only using
-GitHub repository metatadata values if the relevant fields can't be found in
-`CodeMeta.json` or `CITATION.cff`. Option `--all-metadata` makes IGA add
-metadata from GitHub even if the relevant fields exist in `CodeMeta.json` or
-`CITATION.cff`. This makes the resulting InvenioRDM record more comprehensive,
-but may introduce redundancy or even unwanted values because much of the GitHub
-repository metadata is computed by GitHub automatically. Note: `--all-metadata`
-is ignored if a repository lacks both `codemeta.json` and `CITATION.cff` files;
-in that case, relevant values from GitHub are always used.
+take multiple values. For the latter, by default, IGA uses all relevant
+values from `CodeMeta.json`, `CITATION.cff` and the GitHub repository. This
+can sometimes introduce redundancies or even unwanted values because much of
+the GitHub repository metadata is computed by GitHub automatically. Option
+`--leaner-metadata` will make IGA stop short of including values from the
+GitHub repository if it finds necessary values in `codemeta.json` or
+`CITATION.cff`.
 \r
-To override the auto-created record, use the option `--source-record` followed
+To override the auto-created record, use the option `--read-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
-by the destination server. When `--source-record` is provided, IGA does _not_
+by the destination server. When `--read-record` is provided, IGA does _not_
 extract the data above, but still obtains the file assets from GitHub.
 \r
 _**Specification of GitHub file assets**_
@@ -478,7 +475,7 @@ You can repeat the option `--file` to upload multiple file assets. Note that if
 `--file` is provided, then IGA _does not use any file assets from GitHub_; it
 is the user's responsibility to supply all the files that should be uploaded.
 \r
-If both `--source-record` and `--file` are used, then IGA does not actually
+If both `--read-record` and `--file` are used, then IGA does not actually
 contact GitHub for any information.
 \r
 _**Handling communities**_
@@ -503,12 +500,12 @@ interface there.)
 \r
 _**Other options recognized by IGA**_
 \r
-Running IGA with the option `--output` will make it create a metadata
+Running IGA with the option `--save-record` will make it create a metadata
 record, but instead of uploading the record (and any assets) to the InvenioRDM
-server, IGA will output the result to the given destination. This can be useful
+server, IGA will write the result to the given destination. This can be useful
 not only for debugging but also for creating a starting point for a custom
-metadata record: first run IGA with `--output` to save a record to a file,
-edit the result, then finally run IGA with the `--source-record` option to use
+metadata record: first run IGA with `--save-record` to save a record to a file,
+edit the result, then finally run IGA with the `--read-record` option to use
 the modified record to create a release in the InvenioRDM server.
 \r
 The `--mode` option can be used to change the run mode. Four run modes are
@@ -580,7 +577,7 @@ possible values:
         _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
         sys.exit(int(ExitCode.bad_arg))
 
-    if files_to_upload and not output:
+    if files_to_upload and not dest:
         from commonpy.file_utils import readable
         for file in files_to_upload:
             if not readable(file):
@@ -610,15 +607,15 @@ possible values:
                 sys.exit(int(ExitCode.file_error))
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
-            metadata = metadata_for_release(account, repo, tag, all_metadata)
+            metadata = metadata_for_release(account, repo, tag, leaner_metadata)
             github_assets = github_release_assets(account, repo, tag, all_assets)
             _inform(' done.')
 
-        if output:
+        if dest:
             import json
-            output.write(json.dumps(metadata, indent=2))
-            output.write('\n')
-            _inform(f'Wrote metadata to {output.name}.')
+            dest.write(json.dumps(metadata, indent=2))
+            dest.write('\n')
+            _inform(f'Wrote metadata to {dest.name}.')
         else:
             _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata)
