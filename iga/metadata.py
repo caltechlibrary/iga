@@ -96,7 +96,7 @@ FIELDS = [
     "creators",
     "dates",
     "description",
-    "formats",
+#    "formats",            # 2023-03-23 not clear we need this. Skip for now.
     "funding",
     "identifiers",
     "languages",
@@ -107,7 +107,7 @@ FIELDS = [
     "related_identifiers",
     "resource_type",
     "rights",
-    "sizes",
+#    "sizes",,            # 2023-03-23 not clear we need this. Skip for now.
     "subjects",
     "title",
     "version",
