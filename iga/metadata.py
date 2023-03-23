@@ -163,7 +163,7 @@ INVENIO_LICENSES = CaseFoldDict()
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def metadata_for_release(account_name, repo_name, tag):
+def metadata_for_release(account_name, repo_name, tag, include_all):
     '''Return the "metadata" part of an InvenioRDM record.
 
     Data is gathered from the GitHub release identified by "tag" in the
@@ -199,12 +199,13 @@ def metadata_for_release(account_name, repo_name, tag):
     this_module = sys.modules[__name__]
     for field in FIELDS:
         log(f'constructing field "{field}"')
-        value = getattr(this_module, field)(repo, release)
+        value = getattr(this_module, field)(repo, release, include_all)
         metadata[field] = value
         count = 1 if (value and isinstance(value, (str, dict))) else len(value)
         log(f'finished field "{field}" with {pluralized("item", count, True)}')
     log('done constructing metadata')
     return {"metadata": metadata}
+
 
 
 def metadata_from_file(file):
@@ -243,7 +244,7 @@ def metadata_from_file(file):
 # above can create a record by simply iterating over the names in FIELDS and
 # calling the function of that name to get the value for that field.
 
-def additional_descriptions(repo, release):
+def additional_descriptions(repo, release, include_all):
     '''Return InvenioRDM "additional descriptions".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-descriptions-0-n
     '''
@@ -254,7 +255,7 @@ def additional_descriptions(repo, release):
 
     # We don't want to reuse the text that we put in the InvenioRDM description
     # field, so we need to compare to its value later in this function.
-    main_desc = description(repo, release, internal_call=True)
+    main_desc = description(repo, release, include_all, internal_call=True)
 
     # Add the release notes if we didn't release notes as the main description.
     rel_notes = repo.codemeta.get('releaseNotes', '').strip()
@@ -276,17 +277,17 @@ def additional_descriptions(repo, release):
     # little value in adding all 3 fields, especially since they describe the
     # software as a whole and not the release per se. Adding one is enough.
     #
-    # Note #2: the fact that DataCite offers a description type of "abstract"
-    # makes it tempting to use that type for the CFF "abstract" field, but IMHO
-    # that would be wrong because CFF's definition of "abstract" is "a
-    # description of the software or dataset" -- in other words, the same kind
-    # of text as the other fields. Thus, we should use the same type value here.
+    # Note #2: DataCite defines a type called "abstract", and naturally it's
+    # tempting to use it for the CFF "abstract" field. IMHO that would be wrong
+    # because CFF's definition of the "abstract" field is "a description of the
+    # software or dataset" -- i.e., it's more like the other "description"
+    # fields than like an abstract. Thus, we should use the same type for all.
     value_name = ''
     if text := repo.codemeta.get('description', ''):
         value_name = 'CodeMeta "description"'
     elif text := repo.cff.get('abstract', ''):
         value_name = 'CFF "abstract"'
-    elif text := repo.description:
+    elif include_all and (text := repo.description):
         value_name = 'GitHub repo "description"'
     text = text.strip()
     if text != main_desc:
@@ -306,7 +307,7 @@ def additional_descriptions(repo, release):
     return descriptions
 
 
-def additional_titles(repo, release):
+def additional_titles(repo, release, include_all):
     '''Return InvenioRDM "additional titles".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
     '''
@@ -319,7 +320,7 @@ def additional_titles(repo, release):
     # CodeMeta name has a value => we won't have used CFF title yet. Use it now.
     add_cff_title = have_cm_name and have_cff_title
     # No CodeMeta name => we'll have used repo name if have no CFF title.
-    add_repo_name = have_cm_name or have_cff_title
+    add_repo_name = (have_cm_name or have_cff_title) and include_all
 
     titles = []
     if add_cff_title:
@@ -337,7 +338,7 @@ def additional_titles(repo, release):
     return titles
 
 
-def contributors(repo, release):
+def contributors(repo, release, include_all):
     '''Return InvenioRDM "contributors".
     https://inveniordm.docs.cern.ch/reference/metadata/#contributors-0-n
     '''
@@ -384,7 +385,7 @@ def contributors(repo, release):
         log('adding CodeMeta "contributor" value(s) as contributor(s)')
         for contributor in contribs:
             contributors.append(_entity(contributor, role='other'))
-    elif repo_contributors := github_repo_contributors(repo):
+    elif include_all and (repo_contributors := github_repo_contributors(repo)):
         # If CodeMeta doesn't contain contributors, use the repo's, if any.
         log('adding GitHub repo contributors list as contributor(s)')
         # Skip bot accounts.
@@ -412,7 +413,7 @@ def contributors(repo, release):
     return result
 
 
-def creators(repo, release):
+def creators(repo, release, include_all):
     '''Return InvenioRDM "creators".
     https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     '''
@@ -438,7 +439,7 @@ def creators(repo, release):
     raise MissingData('Unable to extract author info from GitHub release or repo.')
 
 
-def dates(repo, release):
+def dates(repo, release, include_all):
     '''Return InvenioRDM "dates".
     https://inveniordm.docs.cern.ch/reference/metadata/#dates-0-n
     '''
@@ -448,25 +449,27 @@ def dates(repo, release):
     # to the GitHub repo "created_at" date.
     if created_date := repo.codemeta.get('dateCreated', ''):
         log('adding the CodeMeta "dateCreated" as the "created" date')
-    elif created_date := repo.created_at:
+    elif include_all and (created_date := repo.created_at):
         log('adding the GitHub repo "created_at" as the "created" date')
-    dates.append({'date': arrow.get(created_date).format('YYYY-MM-DD'),
-                  'type': {'id': 'created'}})
+    if created_date:
+        dates.append({'date': arrow.get(created_date).format('YYYY-MM-DD'),
+                      'type': {'id': 'created'}})
 
     # CodeMeta has a "dateModified" field, which the CodeMeta crosswalk equates
     # to the GitHub repo "updated_at" date.
     if mod_date := repo.codemeta.get('dateModified', ''):
         log('adding the CodeMeta "dateModified" as the "updated" date')
-    elif mod_date := repo.updated_at:
+    elif include_all and (mod_date := repo.updated_at):
         log('adding the GitHub repo "updated_at" date as the "updated" date')
-    dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
-                  'type': {'id': 'updated'}})
+    if mod_date:
+        dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
+                      'type': {'id': 'updated'}})
 
     # If we used a different date for the publication_date value than the
     # release date in GitHub, we add the GitHub date as another type of date.
-    pub_date = publication_date(repo, release)
+    pub_date = publication_date(repo, release, include_all)
     github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
-    if pub_date != github_date:
+    if include_all and (pub_date != github_date):
         log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
                       'type': {'id': 'available'}})
@@ -479,7 +482,7 @@ def dates(repo, release):
     return dates
 
 
-def description(repo, release, internal_call=False):
+def description(repo, release, include_all, internal_call=False):
     '''Return InvenioRDM "description".
     https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
     '''
@@ -527,7 +530,7 @@ def description(repo, release, internal_call=False):
     return ''
 
 
-def formats(repo, release):
+def formats(repo, release, include_all):
     '''Return InvenioRDM "formats".
     https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
     '''
@@ -541,7 +544,7 @@ def formats(repo, release):
     return formats
 
 
-def funding(repo, release):
+def funding(repo, release, include_all):
     '''Return InvenioRDM "funding references".
     https://inveniordm.docs.cern.ch/reference/metadata/#funding-references-0-n
     '''
@@ -629,7 +632,7 @@ def funding(repo, release):
     return results
 
 
-def identifiers(repo, release):
+def identifiers(repo, release, include_all):
     '''Return InvenioRDM "alternate identifiers".
     https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
 
@@ -662,7 +665,7 @@ def identifiers(repo, release):
     return identifiers
 
 
-def languages(repo, release):
+def languages(repo, release, include_all):
     '''Return InvenioRDM "languages".
     https://inveniordm.docs.cern.ch/reference/metadata/#languages-0-n
     '''
@@ -671,7 +674,7 @@ def languages(repo, release):
     return [{"id": "eng"}]
 
 
-def locations(repo, release):
+def locations(repo, release, include_all):
     '''Return InvenioRDM "locations".
     https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
     '''
@@ -679,7 +682,7 @@ def locations(repo, release):
     return {}
 
 
-def publication_date(repo, release):
+def publication_date(repo, release, include_all):
     '''Return InvenioRDM "publication date".
     https://inveniordm.docs.cern.ch/reference/metadata/#publication-date-1
     '''
@@ -697,7 +700,7 @@ def publication_date(repo, release):
     return arrow.get(date).format('YYYY-MM-DD')
 
 
-def publisher(repo, release):
+def publisher(repo, release, include_all):
     '''Return InvenioRDM "publisher".
     https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
     '''
@@ -705,7 +708,7 @@ def publisher(repo, release):
     return 'CaltechDATA'
 
 
-def references(repo, release):
+def references(repo, release, include_all):
     '''Return InvenioRDM "references".
     https://inveniordm.docs.cern.ch/reference/metadata/#references-0-n
     '''
@@ -737,7 +740,7 @@ def references(repo, release):
             for r in cm_refs | cff_refs]
 
 
-def related_identifiers(repo, release):
+def related_identifiers(repo, release, include_all):
     '''Return InvenioRDM "related identifiers/works".
     https://inveniordm.docs.cern.ch/reference/metadata/#related-identifiersworks-0-n
     '''
@@ -764,7 +767,7 @@ def related_identifiers(repo, release):
         log('adding CodeMeta "codeRepository" to "related_identifiers"')
     elif repo_url := repo.cff.get('repository-code', ''):
         log('adding CFF "repository-code" to "related_identifiers"')
-    elif repo_url := repo.html_url:
+    elif include_all and (repo_url := repo.html_url):
         log('adding GitHub repo "html_url" to "related_identifiers"')
     if repo_url:
         identifiers.append(id_dict(repo_url, 'isderivedfrom', 'software'))
@@ -785,7 +788,7 @@ def related_identifiers(repo, release):
         log('adding CodeMeta "url" to "related_identifiers"')
     elif homepage_url := repo.cff.get('url', ''):
         log('adding CFF "url" to "related_identifiers"')
-    elif homepage_url := repo.homepage:
+    elif include_all and (homepage_url := repo.homepage):
         log('adding GitHub repo "homepage" to "related_identifiers"')
     if homepage_url:
         identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
@@ -805,7 +808,7 @@ def related_identifiers(repo, release):
     value_name = ''
     if doc_url := repo.codemeta.get('softwareHelp', ''):
         value_name = 'CodeMeta "softwareHelp"'
-    elif repo.has_pages:
+    elif include_all and repo.has_pages:
         value_name = "the repo's GitHub Pages URL"
         doc_url = f'https://{repo.owner.login}.github.io/{repo.name}'
     doc_url = url_normalize(doc_url)
@@ -817,7 +820,7 @@ def related_identifiers(repo, release):
     # The issues URL is kind of a supplemental resource.
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
-    elif repo.issues_url:
+    elif include_all and repo.issues_url:
         log('adding GitHub repo "issues_url" to "related_identifiers"')
         issues_url = f'https://github.com/{repo.full_name}/issues'
     if issues_url:
@@ -861,7 +864,7 @@ def related_identifiers(repo, release):
     return identifiers
 
 
-def resource_type(repo, release):
+def resource_type(repo, release, include_all):
     '''Return InvenioRDM "resource type".
     https://inveniordm.docs.cern.ch/reference/metadata/#resource-type-1
     '''
@@ -875,7 +878,7 @@ def resource_type(repo, release):
         return {'id': 'software'}
 
 
-def rights(repo, release):
+def rights(repo, release, include_all):
     '''Return InvenioRDM "rights (licenses)".
     https://inveniordm.docs.cern.ch/reference/metadata/#rights-licenses-0-n
     '''
@@ -961,20 +964,19 @@ def rights(repo, release):
     return [rights]
 
 
-def sizes(repo, release):
+def sizes(repo, release, include_all):
     '''Return InvenioRDM "sizes".
     https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
     '''
     return []
 
 
-def subjects(repo, release):
+def subjects(repo, release, include_all):
     '''Return InvenioRDM "subjects".
     https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
     '''
-    # Start with the topics list from the GitHub repo. Use a case-insensitive
-    # set to try to uniquefy the values added to this.
-    subjects = CaseFoldSet(repo.topics)
+    # Use a case-insensitive set to try to uniquefy the values.
+    subjects = CaseFoldSet()
 
     # Add values from CodeMeta field "keywords". If the whole value is one
     # string, it may contain multiple terms separated by a comma or semicolon.
@@ -1023,10 +1025,14 @@ def subjects(repo, release):
                 ' in codemeta.json: ' + str(item))
             break
 
+    if include_all:
+        log('adding GitHub topics to "subjects"')
+        subjects.update(repo.topics)
+
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
 
-def title(repo, release):
+def title(repo, release, include_all):
     '''Return InvenioRDM "title".
     https://inveniordm.docs.cern.ch/reference/metadata/#title-1
     '''
@@ -1053,7 +1059,7 @@ def title(repo, release):
     return cleaned_text(title)
 
 
-def version(repo, release):
+def version(repo, release, include_all):
     '''Return InvenioRDM "version".
     https://inveniordm.docs.cern.ch/reference/metadata/#version-0-1
     '''
