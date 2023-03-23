@@ -257,58 +257,40 @@ def additional_descriptions(repo, release, include_all):
 
     descriptions = []
 
-    # We don't want to reuse the text that we put in the InvenioRDM description
-    # field, so we need to compare to its value later in this function.
+    # We don't want to reuse text that we put in the InvenioRDM "description"
+    # field, so we need to know what it is in order to compare to its value.
     main_desc = description(repo, release, include_all, internal_call=True)
 
-    # Add the release notes if we didn't release notes as the main description.
-    rel_notes = repo.codemeta.get('releaseNotes', '').strip()
-    if rel_notes and rel_notes != main_desc and not rel_notes.startswith('http'):
-        log('adding CodeMeta "releaseNotes" as additional description')
-        descriptions.append({'description': rel_notes,
-                             'type': {'id': 'other'}})
+    # Helper functions used in what follows next.
+    def add(item, role, summary):
+        item = item.strip() if item is not None else ''
+        if not item:
+            return
+        elif item == main_desc:
+            log(f'not using {summary} because it\'s used for the main description')
+        else:
+            log(f'tentatively adding {summary} as an additional description')
+            if item.startswith('http'):
+                item = f'Additional information is available at {item}'
+            descriptions.append({'description': item,
+                                 'type': {'id': role}})
 
-    # Add one of CodeMeta's "description" or CFF's "abstract" if we didn't use
-    # that as the main description. These are listed as equivalent by the
-    # CodeMeta crosswalk. If more than one is set, it's likely that they're all
-    # similar anyway, so add only one of them.
-    #
-    # Note #1: we could use a string distance measure (e.g., Levenshtein) to
-    # evaluate the values really are different and add them individually if
-    # they are not too similar. However, finding a threshold that works for
-    # all cases would be difficult, and it would still risk that some values
-    # essentially say the same thing using different words. There seems to be
-    # little value in adding all 3 fields, especially since they describe the
-    # software as a whole and not the release per se. Adding one is enough.
-    #
-    # Note #2: DataCite defines a type called "abstract", and naturally it's
-    # tempting to use it for the CFF "abstract" field. IMHO that would be wrong
-    # because CFF's definition of the "abstract" field is "a description of the
-    # software or dataset" -- i.e., it's more like the other "description"
-    # fields than like an abstract. Thus, we should use the same type for all.
-    value_name = ''
-    if text := repo.codemeta.get('description', ''):
-        value_name = 'CodeMeta "description"'
-    elif text := repo.cff.get('abstract', ''):
-        value_name = 'CFF "abstract"'
-    elif include_all and (text := repo.description):
-        value_name = 'GitHub repo "description"'
-    text = text.strip()
-    if text and text != main_desc:
-        log(f'adding {value_name} as an additional description')
-        descriptions.append({'description': text,
-                             'type': {'id': 'other'}})
+    add(repo.codemeta.get('releaseNotes', ''), 'other', 'CodeMeta "releaseNotes"')
+    add(repo.codemeta.get('description', ''), 'other', 'CodeMeta "description"')
+    # Note: DataCite defines a type called "abstract", naturally it's tempting
+    # to use it for the CFF "abstract" field. IMHO that would be wrong because
+    # CFF's definition of the "abstract" field is "a description of the
+    # software or dataset" -- i.e., more like the other "description" fields
+    # than like an abstract. Thus, we should use the same type ('other') here.
+    add(repo.cff.get('abstract', ''), 'other', 'CFF "abstract"')
+    if include_all:
+        add(repo.description, 'other', 'GitHub repo "description"')
 
     # CodeMeta's "readme" maps to DataCite's "technical-info". (DataCite's docs
     # say "For software description, this may include a readme.txt ...".)
-    if readme := repo.codemeta.get('readme', '').strip():
-        log('adding CodeMeta "readme" as an additional description')
-        if readme.startswith('http'):
-            readme = f'Additional information is available at {readme}'
-        descriptions.append({'description': readme,
-                             'type': {'id': 'technical-info'}})
+    add(repo.codemeta.get('readme', ''), 'technical-info', 'CodeMeta "readme"')
 
-    return descriptions
+    return deduplicated(descriptions)
 
 
 def additional_titles(repo, release, include_all):
