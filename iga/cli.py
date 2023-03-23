@@ -315,7 +315,7 @@ def _list_communities(ctx, param, value):
 @click.option('--all-assets', '-A', is_flag=True,
               help='Attach all GitHub assets, not only a source ZIP')
 #
-@click.option('--all-metadata', '-M', 'include_all', is_flag=True,
+@click.option('--all-metadata', '-M', is_flag=True,
               help='Extract metadata more comprehensively')
 #
 @click.option('--community', '-c', metavar='STR',
@@ -368,7 +368,7 @@ def _list_communities(ctx, param, value):
 #
 @click.argument('url_or_tag', required=True)
 @click.pass_context
-def cli(ctx, url_or_tag, all_assets=False, community=None, include_all=False,
+def cli(ctx, url_or_tag, all_assets=False, all_metadata=False, community=None,
         draft=False, files_to_upload=None, account=None, repo=None,
         github_token=None, server=None, invenio_token=None,
         list_communities=False, log_dest=None, mode='normal', output=None,
@@ -435,22 +435,31 @@ and follow the instructions for creating a "classic" personal access token.
 _**Construction of an InvenioRDM record**_
 \r
 The record created in InvenioRDM is constructed using information obtained
-using GitHub's API. The information includes the following:
- * (if one exists) a `codemeta.json` file in the repository
- * (if one exists) a `CITATION.cff` file in the repository
- * the data available from GitHub for the release
- * the data available from GitHub for the repository
- * the file assets associated with the release
+using GitHub's API as well as several other APIs as needed. The information
+includes the following:
+ * (if one exists) a `codemeta.json` file in the GitHub repository
+ * (if one exists) a `CITATION.cff` file in the GitHub repository
+ * data available from GitHub for the release
+ * data available from GitHub for the repository
+ * data available from GitHub for the account of the owner
+ * data available from GitHub for the accounts of repository contributors
+ * file assets associated with the GitHub release
+ * data available from ORCID.org for ORCID identifiers
+ * data available from ROR.org for Research Organization Registry identifiers
+ * data available from DOI.org, NCBI, Google Books, & others for publications
+ * data available from spdx.org for software licenses
 \r
 Some metadata fields in the InvenioRDM record take single values, and others
-take multiple values. For the latter, IGA generally takes the approach of
-using appropriate values from `CodeMeta.json` and `CITATION.cff` if they are
-present, and only uses GitHub repository metatadata if it can't find values in
-`CodeMeta.json` or `CITATION.cff`. The option `--all-metadata` makes IGA
-include metadata from GitHub even if it finds the comperable values in
-`CodeMeta.json` or `CITATION.cff`. This makes the result more comprehensive,
+take multiple values. For the latter, IGA takes the approach of using values
+from `CodeMeta.json` and `CITATION.cff` if they are present, and only using
+GitHub repository metatadata values if the relevant fields can't be found in
+`CodeMeta.json` or `CITATION.cff`. Option `--all-metadata` makes IGA add
+metadata from GitHub even if the relevant fields exist in `CodeMeta.json` or
+`CITATION.cff`. This makes the resulting InvenioRDM record more comprehensive,
 but may introduce redundancy or even unwanted values because much of the GitHub
-metadata is computed by GitHub automatically.
+repository metadata is computed by GitHub automatically. Note: `--all-metadata`
+is ignored if a repository lacks both `codemeta.json` and `CITATION.cff` files;
+in that case, relevant values from GitHub are always used.
 \r
 To override the auto-created record, use the option `--source-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
@@ -601,7 +610,7 @@ possible values:
                 sys.exit(int(ExitCode.file_error))
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
-            metadata = metadata_for_release(account, repo, tag, include_all)
+            metadata = metadata_for_release(account, repo, tag, all_metadata)
             github_assets = github_release_assets(account, repo, tag, all_assets)
             _inform(' done.')
 
