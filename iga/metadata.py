@@ -268,10 +268,10 @@ def additional_descriptions(repo, release, include_all):
         descriptions.append({'description': rel_notes,
                              'type': {'id': 'other'}})
 
-    # Add one of CodeMeta's "description", CFF's "abstract", or the GitHub repo
-    # description if we didn't that as the main description. These are listed
-    # as equivalent by the CodeMeta crosswalk. If more than one is set, it's
-    # likely that they're all similar anyway, so add only one of them.
+    # Add one of CodeMeta's "description" or CFF's "abstract" if we didn't use
+    # that as the main description. These are listed as equivalent by the
+    # CodeMeta crosswalk. If more than one is set, it's likely that they're all
+    # similar anyway, so add only one of them.
     #
     # Note #1: we could use a string distance measure (e.g., Levenshtein) to
     # evaluate the values really are different and add them individually if
@@ -499,8 +499,11 @@ def description(repo, release, include_all, internal_call=False):
     # through the API is empty. There doesn't seem to be a way to get the text
     # shown by GitHub in those cases, so we try other alternatives after this.
     if release.body:
-        log('adding GitHub release body text as "description"')
-        return html_from_md(release.body.strip())
+        if internal_call:
+            return release.body.strip()
+        else:
+            log('adding GitHub release body text as "description"')
+            return html_from_md(release.body.strip())
 
     # CodeMeta releaseNotes can be either text or a URL. If it's a URL, it
     # often points to a NEWS or ChangeLog or similar file in their repo.
@@ -508,9 +511,12 @@ def description(repo, release, include_all, internal_call=False):
     # doesn't work well for the purposes of an InvenioRDM record description.
     if rel_notes := repo.codemeta.get('releaseNotes', '').strip():
         if not rel_notes.startswith('http'):
-            log('adding CodeMeta "releaseNotes" as "description"')
-            return html_from_md(rel_notes)
-        else:
+            if internal_call:
+                return rel_notes
+            else:
+                log('adding CodeMeta "releaseNotes" as "description"')
+                return html_from_md(rel_notes)
+        elif not internal_call:
             log('CodeMeta has releaseNotes in the form of a URL -- skipping')
 
     # CodeMeta's "description" & CFF's "abstract" (which the CodeMeta crosswalk
@@ -526,8 +532,11 @@ def description(repo, release, include_all, internal_call=False):
     elif text := repo.description:
         value_name = 'GitHub repo "description"'
     if text:
-        log(f'adding {value_name} as "description"')
-        return html_from_md(text.strip())
+        if internal_call:
+            return text.strip()
+        else:
+            log(f'adding {value_name} as "description"')
+            return html_from_md(text.strip())
 
     # Bummer.
     log('could not find a usable value for the "description" field')
