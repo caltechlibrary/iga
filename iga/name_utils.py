@@ -138,6 +138,8 @@ def is_person(name):
             else:
                 log(f'spaCy did not return entity labels for {name}')
                 return None
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception as ex:             # noqa: PIE786
             log('unable to use spaCy due to error: ' + str(ex))
         return False
@@ -148,6 +150,8 @@ def is_person(name):
             from_pp = pp.tag(name)
             log(f'entity type according to PP for {name}: {from_pp[1]}')
             return (from_pp[1] == 'Person')
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception:                 # noqa: PIE786
             # PP sometimes fails with an exception.
             log(f'probablepeople failed for {name}')
@@ -218,6 +222,8 @@ def split_name(name):
                 surname = parsed.get('LastInitial').title()
             else:
                 surname = parsed.get('Surname', '')
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception:                   # noqa: PIE786
             log(f'switching to nameparser b/c probablepeople failed on "{name}"')
             from nameparser import HumanName

@@ -63,6 +63,8 @@ def _doi_for_pubmed(pub_id, scheme):
                 log(f'NCBI returned an error for {pub_id}: ' + errmsg)
             else:
                 log(f'did not get a DOI or error message for {pub_id} from NCBI')
+    except KeyboardInterrupt as ex:
+        raise ex
     except commonpy.exceptions.NoContent:
         log(f'NBCI returned no result for "{pub_id}"')
     except commonpy.exceptions.CommonPyException as ex:

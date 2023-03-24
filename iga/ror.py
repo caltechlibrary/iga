@@ -86,6 +86,8 @@ def ror_data(rorid):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'data received for {rorid} from ror.org:\n{str(data)}')
         return data
+    except KeyboardInterrupt as ex:
+        raise ex
     except commonpy.exceptions.NoContent:
         log(f'ROR.org returned no result for "{rorid}"')
     except commonpy.exceptions.CommonPyException as ex:

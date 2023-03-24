@@ -287,6 +287,9 @@ def _list_communities(ctx, param, value):
                           f'[link={community.url}]{community.url}[/]')
         Console().print()
         Console().print(table)
+    except KeyboardInterrupt:
+        log('keyboard interrupt received')
+        sys.exit(int(ExitCode.interrupt))
     except Exception as ex:
         log('exception trying to list communities: ' + str(ex))
         _alert(ctx, 'Unable to get a list of communitities from the InvenioRDM'

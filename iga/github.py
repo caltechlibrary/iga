@@ -263,6 +263,8 @@ def _object_for_github(api_url, cls):
         obj = cls(response.json())
         obj.api_url = api_url
         return obj
+    except KeyboardInterrupt as ex:
+        raise ex
     except Exception as ex:
         # Something unexpected happened. We need to fix our handling.
         log('Error: ' + str(ex))
@@ -277,6 +279,8 @@ def _github_get(endpoint):
     try:
         response = network('get', endpoint, headers=headers)
         return response
+    except KeyboardInterrupt as ex:
+        raise ex
     except commonpy.exceptions.NoContent:
         log(f'got no content for {endpoint}')
     except commonpy.exceptions.AuthenticationFailure:
