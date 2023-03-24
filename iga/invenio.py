@@ -62,22 +62,25 @@ class InvenioCommunity():
 def invenio_api_available(server_url):
     '''Return the name of the INVENIO_SERVER if it responds to API calls.'''
     server_host = netloc(server_url)
-    test_endpoint = '/api/records?size=1'
+    endpoint = '/api/records?size=1'
     try:
         log(f'testing if we can reach {server_url} in 5 sec or less')
         socket.setdefaulttimeout(5)
         # If the next one can't reach the host, it'll throw an exception.
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server_host, 443))
         # If we can reach the host, check that it responds to the API endpoint.
-        if response := network('get', server_url + test_endpoint):
-            log(f'we can reach {server_url} and it responds to {test_endpoint}')
+        if response := network('get', server_url + endpoint):
+            log(f'we can reach {server_url} and it responds to {endpoint}')
             data = response.json()
             record = data.get('hits', {}).get('hits', {})[0]
             return record['metadata']['publisher']
     except KeyboardInterrupt as ex:
         raise ex
-    except (socket.error, commonpy.exceptions.CommonPyException) as ex:
-        log('error attempting to reach {server_url}{test_endpoint}: ' + str(ex))
+    except socket.error:
+        log(f'{server_url} did not respond')
+        return False
+    except commonpy.exceptions.CommonPyException as ex:
+        log(f'trying to get {server_url}{endpoint} produced an error: ' + str(ex))
         return False
     log(f'failed to reach server {server_url}')
     return False
@@ -128,6 +131,8 @@ def invenio_upload(record, asset, print_status):
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
         try:
             response = network('get', asset)
+        except KeyboardInterrupt as ex:
+            raise ex
         except commonpy.exceptions.CommonPyException:
             raise InvenioRDMError(f'Failed to download GitHub asset {asset} and'
                                   ' therefore cannot attach it to the record.')
@@ -302,6 +307,8 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'got response:\n{json.dumps(response_json, indent=2)}')
         return response_json
+    except KeyboardInterrupt as ex:
+        raise ex
     except commonpy.exceptions.NoContent:
         log(f'got no content for {endpoint}')
         return None
