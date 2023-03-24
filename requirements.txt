@@ -1,16 +1,47 @@
 # =============================================================================
 # @file    requirements.txt
 # @brief   Python dependencies for iga
-# @created 2022-12-08
+# @created 2023-03-24
 # @license Please see the file named LICENSE in the project directory
 # @website https://github.com/caltechlibrary/iga
 # =============================================================================
 
-aenum
-arrow
-boltons
-cffconvert
-commonpy
-rich_click
-sidetrack
+aenum               == 3.1.11
+arrow               == 1.2.3
+boltons             == 21.0.0
+caltechdata-api     == 1.2.1
+commonpy            == 1.12.0
+demoji              == 1.1.0
+httpx               == 0.23.0
+humanize            == 4.4.0
+idutils             == 1.2.0
+iptools             == 0.7.0
+isbnlib             == 3.10.12
+json5               == 0.9.10
+latexcodec          == 2.0.1
+lxml                == 4.9.2
+Markdown            == 3.4.1
+markdown-checklist  == 0.4.4
+mdx-breakless-lists == 1.0.1
+nameparser          == 1.1.2
+probablepeople      == 0.5.4
+pymdown-extensions  == 9.10
+PyYAML              == 6.0
+rich-click          == 1.6.0
+sidetrack           == 2.0.1
+spacy               == 3.4.4
+spacy-alignments    == 0.9.0
+spacy-legacy        == 3.0.11
+spacy-loggers       == 1.0.4
+spacy-pkuseg        == 0.0.32
+spacy-transformers  == 1.1.9
+StringDist          == 1.0.9
+url-normalize       == 1.4.3
+validators          == 0.20.0
 
+# Not used by IGA but it's an undeclared dependency of caltechdata_api
+s3fs               == 2023.3.0
+
+# This next set is finicky.
+pybtex             == 0.24.0
+pybtex-apa7-style  -e git+https://github.com/caltechlibrary/pybtex-apa7-style.git
