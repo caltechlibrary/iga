@@ -60,7 +60,7 @@ class InvenioCommunity():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def invenio_api_available(server_url):
-    '''Return True if the INVENIO_SERVER responds to API calls.'''
+    '''Return the name of the INVENIO_SERVER if it responds to API calls.'''
     server_host = netloc(server_url)
     test_endpoint = '/api/records?size=1'
     try:
@@ -69,9 +69,11 @@ def invenio_api_available(server_url):
         # If the next one can't reach the host, it'll throw an exception.
         socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server_host, 443))
         # If we can reach the host, check that it responds to the API endpoint.
-        if network('get', server_url + test_endpoint):
+        if response := network('get', server_url + test_endpoint):
             log(f'we can reach {server_url} and it responds to {test_endpoint}')
-            return True
+            data = response.json()
+            record = data.get('hits', {}).get('hits', {})[0]
+            return record['metadata']['publisher']
     except KeyboardInterrupt as ex:
         raise ex
     except (socket.error, commonpy.exceptions.CommonPyException) as ex:
