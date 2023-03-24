@@ -2,11 +2,11 @@
 
 The description of the terms at <https://codemeta.github.io/terms/> does not make clear the expected hierarchical structure of a `codemeta.json` file, and neither does the crosswalk table at <https://raw.githubusercontent.com/codemeta/codemeta/master/crosswalk.csv>
 
-Here is what we deduce as the structure. The top-level terms are drawn from:
- * `SoftwareSourceCode` from Schema.or
- * `SoftwareApplication` from Schema.or
- * `CreativeWork` from Schema.or
- * `Thing` from Schema.or
+Here is what we deduced as the structure. The top-level terms are drawn from:
+ * `SoftwareSourceCode` from Schema.org
+ * `SoftwareApplication` from Schema.org
+ * `CreativeWork` from Schema.org
+ * `Thing` from Schema.org
 * the 10 terms introduced as additional "Codemeta terms" (bottom of <https://codemeta.github.io/terms/>)
 
 The remaining terms in the crosswalk table and the web page of terms on the CodeMeta.github.io site are part of object structures that are used in the other terms.
