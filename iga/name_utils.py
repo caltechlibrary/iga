@@ -9,6 +9,7 @@ file "LICENSE" for more information.
 '''
 
 from commonpy.data_structures import CaseFoldSet
+from functools import cache
 from sidetrack import log
 
 
@@ -67,7 +68,7 @@ _ORGANIZATIONS_FILENAMES = ['famous-orgs.txt', 'github-orgs.txt']
 # spacy.cli.download("en_core_web_trf")
 # spacy.cli.download("zh_core_web_trf")
 
-
+@cache
 def is_person(name):
     '''Try to guess whether the given string is a person's name.
 
@@ -161,6 +162,7 @@ def is_person(name):
     return decision
 
 
+@cache
 def split_name(name):
     '''Split a name into given name & surname.
 
