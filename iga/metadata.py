@@ -356,31 +356,52 @@ def contributors(repo, release, include_all):
         log('adding CodeMeta "copyrightHolder" value(s) as contributor(s)')
         contributors.append(_entity(copyrightHolder, role='rightsholder'))
 
+    # For the next bunch, we have a problem. Their roles are all "other", which
+    # leads to InvenioRDM to displaying them all in a section titled "Other".
+    # If a CodeMeta files includes, say, a maintainer who is also an author,
+    # then that name will show up in the "Other" list as well as the creators
+    # list, which adds nothing and just looks like a mistake. So the strategy
+    # here is avoid adding people we already have added as authors. FIXME: if
+    # InvenioRDM ever adds new role definitions for 'maintainer' and 'provider'
+    # we can move those up above, and use them without deduplication.
+
+    authors = creators(repo, release, include_all, internal_call=True)
+
     # CodeMeta's "maintainer" is person or org, but people often use a list.
     # InvenioRDM roles lack an explicit term for maintainer, so we use "other".
     for maintainer in listified(repo.codemeta.get('maintainer', {})):
-        log('adding CodeMeta "maintainer" value(s) as contributor(s)')
-        contributors.append(_entity(maintainer, role='other'))
+        entity = _entity(maintainer, role='other')
+        if not any(_entity_match(entity, author) for author in authors):
+            log('adding CodeMeta "maintainer" value(s) as contributor(s)')
+            contributors.append(entity)
 
     # InvenioRDM lacks an explicit term for "provider", so we use "other"
     for provider in listified(repo.codemeta.get('provider', {})):
-        log('adding CodeMeta "provider" value(s) as contributor(s)')
-        contributors.append(_entity(provider, role='other'))
+        entity = _entity(provider, role='other')
+        if not any(_entity_match(entity, author) for author in authors):
+            log('adding CodeMeta "provider" value(s) as contributor(s)')
+            contributors.append(entity)
 
     # CodeMeta has a list of contributors, but without role information.
     if contribs := listified(repo.codemeta.get('contributor', [])):
         log('adding CodeMeta "contributor" value(s) as contributor(s)')
         for contributor in contribs:
-            contributors.append(_entity(contributor, role='other'))
+            entity = _entity(contributor, role='other')
+            if not any(_entity_match(entity, author) for author in authors):
+                contributors.append(entity)
     elif include_all and (repo_contributors := github_repo_contributors(repo)):
         # If CodeMeta doesn't contain contributors, use the repo's, if any.
-        log('adding GitHub repo contributors list as contributor(s)')
         # Skip bot accounts.
         for account in filterfalse(probable_bot, repo_contributors):
-            contributors.append(_identity_from_github(account, 'other'))
+            entity = _identity_from_github(account, 'other')
+            name = entity.get('name', '') or entity.get('family_name')
+            if not any(_entity_match(entity, author) for author in authors):
+                log(f'adding GitHub repo contributor {name} as contributor(s)')
+                contributors.append(entity)
 
     # We're getting data from multiple sources & we might have duplicates.
     # Deduplicate based on names & roles only.
+    log('deduplicating overall list of contributors -- some may be removed')
     result = []
     seen = set()
     for entry in contributors:
@@ -397,28 +418,34 @@ def contributors(repo, release, include_all):
         if key not in seen:
             seen.add(key)
             result.append(entry)
+
     return result
 
 
-def creators(repo, release, include_all):
+def creators(repo, release, include_all, internal_call=False):
     '''Return InvenioRDM "creators".
     https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     '''
+    # Helper function.
+    def log_choice(text):
+        if not internal_call:
+            log('adding ' + text + ' as creator(s)')
+
     # CodeMeta & CFF files contain more complete author info than the GitHub
     # release data, so try them 1st.
     if authors := listified(repo.codemeta.get('author', [])):
-        log('adding CodeMeta "author" name(s) as creator(s)')
+        log_choice('CodeMeta "author" name(s)')
     elif authors := repo.cff.get('author', []):
-        log('adding CFF "author" name(s) as creator(s)')
+        log_choice('CFF "author" name(s)')
     if authors:
         return deduplicated(_entity(x) for x in authors)
 
     # Couldn't get authors from codemeta.json or CITATION.cff. Try the release
     # author first, followed by the repo owner.
     if identity := _release_author(release):
-        log('adding GitHub release author name as creator(s)')
+        log_choice('GitHub release author')
     elif identity := _repo_owner(repo):
-        log('adding GitHub repo owner name as creator(s)')
+        log_choice('GitHub repo owner name')
     if identity:
         return [identity]
 
@@ -1195,6 +1222,18 @@ def _entity_from_dict(data, role):
         if role:
             result['role'] = {'id': role}
     return result
+
+
+def _entity_match(first, second):
+    # Match based on names only.
+    po1 = first['person_or_org']
+    po2 = second['person_or_org']
+    if 'name' in po1 and 'name' in po2:
+        return po1['name'] == po2['name']
+    elif 'family_name' in po1 and 'family_name' in po2:
+        return (po1['family_name'] == po2['family_name']
+                and po1.get('given_name', '') == po2.get('given_name', ''))
+    return False
 
 
 def _release_author(release):
