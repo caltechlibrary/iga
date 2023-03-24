@@ -44,3 +44,4 @@ tests/*.log
 build
 dist
 docs/_build
+e.sh
