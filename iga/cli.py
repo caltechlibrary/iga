@@ -11,7 +11,7 @@ file "LICENSE" for more information.
 import bdb
 import os
 import rich_click as click
-from   rich_click import File, INT
+from   rich_click import File, Path, INT, IntRange, Choice
 import sys
 from   sidetrack import set_debug, log
 
@@ -47,12 +47,6 @@ click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help.
 
 def _config_mode(ctx, param, mode):
     '''Handle the --mode option and configure the run mode as needed.'''
-    mode = 'normal' if mode is None else mode.strip().lower()
-    if mode not in ['quiet', 'normal', 'verbose', 'debug']:
-        _alert(ctx, f'Unrecognized mode: "{mode}". The mode value must be'
-               ' chosen from `quiet`, `normal`, `verbose`, or `debug`. Please'
-               ' use `--help` for more information.')
-        sys.exit(int(ExitCode.bad_arg))
     os.environ['IGA_RUN_MODE'] = mode
     if mode in ['verbose', 'debug']:
         set_debug(True)
@@ -179,13 +173,8 @@ def _read_timeout(ctx, param, value):
     '''Read the timeout value and perform some basic checks on it.'''
     if result := _read_param_value(ctx, param, value, 'IGA_NETWORK_TIMEOUT',
                                    'network timeout (in seconds)', required=False):
-        # Allow Python-style thousands separators.
-        result = result.replace('_', '')
+        # Click converts Python-style "_" separators so we don't worry about it.
         os.environ['IGA_NETWORK_TIMEOUT'] = result
-        # Do some sanity-checking on the input.
-        if not result.isdigit():
-            _alert(ctx, 'The timeout value must be given as an integer.')
-            sys.exit(int(ExitCode.bad_arg))
         result = int(result)
         if result < 0 or result > 6000:
             _alert(ctx, 'The timeout value must be in the range 0-6000.')
@@ -322,7 +311,7 @@ def _list_communities(ctx, param, value):
               help='Mark the record as a draft; don\'t publish it')
 #
 @click.option('--file', '-f', 'files_to_upload', metavar='FILE', multiple=True,
-              help='Upload _FILE_ (repeat for multiple files)')
+              type=Path(exists=True), help='Upload _FILE_ (repeat for multiple files)')
 #
 @click.option('--github-account', '-a', 'account', metavar='STR',
               help='GitHub account name, if not using release URL')
@@ -347,11 +336,12 @@ def _list_communities(ctx, param, value):
 @click.option('--list-communities', '-L', is_flag=True, callback=_list_communities,
               help='List communities available for `--community`')
 #
-@click.option('--log-dest', '-l', metavar='FILE', type=File('w', lazy=False),
-              expose_value=False, callback=_config_log, is_eager=True,
+@click.option('--log-dest', '-l', metavar='FILE', callback=_config_log,
+              type=File('w', lazy=False), expose_value=False, is_eager=True,
               help='Send log output to _FILE_ (use `-` for stdout)')
 #
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
+              type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
 @click.option('--read-record', '-R', 'source', metavar='FILE', type=File('r'),
@@ -576,13 +566,6 @@ possible values:
     if files_to_upload and all_assets:
         _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
         sys.exit(int(ExitCode.bad_arg))
-
-    if files_to_upload and not dest:
-        from commonpy.file_utils import readable
-        for file in files_to_upload:
-            if not readable(file):
-                _alert(ctx, f'Unable to read file: {file}')
-                sys.exit(int(ExitCode.file_error))
 
     if community and community not in invenio_communities():
         _alert(ctx, f'"{community}" is not the name of a known community in'
