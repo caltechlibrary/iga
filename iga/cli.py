@@ -159,8 +159,11 @@ def _read_server(ctx, param, value):
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
-    # Check that the host actually offers an InvenioRDM API.
-    if not invenio_api_available(server):
+    # Test that the server responds to the API & simultaneously get its name.
+    if name := invenio_api_available(server):
+        os.environ['INVENIO_SERVER_NAME'] = name
+        log(f'will use {name} as the InvenioRDM publisher name')
+    else:
         _alert(ctx, f'The server address ({server}) does not appear to be'
                ' reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))

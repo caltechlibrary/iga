@@ -40,6 +40,7 @@ from   commonpy.data_structures import CaseFoldSet, CaseFoldDict
 from   commonpy.data_utils import pluralized
 from   itertools import filterfalse
 import json5
+import os
 from   sidetrack import log
 import sys
 
@@ -727,8 +728,7 @@ def publisher(repo, release, include_all):
     '''Return InvenioRDM "publisher".
     https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
     '''
-    log('using CaltechDATA as "publisher"')
-    return 'CaltechDATA'
+    return os.environ['INVENIO_SERVER_NAME']
 
 
 def references(repo, release, include_all):
