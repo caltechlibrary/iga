@@ -33,6 +33,7 @@ def without_html(text):
 
 
 def html_from_md(md):
+    '''Convert Markdown content to HTML.'''
     from markdown import markdown
     return markdown(md, extensions=['pymdownx.superfences',
                                     'pymdownx.extra',

@@ -10,7 +10,7 @@ file "LICENSE" for more information.
 
 import commonpy.exceptions
 from   commonpy.network_utils import network
-import functools
+from   functools import cache
 import json
 import os
 from   sidetrack import log
@@ -55,7 +55,7 @@ def name_from_ror(rorid, recursion=0):
 
     name = ror_dict.get('name', '')
     log(f'ROR.org says organization {rorid} is named "{name}"')
-    if not ror_dict.get('status', '') == 'withdrawn':
+    if ror_dict.get('status', '') != 'withdrawn':
         return name
 
     # If a record has been withdrawn, see if there's a link to an update.
@@ -74,7 +74,7 @@ def name_from_ror(rorid, recursion=0):
         return ''
 
 
-@functools.cache
+@cache
 def ror_data(rorid):
     '''Return the data from ror.org for the given ROR id.'''
     if not rorid:
