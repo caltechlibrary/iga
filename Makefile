@@ -176,10 +176,13 @@ update-init: vars
 	@sed -i .bak -e "s|^\(__license__ *=\).*|\1 '$(license)'|"  $(initfile)
 
 update-meta: vars
+	$(eval date := $(shell date "+%F"))
 	@sed -i .bak -e "/version/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" codemeta.json
+	@sed -i .bak -e "/softwareVersion/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" codemeta.json
+	@sed -i .bak -e "/datePublished/ s/[0-9][0-9-]*/$(date)/" codemeta.json
 
 update-citation: vars
-	$(eval date  := $(shell date "+%F"))
+	$(eval date := $(shell date "+%F"))
 	@sed -i .bak -e "/^date-released/ s/[0-9][0-9-]*/$(date)/" CITATION.cff
 	@sed -i .bak -e "/^version/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" CITATION.cff
 
