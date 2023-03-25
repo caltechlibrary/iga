@@ -32,6 +32,9 @@ def without_html(text):
         return text
 
 
+# Note: here's the master list of extensions for python-markdown:
+# https://github.com/Python-Markdown/markdown/wiki/Third-Party-Extensions
+
 def html_from_md(md):
     '''Convert Markdown content to HTML.'''
     from markdown import markdown
