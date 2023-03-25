@@ -44,7 +44,7 @@ import os
 from   sidetrack import log
 import sys
 
-from iga.data_utils import deduplicated, similar_urls, listified, cleaned_text
+from iga.data_utils import deduplicated, similar_urls, listified
 from iga.exceptions import MissingData
 from iga.github import (
     github_account,
@@ -60,6 +60,7 @@ from iga.github import (
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
 from iga.reference import reference
+from iga.text_utils import cleaned_text
 
 
 # Constants.
@@ -181,6 +182,8 @@ def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
     if 'codemeta.json' in filenames:
         try:
             repo.codemeta = json5.loads(github_repo_file(repo, 'codemeta.json'))
+        except KeyboardInterrupt as ex:
+            raise ex
         except Exception as ex:         # noqa PIE786
             log('ignoring codemeta.json file because of error: ' + str(ex))
     for name in ['CITATION.cff', 'CITATION.CFF', 'citation.cff']:
@@ -188,6 +191,8 @@ def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
             import yaml
             try:
                 repo.cff = yaml.safe_load(github_repo_file(repo, name))
+            except KeyboardInterrupt as ex:
+                raise ex
             except Exception as ex:     # noqa PIE786
                 log(f'ignoring {name} file because of error: ' + str(ex))
             break
@@ -501,7 +506,7 @@ def description(repo, release, include_all, internal_call=False):
     '''Return InvenioRDM "description".
     https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
     '''
-    from iga.markdown_utils import html_from_md
+    from iga.text_utils import html_from_md
 
     # The description that a user provides for a release in GitHub is stored
     # in the release data as "body". If the user omits the text, GitHub
@@ -602,7 +607,7 @@ def funding(repo, release, include_all):
     # If we have multiple values for funder, we can only make sense of it if we
     # do NOT also have funding award values. If we have multiple funders and
     # funding values, we have no way to match up funders to funding, so we have
-    # to bail. However, InvenioRDM does allow a list of only funders.
+    # to bail. However, InvenioRDM does allow a list of funders only.
     if len(funder_tuples) > 1:
         log('CodeMeta "funder" has multiple values')
         if not funding_field:

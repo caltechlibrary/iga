@@ -30,3 +30,13 @@ def without_html(text):
         raise ex
     except Exception:                   # noqa PIE786
         return text
+
+
+def html_from_md(md):
+    from markdown import markdown
+    return markdown(md, extensions=['pymdownx.superfences',
+                                    'pymdownx.extra',
+                                    'pymdownx.emoji',
+                                    'mdx_breakless_lists',
+                                    'markdown_checklist.extension',
+                                    ])
