@@ -16,12 +16,12 @@ file "LICENSE" for more information.
 #  |    by the Makefile. Manual changes to these values will be lost.      |
 #  ╰────────────────────── Notice ── Notice ── Notice ─────────────────────╯
 
-__version__     = '0.0.0'
+__version__     = '0.0.1'
 __description__ = 'InvenioRDM GitHub Archiver'
 __url__         = 'https://github.com/caltechlibrary/iga'
-__author__      = 'Mike Hucka'
+__author__      = 'Michael Hucka'
 __email__       = 'helpdesk@library.caltech.edu'
-__license__     = 'https://data.caltech.edu/license'
+__license__     = 'https://github.com/caltechlibrary/iga/blob/main/LICENSE'
 
 
 # Miscellaneous utilities.
