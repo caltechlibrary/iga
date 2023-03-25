@@ -178,8 +178,14 @@ with open(outputfile, 'w') as out:
     out.write('\n')
     out.write('LICENSE_URLS = CaseFoldDict({')
     out.write('\n')
+    # We write both http: & https: forms, b/c people sometimes unknowingly use
+    # old URLs in their CodeMeta or CFF files. This makes matching simpler.
     for url, key in spdx_urls.items():
-        out.write("  '" + url + "': '" + key + "',")
+        http_url  = url.replace('https://', 'http://')
+        https_url = url.replace('http://', 'https://')
+        out.write("  '" + http_url + "': '" + key + "',")
+        out.write('\n')
+        out.write("  '" + https_url + "': '" + key + "',")
         out.write('\n')
     out.write('})')
     out.write('\n')
