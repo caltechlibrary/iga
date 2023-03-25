@@ -67,26 +67,3 @@ def listified(thing):
     if not thing:
         return []
     return thing if isinstance(thing, (list, Iterator, Generator)) else [thing]
-
-
-def cleaned_text(text):
-    '''Return text that has been mildly cleaned up.
-
-    Whitespace characters are normalized to single spaces, and period
-    characters are followed by one space.
-    '''
-    # Get rid of embedded newlines and related characters.
-    text = ' '.join(text.splitlines())
-    # Normalize runs of multiple spaces to one.
-    return ' '.join(text.split())
-
-
-def without_html(text):
-    '''Return the given text with HTML tags, if any, removed.'''
-    from lxml import html
-    try:
-        return html.fromstring(text).text_content().strip()
-    except KeyboardInterrupt as ex:
-        raise ex
-    except Exception:                   # noqa PIE786
-        return text
