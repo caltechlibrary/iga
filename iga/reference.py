@@ -16,6 +16,7 @@ from   sidetrack import log
 from iga.doi import doi_for_publication
 from iga.exceptions import InternalError
 from iga.id_utils import recognized_scheme
+from iga.text_utils import without_html
 
 
 # Internal variables for this module.
@@ -69,16 +70,17 @@ def reference_from_doi(doi):
         log(f'returning cached reference for {doi}: ' + cached)
         return cached
 
-    log(f'asking Crossref for formatted reference for {doi}')
+    log(f'asking DOI.org for formatted reference for {doi}')
     doi_url = 'https://doi.org/' + doi
     headers = {'accept': 'text/x-bibliography; style=apa'}
     try:
         response = network('get', doi_url, headers=headers)
-        from iga.data_utils import without_html
         log('received response from Crossref: ' + response.text)
-        cleaned_text = without_html(response.text)
-        _CACHE[cache_key] = cleaned_text
-        return cleaned_text
+        text = without_html(response.text)
+        _CACHE[cache_key] = text
+        return text
+    except KeyboardInterrupt as ex:
+        raise ex
     except commonpy.exceptions.NoContent:
         log(f'CrossRef returned no result for "{doi}"')
     except commonpy.exceptions.CommonPyException as ex:

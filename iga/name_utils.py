@@ -261,7 +261,7 @@ def contains_cjk(text):
 def _cleaned_name(name):
     import re
     import demoji
-    from iga.data_utils import without_html
+    from iga.text_utils import without_html
     # Remove any HTML tags there might be left.
     name = without_html(name)
     # Remove parenthetical text like "Somedude [somedomain.io]".
