@@ -45,3 +45,4 @@ build
 dist
 docs/_build
 e.sh
+iga/tmp
