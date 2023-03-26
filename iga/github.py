@@ -19,6 +19,14 @@ from   types import SimpleNamespace
 from iga.exceptions import GitHubError, InternalError
 
 
+# Constants.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+_BOT_NAME_WORDS = ['bot', 'daemon']
+'''List of words such that, if one of the words is the last word in an account
+name, mean the account will be assumed to be a software bot of some kind.'''
+
+
 # Classes.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -84,7 +92,7 @@ class GitHubFile(SimpleNamespace):
         super().__init__(**file_dict)
 
 
-# Principal exported functions.
+# Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def github_release(account_name, repo_name, tag_name):
@@ -245,7 +253,8 @@ def probable_bot(account):
         return False
     # Beware that some user accounts have "None" for account.name.
     return (account.type == 'Bot'
-            or (account.name and account.name.lower().split()[-1] == 'bot'))
+            or (account.name
+                and account.name.lower().split()[-1] in _BOT_NAME_WORDS))
 
 
 # Helper functions
