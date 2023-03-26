@@ -829,21 +829,29 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "sameAs" to "related_identifiers"')
         identifiers.append(id_dict(sameas_url, 'isversionof', 'software'))
 
-    # GitHub pages are usually used to document a given software package.
-    # That's not necessarily documentation for this release of the software,
-    # but it's the best we can do. We add it, but not if it's already been
-    # added as one of the URLs above.
-    value_name = ''
-    if doc_url := repo.codemeta.get('softwareHelp', ''):
-        value_name = 'CodeMeta "softwareHelp"'
-    elif include_all and repo.has_pages:
-        value_name = "the repo's GitHub Pages URL"
-        doc_url = f'https://{repo.owner.login}.github.io/{repo.name}'
-    doc_url = url_normalize(doc_url)
-    if doc_url and not any(doc_url == item['identifier'] for item in identifiers):
-        log(f'adding {value_name} to "related_identifiers"')
-        identifiers.append(id_dict(doc_url, 'isdocumentedby',
-                                   'publication-softwaredocumentation'))
+    # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
+    for help in listified(repo.codemeta.get('softwareHelp', '')):
+        if isinstance(help, str) and help.startswith('http'):
+            url = help
+        elif isinstance(help, dict):
+            if help_url := help.get('url', ''):
+                url = url_normalize(help_url)
+            elif help.get('@id', '').startswith('http'):
+                url = url_normalize(help.get('@id'))
+        # Don't add if has been added already as one of the other URLs above.
+        if url and not any(url == item['identifier'] for item in identifiers):
+            log(f'adding CodeMeta "softwareHelp" {url} to "related_identifiers"')
+            identifiers.append(id_dict(url, 'isdocumentedby',
+                                       'publication-softwaredocumentation'))
+
+    # GitHub pages for a repo usually document the software. It may not be the
+    # docs for this release of the software, but we can't tell, so we add it.
+    if include_all and repo.has_pages:
+        url = f'https://{repo.owner.login}.github.io/{repo.name}'
+        if url and not any(url == item['identifier'] for item in identifiers):
+            log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
+            identifiers.append(id_dict(url, 'isdocumentedby',
+                                       'publication-softwaredocumentation'))
 
     # The issues URL is kind of a supplemental resource.
     if issues_url := repo.codemeta.get('issueTracker', ''):
