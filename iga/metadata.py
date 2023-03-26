@@ -587,7 +587,7 @@ def funding(repo, release, include_all):
 
     # Some people don't actually provide funding info, yet don't leave the
     # fields blank. We don't bother putting these in the InvenioRDM record.
-    not_avail = ['n/a', 'not available']
+    not_avail = ['n/a', 'not available', 'none']
     for item in listified(funding_field):
         if isinstance(item, str) and any(t in item.lower() for t in not_avail):
             log('CodeMeta "funding" has a value but it says "not available"')
@@ -604,46 +604,48 @@ def funding(repo, release, include_all):
             # Incorrect data type. Let's take it anyway. Use the whole string.
             funder_tuples.append((item, ''))
 
-    # If we have multiple values for funder, we can only make sense of it if we
-    # do NOT also have funding award values. If we have multiple funders and
-    # funding values, we have no way to match up funders to funding, so we have
-    # to bail. However, InvenioRDM does allow a list of funders only.
+    # If we have multiple values for funder, we can only use them if we do NOT
+    # also have funding values because if we have multiple funders, we have no
+    # way to match funders with funding values. However, Invenio allows a list
+    # of funders only, so we return that if we find funders but not funding.
     if len(funder_tuples) > 1:
         log('CodeMeta "funder" has multiple values')
         if not funding_field:
             log('using CodeMeta "funder" values to build "funding" field')
             return [_funding(funder, fid) for (funder, fid) in funder_tuples]
         else:
-            log('cannot handle list of funders with separate funding values')
+            log('CodeMeta has multiple funders and funding values – giving up')
             return []
 
-    # If we get here, we don't have more than one funder/funder_id.
+    # If we get here, it means we DON'T have more than one funder/funder_id.
     funder, funder_id = funder_tuples[0] if funder_tuples else ('', '')
-    if funder and funding_field:
-        log('using CodeMeta "funding" and "funder" to build "funding" field')
-
-    # The correct funding data type is text. Sometimes people use lists or dict.
     results = []
     for item in listified(funding_field):
+        # The correct funding type is text. Sometimes people use lists or dict.
         if isinstance(item, str):
-            if not funder:
-                # Maybe the string contains embedded funder info (e.g., if it's
-                # a grant + agency name) but we have no way to reliably parse
-                # that from a string. FIXME could apply ML-based NER.
-                continue
-            # If there's only one token in the funding item string, it's likely
-            # an award id. If there's more than 1 token, we can't reliably
-            # parse out the grant id, so give up and use the whole string.
-            num_terms = len(item.split())
-            award_id = item if num_terms == 1 else ''
-            award_name = item if num_terms > 1 else ''
-            results.append(_funding(funder, funder_id, award_name, award_id))
+            # InvenioRDM requires EITHER an id drawn from OpenAIRE, OR a grant
+            # name + number pair. We can't reliably parse grant numbers & names
+            # from strings, and we don't currently have a way to detect OpenAIRE
+            # grant id's. All we can do is report the funder. And because if
+            # we get here we know we only have one funder, we can also quit now.
+            if funder or funder_id:
+                log('"funding" value is a string – giving up, returning funder')
+                return [_funding(funder, funder_id)]
+            else:
+                log('"funding" value is a string and we have no funder – giving up')
+                return []
         elif isinstance(item, dict):
+            # The type used by CodeMeta for funding does not have a separate
+            # number field, and we can't reliably parse grant numbers & names
+            # out of a plain-text name string, so at best we can only do this:
+            #
+            #  case 1: if there's a separate identifier, (mis)use that as the
+            #          "number" if the funding item also gives a "name".
+            #
+            #  case 2: if there's a separate funder item within the funding
+            #          item, and case #1 doesn't apply, return just the funder
             award_name = item.get('name', '') or item.get('@name', '')
-            award_id = item.get('identifier', '')
-            if not (award_name or award_id):
-                continue
-            # Some people put a funder object in the funding item dict.
+            award_id = item.get('identifier', '') or item.get('@id', '')
             item_funder = ''
             item_funder_id = ''
             if fun := item.get('funder', {}):
@@ -657,8 +659,16 @@ def funding(repo, release, include_all):
             item_funder_id = item_funder_id or funder_id
             if not item_funder or item_funder_id:
                 continue
-            results.append(_funding(item_funder, item_funder_id, award_name, award_id))
-    return results
+            log('using CodeMeta "funding" value')
+            if award_id and not award_name:
+                results.append(_funding(item_funder, item_funder_id,
+                                        award_id=award_id))
+            elif award_id and award_name:
+                results.append(_funding(item_funder, item_funder_id,
+                                        award_name=award_name, award_num=award_id))
+            else:
+                results.append(_funding(item_funder, item_funder_id))
+    return deduplicated(results)
 
 
 def identifiers(repo, release, include_all):
@@ -1317,9 +1327,11 @@ def _parsed_funder_info(data):
     return (funder_name, funder_id)
 
 
-def _funding(funder_name, funder_id, award_name=None, award_id=None):
+def _funding(funder_name, funder_id, award_name=None, award_id=None, award_num=None):
+    # InvenioRDM funding items are like this: { 'funder': {...}, 'award': {...} }
+    #
     # InvenioRDM says funder subfield must have id OR name, and award subfield
-    # must have either id or both title and number.
+    # must have either id or BOTH title and number.
     result = {}
 
     if funder_name:
@@ -1327,10 +1339,11 @@ def _funding(funder_name, funder_id, award_name=None, award_id=None):
     elif funder_id:
         result['funder'] = {'id': funder_id}
 
-    if award_name:
-        result['award'] = {'title': {'en': award_name}}
-    elif award_id:
+    if award_id:
         result['award'] = {'id': award_id}
+    elif award_name and award_num:
+        result['award'] = {'title': {'en': award_name},
+                           'number': award_num}
 
     return result
 
