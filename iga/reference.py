@@ -75,7 +75,7 @@ def reference_from_doi(doi):
     headers = {'accept': 'text/x-bibliography; style=apa'}
     try:
         response = network('get', doi_url, headers=headers)
-        log('received response from Crossref: ' + response.text)
+        log('received response from Crossref:\n' + response.text)
         text = without_html(response.text)
         _CACHE[cache_key] = text
         return text
