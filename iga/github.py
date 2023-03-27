@@ -22,7 +22,10 @@ from iga.exceptions import GitHubError, InternalError
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-_BOT_NAME_WORDS = ['bot', 'daemon']
+# 2023-03-27 used to include "bot" in this list, but then discovered a real
+# person whose last name is "Bot".
+
+_BOT_NAME_WORDS = ['daemon']
 '''List of words such that, if one of the words is the last word in an account
 name, mean the account will be assumed to be a software bot of some kind.'''
 
