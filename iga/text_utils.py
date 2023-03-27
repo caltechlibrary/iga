@@ -42,5 +42,6 @@ def html_from_md(md):
                                     'pymdownx.extra',
                                     'pymdownx.emoji',
                                     'mdx_breakless_lists',
+                                    'mdx_linkify',
                                     'markdown_checklist.extension',
                                     ])
