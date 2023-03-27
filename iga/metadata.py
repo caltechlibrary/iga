@@ -1235,16 +1235,16 @@ def _entity_from_dict(data, role):
     result = {}
     if person or org:
         result = {'person_or_org': person or org}
-        if affiliation := data.get('affiliation', ''):
+        for affiliation in listified(data.get('affiliation', '')):
             if isinstance(affiliation, str):
                 name = affiliation
             elif isinstance(affiliation, dict):
-                # In CFF, the field name is 'legalName'. In CodeMeta, it's 'name'.
+                # In CFF the field name is 'legalName'. In CodeMeta it's 'name'.
                 name = affiliation.get('legalName', '') or affiliation.get('name', '')
-            else:
-                name = affiliation
             if name:
-                result['affiliations'] = [{'name': flattened_name(name)}]
+                affiliations = result.get('affiliations', [])
+                affiliations.append({'name': flattened_name(name)})
+                result['affiliations'] = affiliations
         if role:
             result['role'] = {'id': role}
     return result
