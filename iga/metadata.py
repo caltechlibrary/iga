@@ -269,23 +269,24 @@ def additional_descriptions(repo, release, include_all):
 
     descriptions = []
 
-    # We don't want to reuse text that we put in the InvenioRDM "description"
-    # field, so we need to know what it is in order to compare to its value.
-    main_desc = description(repo, release, include_all, internal_call=True)
+    # We don't want to add repeated text, so we track what we have seen. Start
+    # with the text we put in the InvenioRDM "description" field.
+    added = [description(repo, release, include_all, internal_call=True).lower()]
 
     # Helper functions used in what follows next.
     def add(item, role, summary):
         item = item.strip() if item is not None else ''
         if not item:
             return
-        elif item.lower() == main_desc.lower():
-            log(f'not using {summary} because it\'s used for the main description')
+        elif item.lower() in added:
+            log(f'not using {summary} because it\'s a duplicate of something else')
         else:
             log(f'tentatively adding {summary} as an additional description')
             if item.startswith('http'):
                 item = f'Additional information is available at {item}'
             descriptions.append({'description': item,
                                  'type': {'id': role}})
+            added.append(item.lower())
 
     add(repo.codemeta.get('releaseNotes', ''), 'other', 'CodeMeta "releaseNotes"')
     add(repo.codemeta.get('description', ''), 'other', 'CodeMeta "description"')
