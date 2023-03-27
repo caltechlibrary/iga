@@ -55,6 +55,7 @@ from iga.github import (
     github_repo_file,
     github_repo_filenames,
     github_repo_languages,
+    GitHubError,
     probable_bot,
 )
 from iga.id_utils import detected_id, recognized_scheme
@@ -405,9 +406,8 @@ def contributors(repo, release, include_all):
         # Skip bot accounts.
         for account in filterfalse(probable_bot, repo_contributors):
             entity = _identity_from_github(account, 'other')
-            name = entity.get('name', '') or entity.get('family_name')
             if not any(_entity_match(entity, author) for author in authors):
-                log(f'adding GitHub repo contributor {name} as contributor(s)')
+                log(f'adding GitHub repo contributor {entity} as contributor(s)')
                 contributors.append(entity)
 
     # We're getting data from multiple sources & we might have duplicates.
@@ -775,9 +775,9 @@ def references(repo, release, include_all):
     # we can use for publications is "other". The tough one is the "reference"
     # value, which is free text and supposed to be a "full reference string".
 
-    if cm_refs := _codemeta_references(repo):
+    if cm_refs := _codemeta_reference_ids(repo):
         log('adding CodeMeta "referencePublication" value(s) to "references"')
-    if cff_refs := _cff_references(repo):
+    if cff_refs := _cff_reference_ids(repo):
         log('adding CFF "preferred-citation" and/or "references" to "references"')
     return [{'reference': reference(r), 'identifier': r, 'scheme': 'other'}
             for r in cm_refs | cff_refs]
@@ -899,11 +899,9 @@ def related_identifiers(repo, release, include_all):
             # There's no good way to know what the resource type actually is.
             identifiers.append(id_dict(url, 'references', 'other'))
 
-    # We already added CodeMeta & CFF "references" field values to InvenioRDM's
-    # field "references" (c.f. function references() in this file); however,
-    # InvenioRDM doesn't do much with the "references" field & data.caltech.edu
-    # doesn't currently show it, so we also add the items as related ids here.
-    if reference_ids := (_codemeta_references(repo) | _cff_references(repo)):
+    # We will add CodeMeta & CFF "references" values to InvenioRDM "references"
+    # (see function references()). To be complete, add ids as related ids here.
+    if reference_ids := (_codemeta_reference_ids(repo) | _cff_reference_ids(repo)):
         log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
     for id in reference_ids:
         # We're adding identifiers => must recreate this next list each loop
@@ -1122,7 +1120,7 @@ def version(repo, release, include_all):
     tag = release.tag_name
     if tag.startswith('v'):
         import re
-        tag = re.sub(r'v(er|version)?[ .]?', '', tag)
+        tag = re.sub(r'v(er|version)?[ .]? ?', '', tag)
     return tag.strip()
 
 
@@ -1300,12 +1298,19 @@ def _identity_from_github(account, role=None):
         account.company = account.company.strip()
         if account.company.startswith('@'):
             # Some people write @foo to indicate org account "foo" in GitHub.
-            candidate = account.company[1:]
-            if org_account := github_account(candidate):
-                result['affiliations'] = [{'name': org_account.name}]
-            else:
+            # Grab only the first token after the '@'.
+            log(f'company for {account.login} account starts with @')
+            try:
+                import re
+                candidate = re.search(r'\w+', account.company).group()
+                org_account = github_account(candidate)
+            except GitHubError:
                 # No luck. Take it as-is.
+                log(f'failed to find {account.company[1:]} as a GitHub account')
                 result['affiliations'] = [{'name': account.company}]
+            else:
+                log(f'using org {candidate} as affiliation for {account.name}')
+                result['affiliations'] = [{'name': org_account.name}]
         else:
             result['affiliations'] = [{'name': account.company}]
     if role:
@@ -1353,7 +1358,7 @@ def _funding(funder_name, funder_id, award_name=None, award_id=None, award_num=N
     return result
 
 
-def _codemeta_references(repo):
+def _codemeta_reference_ids(repo):
     # CodeMeta's referencePublication is supposed to be a ScholarlyArticle
     # (dict), but people often make it a list, and moreover, sometimes they
     # make it a list of strings (often URLs) instead of dicts.
@@ -1376,7 +1381,7 @@ def _codemeta_references(repo):
     return identifiers
 
 
-def _cff_references(repo):
+def _cff_reference_ids(repo):
     # CFF has "preferred-citation" and "references". The former is one CFF
     # "reference" type object, while the latter is a list of those objects.
     # Annoyingly, a "reference" object itself can have a list of identifiers.
