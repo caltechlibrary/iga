@@ -9,6 +9,7 @@ file "LICENSE" for more information.
 '''
 
 from typing import Generator, Iterator
+from url_normalize import url_normalize
 
 
 def deduplicated(lst):
@@ -39,6 +40,31 @@ def deduplicated(lst):
         return unique(lst)
 
 
+def listified(thing):
+    '''Return a list made out of thing.
+
+    If thing is a single object, then this returns [thing].
+    If list is a list, Iterator or Generator, this simply returns thing.
+    '''
+    if not thing:
+        return []
+    return thing if isinstance(thing, (list, Iterator, Generator)) else [thing]
+
+
+def normalized_url(url):
+    '''Return url but with some transformations to make it consistent.'''
+    url = url.replace('https://git+https/github.com', 'https://github.com')
+    url = url.replace('https://git@github.com:', 'https://github.com/')
+    url = url.replace('git+https://github.com', 'https://github.com')
+    url = url.replace('git+ssh://git@github.com:', 'https://github.com/')
+    url = url.replace('git@github.com:', 'https://github.com/')
+    url = url.replace('git://github.com/', 'https://github.com/')
+    url = url.split('#')[0]
+    url = url.removesuffix('.git')
+    url = url_normalize(url)
+    return url
+
+
 def similar_urls(url1, url2):
     '''Return True if url1 is believed to be the same URL as url2.'''
     # I found things like urllib's urlparse and w3lib's canonicalize_url
@@ -56,14 +82,3 @@ def similar_urls(url1, url2):
         or url1.replace('https://', 'http://').removesuffix('/') == url2
         or url1.replace('https://', 'http://') == url2.removesuffix('/')
     )
-
-
-def listified(thing):
-    '''Return a list made out of thing.
-
-    If thing is a single object, then this returns [thing].
-    If list is a list, Iterator or Generator, this simply returns thing.
-    '''
-    if not thing:
-        return []
-    return thing if isinstance(thing, (list, Iterator, Generator)) else [thing]

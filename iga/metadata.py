@@ -44,7 +44,7 @@ import os
 from   sidetrack import log
 import sys
 
-from iga.data_utils import deduplicated, similar_urls, listified
+from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
 from iga.exceptions import MissingData
 from iga.github import (
     github_account,
@@ -790,11 +790,9 @@ def related_identifiers(repo, release, include_all):
     # Note about how to interpret the relations below: the direction is
     #   "this release" --> has relationship to --> "related resource identifier"
 
-    from url_normalize import url_normalize
-
     def id_dict(url, rel_type, res_type):
         '''Helper function for creating a frequently-used data structure.'''
-        return {'identifier': url_normalize(url),
+        return {'identifier': normalized_url(url),
                 'relation_type': {'id': rel_type},
                 'resource_type': {'id': res_type},
                 'scheme': 'url'}
@@ -850,9 +848,9 @@ def related_identifiers(repo, release, include_all):
             url = help
         elif isinstance(help, dict):
             if help_url := help.get('url', ''):
-                url = url_normalize(help_url)
+                url = normalized_url(help_url)
             elif help.get('@id', '').startswith('http'):
-                url = url_normalize(help.get('@id'))
+                url = normalized_url(help.get('@id'))
         # Don't add if has been added already as one of the other URLs above.
         if url and not any(url == item['identifier'] for item in identifiers):
             log(f'adding CodeMeta "softwareHelp" {url} to "related_identifiers"')
@@ -888,7 +886,7 @@ def related_identifiers(repo, release, include_all):
     if links := listified(repo.codemeta.get('relatedLink', None)):
         log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
         for url in filter(lambda x: x.startswith('http'), links):
-            url = url_normalize(url)
+            url = normalized_url(url)
             # We don't add URLs we've already added (possibly as another type).
             # The list needs to be recreated in the loop b/c we're adding to it.
             added_urls = [item['identifier'] for item in identifiers]
@@ -954,8 +952,7 @@ def rights(repo, release, include_all):
             license_id = value
         elif value.startswith('http'):
             # Is it a URL for a known license?
-            from url_normalize import url_normalize
-            url = url_normalize(value.lower().removesuffix('.html'))
+            url = normalized_url(value.lower().removesuffix('.html'))
             if url in LICENSE_URLS:
                 log(f'found {value_name} value among known license URLs: {url}')
                 license_id = LICENSE_URLS[url]
