@@ -180,10 +180,15 @@ def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
     repo.cff = {}
     filenames = github_repo_filenames(repo)
     if 'codemeta.json' in filenames:
+        codemeta_file = github_repo_file(repo, 'codemeta.json')
         try:
-            repo.codemeta = json5.loads(github_repo_file(repo, 'codemeta.json'))
+            repo.codemeta = json5.loads(codemeta_file)
         except KeyboardInterrupt as ex:
             raise ex
+        except ValueError:
+            from iga.json_utils import partial_json
+            log('CodeMeta content has syntactic errors; trying alternate parser')
+            repo.codemeta = partial_json(codemeta_file)
         except Exception as ex:         # noqa PIE786
             log('ignoring codemeta.json file because of error: ' + str(ex))
     for name in ['CITATION.cff', 'CITATION.CFF', 'citation.cff']:
