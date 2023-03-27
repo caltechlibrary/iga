@@ -11,8 +11,7 @@ from iga.data_utils import (
     deduplicated,
     listified,
     similar_urls,
-    without_html,
-    cleaned_text
+    normalized_url,
 )
 
 
@@ -97,19 +96,8 @@ def test_lisitifed():
     assert isinstance(listified(x for x in ['a', 'b']), Generator)
 
 
-def test_cleaned_text():
-    assert cleaned_text('') == ''
-    assert cleaned_text('a  b') == 'a b'
-    assert cleaned_text('a.b. jones') == 'a. b. jones'
-    assert cleaned_text('A.B. jones') == 'A. B. jones'
-    assert cleaned_text('a\nb') == 'a b'
-    assert cleaned_text('a\t b') == 'a b'
-    assert cleaned_text('some text.') == 'some text.'
-
-
-def test_without_html():
-    assert without_html('') == ''
-    assert without_html('a') == 'a'
-    assert without_html('this has no html') == 'this has no html'
-    assert without_html('foo <i>bar</i>') == 'foo bar'
-    assert without_html('Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053\n') == 'Sjoberg, D., D., Whiting, K., Curry, M., Lavery, J., A., & Larmarange, J. (2021). Reproducible Summary Tables with the gtsummary Package. The R Journal, 13(1), 570. https://doi.org/10.32614/rj-2021-053'
+def test_normalized_url():
+    assert normalized_url('git@github.com:IonicaBizau/node-git-url-parse.git') == 'https://github.com/IonicaBizau/node-git-url-parse'
+    assert normalized_url('https://github.com/IonicaBizau/node-git-url-parse.git') == 'https://github.com/IonicaBizau/node-git-url-parse'
+    assert normalized_url('git+ssh://git@github.com:organization/repo.git#hashbrowns') == 'https://github.com/organization/repo'
+    assert normalized_url('git+https://github.com/cds-astro/tutorials') == 'https://github.com/cds-astro/tutorials'
