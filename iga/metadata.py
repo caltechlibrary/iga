@@ -278,7 +278,7 @@ def additional_descriptions(repo, release, include_all):
         item = item.strip() if item is not None else ''
         if not item:
             return
-        elif item == main_desc:
+        elif item.lower() == main_desc.lower():
             log(f'not using {summary} because it\'s used for the main description')
         else:
             log(f'tentatively adding {summary} as an additional description')
