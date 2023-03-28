@@ -80,6 +80,10 @@ def normalize_purl(val):
     return val
 
 
+def normalize_url(val):
+    '''Normalize a URL.'''
+    return val
+
 
 RECOGNIZED_SCHEMES = {
     'ark'    : normalize_ark,
@@ -99,6 +103,7 @@ RECOGNIZED_SCHEMES = {
     'purl'   : normalize_purl,
     'ror'    : normalize_ror,
     'swh'    : normalize_swh,
+    'url'    : normalize_url,
     'urn'    : normalize_urn,
 }
 
