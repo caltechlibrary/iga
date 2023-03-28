@@ -29,11 +29,10 @@ class ExitCode(Enum):
     success          = 0, "success – program completed normally"
     user_interrupt   = 1, "the user interrupted the program's execution"
     bad_arg          = 2, "encountered a bad or missing value for an option"
-    no_network       = 3, "no network detected – cannot proceed"
-    file_error       = 4, "encountered a problem with a file or directory"
-    github_error     = 5, "encountered a problem interacting with GitHub"
-    inveniordm_error = 6, "encountered a problem interacting with InvenioRDM"
-    exception        = 7, "a miscellaneous exception or fatal error occurred"
+    file_error       = 3, "encountered a problem with a file or directory"
+    github_error     = 4, "encountered a problem interacting with GitHub"
+    inveniordm_error = 5, "encountered a problem interacting with InvenioRDM"
+    exception        = 6, "a miscellaneous exception or fatal error occurred"
 
     def __int__(self):
         return self.value

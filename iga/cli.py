@@ -544,11 +544,10 @@ possible values:
   0 = success – program completed normally  
   1 = interrupted  
   2 = encountered a bad or missing value for an option  
-  3 = no network detected  
-  4 = encountered a problem with a file or directory  
-  5 = encountered a problem interacting with GitHub  
-  6 = encountered a problem interacting with InvenioRDM  
-  7 = an exception or fatal error occurred  
+  3 = encountered a problem with a file or directory  
+  4 = encountered a problem interacting with GitHub  
+  5 = encountered a problem interacting with InvenioRDM  
+  6 = an exception or fatal error occurred  
 '''
     # Process arguments & handle early exits ..................................
 
