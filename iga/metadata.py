@@ -38,11 +38,13 @@ file "LICENSE" for more information.
 import arrow
 from   commonpy.data_structures import CaseFoldSet, CaseFoldDict
 from   commonpy.data_utils import pluralized
+from   commonpy.network_utils import scheme as url_scheme
 from   itertools import filterfalse
 import json5
 import os
 from   sidetrack import log
 import sys
+import validators
 
 from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
 from iga.exceptions import MissingData
@@ -161,6 +163,10 @@ CV_NAMES = {'crr'   : 'creator-roles',
 # called. It's a dict of licenses id's & urls recognized by this Invenio server.
 
 INVENIO_LICENSES = CaseFoldDict()
+
+# URL schemes we accept for URLs in certain situations where a URL type is
+# allowed but we don't want to allow some types such as 'data' URLs.
+ALLOWED_URL_SCHEMES = ['http', 'https', 'git', 'ftp', 'gopher', 's3', 'svn']
 
 
 # Exported module functions.
@@ -285,9 +291,13 @@ def additional_descriptions(repo, release, include_all):
         elif item.lower() in added:
             log(f'not using {summary} because it\'s a duplicate of something else')
         else:
+            if validators.url(item):
+                if url_scheme(item) in ALLOWED_URL_SCHEMES:
+                    item = f'Additional information is available at {item}'
+                else:
+                    log(f'not using {summary} URL {item} due to disallowed scheme')
+                    return
             log(f'tentatively adding {summary} as an additional description')
-            if item.startswith('http'):
-                item = f'Additional information is available at {item}'
             descriptions.append({'description': item,
                                  'type': {'id': role}})
             added.append(item.lower())
@@ -536,7 +546,7 @@ def description(repo, release, include_all, internal_call=False):
     # Those files often describe every release ever made, and that just
     # doesn't work well for the purposes of an InvenioRDM record description.
     if rel_notes := repo.codemeta.get('releaseNotes', '').strip():
-        if not rel_notes.startswith('http'):
+        if not validators.url(rel_notes):
             if internal_call:
                 return rel_notes
             else:
@@ -700,17 +710,27 @@ def identifiers(repo, release, include_all):
     for item in cm_ids + cff_ids:
         if isinstance(item, str):
             kind = recognized_scheme(item)
-            if kind in CV['identifier-types']:
-                identifiers.append({'identifier': item,
-                                    'scheme': kind})
+            value = item.strip()
         elif isinstance(item, dict):
             kind = item.get('type', '').lower() or item.get('@type', '').lower()
-            value = item.get('value', '')
-            if value.startswith('http') and kind != 'url':
-                value = detected_id(value) or value
-            if value and (kind in CV['identifier-types']):
-                identifiers.append({'identifier': value,
-                                    'scheme': kind})
+            value = item.get('value', '').strip()
+        else:
+            log(f'skipping due to unsupported item data type: {item}')
+            continue
+        if not value:
+            continue
+        if kind == 'url' and value not in ALLOWED_URL_SCHEMES:
+            log(f'skipping due to unsupported URL type: {value}')
+            continue
+        if kind != 'url' and validators.url(value):
+            # Original value is in URL form, but we recognzie the kind as a
+            # particular sort of identifier. Try to extract the identifier.
+            value = detected_id(value) or value
+        if kind in CV['identifier-types']:
+            identifiers.append({'identifier': value,
+                                'scheme': kind})
+        else:
+            log(f'skipping due to unsupported identifier type: {value}')
     return identifiers
 
 
@@ -784,6 +804,7 @@ def references(repo, release, include_all):
         log('adding CodeMeta "referencePublication" value(s) to "references"')
     if cff_refs := _cff_reference_ids(repo):
         log('adding CFF "preferred-citation" and/or "references" to "references"')
+    # FIXME filter id types that can't be formatted as refs
     return [{'reference': reference(r), 'identifier': r, 'scheme': 'other'}
             for r in cm_refs | cff_refs]
 
@@ -821,7 +842,7 @@ def related_identifiers(repo, release, include_all):
     # If releaseNotes is a URL, we will not have used it for either the
     # description or additional descriptions, so add it here.
     relnotes_url = repo.codemeta.get('releaseNotes', '').strip()
-    if relnotes_url.startswith('http'):
+    if validators.url(relnotes_url):
         log('adding CodeMeta "releaseNotes" URL to "related_identifiers"')
         identifiers.append(id_dict(relnotes_url, 'isdescribedby', 'other'))
 
@@ -849,12 +870,12 @@ def related_identifiers(repo, release, include_all):
 
     # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
     for help in listified(repo.codemeta.get('softwareHelp', '')):
-        if isinstance(help, str) and help.startswith('http'):
+        if isinstance(help, str) and validators.url(help):
             url = help
         elif isinstance(help, dict):
             if help_url := help.get('url', ''):
                 url = normalized_url(help_url)
-            elif help.get('@id', '').startswith('http'):
+            elif validators.url(help.get('@id', '')):
                 url = normalized_url(help.get('@id'))
         # Don't add if has been added already as one of the other URLs above.
         if url and not any(url == item['identifier'] for item in identifiers):
@@ -890,7 +911,7 @@ def related_identifiers(repo, release, include_all):
     # term seems to be "references", as in "this release references this link".
     if links := listified(repo.codemeta.get('relatedLink', None)):
         log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
-        for url in filter(lambda x: x.startswith('http'), links):
+        for url in filter(lambda x: validators.url(x), links):
             url = normalized_url(url)
             # We don't add URLs we've already added (possibly as another type).
             # The list needs to be recreated in the loop b/c we're adding to it.
@@ -913,7 +934,18 @@ def related_identifiers(repo, release, include_all):
                                 'relation_type': {'id': 'isreferencedby'},
                                 'scheme': recognized_scheme(id)})
 
-    return identifiers
+    # Final step: remove things that have urls not in our allowed list.
+    filtered_identifiers = []
+    for item in identifiers:
+        if item['scheme'] != 'url':
+            filtered_identifiers.append(item)
+        elif url_scheme(item['identifier']) not in ALLOWED_URL_SCHEMES:
+            log(f'omitting {item["identifier"]} because of disallowed scheme')
+            continue
+        else:
+            filtered_identifiers.append(item)
+
+    return filtered_identifiers
 
 
 def resource_type(repo, release, include_all):
@@ -955,7 +987,7 @@ def rights(repo, release, include_all):
         if value in LICENSES:
             log(f'found {value_name} value in list of known licenses: {value}')
             license_id = value
-        elif value.startswith('http'):
+        elif validators.url(value):
             # Is it a URL for a known license?
             url = normalized_url(value.lower().removesuffix('.html'))
             if url in LICENSE_URLS:
@@ -1130,9 +1162,25 @@ def version(repo, release, include_all):
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # See https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n for info
-# about the fields for authors in InvenioRDM. Although people sometimes put
-# more things in (e.g.) the CFF authors fields (e.g., email addr), there's no
-# provision in InvenioRDM for that.
+# about the fields for authors and contributors in InvenioRDM. Although
+# software authors sometimes put more things in (e.g.) the CFF authors fields
+# (e.g., email addr), there's no provision in InvenioRDM for that. We have to
+# put together a dict that has only the following keys:
+#
+#   1. person_or_org (required, type dict):
+#       a. type (required, string, either "personal" or "organizational")
+#       b. given_name + family_name (if person) OR name (if org)
+#       c. identifiers (optional, dict)
+#          i) scheme (string, taken from a CV)
+#          ii) identifier (string)
+#
+#   2. role (optional, string, taken from a CV)
+#
+#   3. affiliations (optional, dict, only if type is "personal")
+#       a. id OR name
+#
+# Note that for people, we MUST produce names split into given + family names
+# or InvenioRDM will reject the record.
 
 def _entity(data, role=None):
     if isinstance(data, dict):          # Correct data type.
