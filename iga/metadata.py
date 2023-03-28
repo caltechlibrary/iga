@@ -273,9 +273,13 @@ def additional_descriptions(repo, release, include_all):
     # with the text we put in the InvenioRDM "description" field.
     added = [description(repo, release, include_all, internal_call=True).lower()]
 
-    # Helper functions used in what follows next.
+    # Helper functions used in what follows next. All of the fields we use
+    # below are supposed to be strings or URLs, per the CodeMeta & CFF specs.
     def add(item, role, summary):
-        item = item.strip() if item is not None else ''
+        if item and not isinstance(item, str):
+            log(f'not using {summary} because it\'s not the expected data type')
+            return
+        item = item.strip()
         if not item:
             return
         elif item.lower() in added:
@@ -1193,6 +1197,10 @@ def _entity_from_string(data, role):
 
 
 def _entity_from_dict(data, role):
+    # This handles data coming from CodeMeta and CFF. CodeMeta uses Schema.org
+    # Person or Organization, which define a metric shit-ton of fields, but we
+    # can only make use of a subset anyway because there's no place in Invenio
+    # records to put the rest.
     person = {}
     org = {}
 
@@ -1204,7 +1212,7 @@ def _entity_from_dict(data, role):
 
         # Do our best to obtain names split into family & given.
         if not (family or given) and (name := data.get('name', '')):
-            # Schema.org allows single names too. Try to split it if we can.
+            # CodeMeta/schema.org allows a single "name" value. Try to split it.
             if isinstance(name, list):
                 # The name was given as a list. Weird, but let's roll with it.
                 name = ' '.join(name)
