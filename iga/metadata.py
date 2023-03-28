@@ -166,7 +166,7 @@ INVENIO_LICENSES = CaseFoldDict()
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
+def metadata_for_release(account_name, repo_name, tag, all_metadata):
     '''Return the "metadata" part of an InvenioRDM record.
 
     Data is gathered from the GitHub release identified by "tag" in the
@@ -208,7 +208,7 @@ def metadata_for_release(account_name, repo_name, tag, leaner_metadata):
     # For some fields that contain multiple values, we let the user decide if
     # we should include values from the GitHub repo. The exception is that if
     # there's no CM or CFF file, we always resort to using the repo data.
-    include_all = not leaner_metadata or (not repo.codemeta and not repo.cff)
+    include_all = all_metadata or (not repo.codemeta and not repo.cff)
 
     # The metadata dict is created by iterating over the names in FIELDS and
     # calling each function of that name defined in this (module) file.
@@ -471,6 +471,15 @@ def dates(repo, release, include_all):
     '''
     dates = []
 
+    # If we used a different date for the publication_date value than the
+    # release date in GitHub, we add release date as another type of date.
+    pub_date = publication_date(repo, release, include_all)
+    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
+    if pub_date != github_date:
+        log('adding the GitHub release "published_at" date as the "available" date')
+        dates.append({'date': github_date,
+                      'type': {'id': 'available'}})
+
     # CodeMeta has a "dateCreated" field, which the CodeMeta crosswalk equates
     # to the GitHub repo "created_at" date.
     if created_date := repo.codemeta.get('dateCreated', ''):
@@ -490,15 +499,6 @@ def dates(repo, release, include_all):
     if mod_date:
         dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
                       'type': {'id': 'updated'}})
-
-    # If we used a different date for the publication_date value than the
-    # release date in GitHub, we add the GitHub date as another type of date.
-    pub_date = publication_date(repo, release, include_all)
-    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
-    if include_all and (pub_date != github_date):
-        log('adding the GitHub release "published_at" date as the "available" date')
-        dates.append({'date': github_date,
-                      'type': {'id': 'available'}})
 
     # CodeMeta has a "copyrightYear", but there's no equivalent elsewhere.
     if copyrighted := repo.codemeta.get('copyrightYear', ''):
@@ -545,7 +545,7 @@ def description(repo, release, include_all, internal_call=False):
     # maps as equivalent) and GitHub's repo "description" field refer to the
     # software or dataset overall, not specifically to the release. Still, if
     # there's nothing else, it seems better to use this instead of leaving an
-    # empty description in the record.
+    # empty description in the record. We do this regardless of include_all.
     value_name = ''
     if text := repo.codemeta.get('description', ''):
         value_name = 'CodeMeta "description"'

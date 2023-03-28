@@ -310,6 +310,9 @@ def _list_communities(ctx, param, value):
 @click.option('--all-assets', '-A', is_flag=True,
               help='Attach all GitHub assets, not only a source ZIP')
 #
+@click.option('--all-metadata', '-M', is_flag=True,
+              help='Be more comprehensive when gathering metadata')
+#
 @click.option('--community', '-c', metavar='STR',
               help='Submit record to the designated RDM community')
 #
@@ -335,9 +338,6 @@ def _list_communities(ctx, param, value):
 #
 @click.option('--invenio-token', '-k', metavar='STR', callback=_read_invenio_token,
               help="InvenioRDM access token (**avoid – use variable**)")
-#
-@click.option('--leaner-metadata', '-M', is_flag=True,
-              help='Be more selective of metadata values used')
 #
 @click.option('--list-communities', '-L', is_flag=True, callback=_list_communities,
               help='List communities available for `--community`')
@@ -367,7 +367,7 @@ def _list_communities(ctx, param, value):
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
         files_to_upload=None, account=None, repo=None, github_token=None,
         server=None, invenio_token=None, list_communities=False,
-        log_dest=None, mode='normal', leaner_metadata=False, source=None,
+        log_dest=None, mode='normal', all_metadata=False, source=None,
         dest=None, timeout=None, help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
@@ -445,14 +445,13 @@ includes the following:
  * data available from DOI.org, NCBI, Google Books, & others for publications
  * data available from spdx.org for software licenses
 \r
-Some metadata fields in the InvenioRDM record take single values, and others
-take multiple values. For the latter, by default, IGA uses all relevant
-values from `CodeMeta.json`, `CITATION.cff` and the GitHub repository. This
-can sometimes introduce redundancies or even unwanted values because much of
-the GitHub repository metadata is computed by GitHub automatically. Option
-`--leaner-metadata` will make IGA stop short of including values from the
-GitHub repository if it finds necessary values in `codemeta.json` or
-`CITATION.cff`.
+IGA tries to use `CodeMeta.json` first and `CITATION.cff` second to fill out
+the fields of the InvenioRDM record. If neither of those files are present, IGA
+uses values from the GitHub repository instead. You can make it always use all
+sources of info with the option `--all-metadata`. Depending on how complete and
+up-to-date your `CodeMeta.json` and `CITATION.cff` are, this may or may not
+make the record more comprehensive and may or may not introduce redundancies or
+unwanted values.
 \r
 To override the auto-created record, use the option `--read-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
@@ -596,7 +595,7 @@ possible values:
                 sys.exit(int(ExitCode.file_error))
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
-            metadata = metadata_for_release(account, repo, tag, leaner_metadata)
+            metadata = metadata_for_release(account, repo, tag, all_metadata)
             github_assets = github_release_assets(account, repo, tag, all_assets)
             _inform(' done.')
 
