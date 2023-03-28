@@ -14,10 +14,13 @@ from idutils import (
     normalize_arxiv,
     normalize_doi,
     normalize_gnd,
+    normalize_handle,
     normalize_isbn,
+    normalize_issn,
     normalize_orcid,
     normalize_pmid,
     normalize_ror,
+    normalize_urn,
 )
 import re
 
@@ -52,17 +55,51 @@ def normalize_swh(val):
     return val
 
 
+def normalize_ark(val):
+    '''Normalize an ARK identifier.'''
+    return val
+
+
+def normalize_ean13(val):
+    '''Normalize an EAN13 identifier.'''
+    return val
+
+
+def normalize_istc(val):
+    '''Normalize an ISTC identifier.'''
+    return val
+
+
+def normalize_lsid(val):
+    '''Normalize an LSID identifier.'''
+    return val
+
+
+def normalize_purl(val):
+    '''Normalize a PURL identifier.'''
+    return val
+
+
+
 RECOGNIZED_SCHEMES = {
-    'arxiv': normalize_arxiv,
-    'doi'  : normalize_doi,
-    'gnd'  : normalize_gnd,
-    'isbn' : normalize_isbn,
-    'isni' : normalize_isni,
-    'orcid': normalize_orcid,
-    'pmcid': normalize_pmcid,
-    'pmid' : normalize_pmid,
-    'ror'  : normalize_ror,
-    'swh'  : normalize_swh,
+    'ark'    : normalize_ark,
+    'arxiv'  : normalize_arxiv,
+    'doi'    : normalize_doi,
+    'ean13'  : normalize_ean13,
+    'gnd'    : normalize_gnd,
+    'handle' : normalize_handle,
+    'isbn'   : normalize_isbn,
+    'isni'   : normalize_isni,
+    'issn'   : normalize_issn,
+    'istc'   : normalize_istc,
+    'lsid'   : normalize_lsid,
+    'orcid'  : normalize_orcid,
+    'pmcid'  : normalize_pmcid,
+    'pmid'   : normalize_pmid,
+    'purl'   : normalize_purl,
+    'ror'    : normalize_ror,
+    'swh'    : normalize_swh,
+    'urn'    : normalize_urn,
 }
 
 
