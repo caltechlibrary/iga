@@ -22,10 +22,10 @@ from iga.exceptions import GitHubError, InternalError
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# 2023-03-27 used to include "bot" in this list, but then discovered a real
-# person whose last name is "Bot".
+# 2023-03-27 used to include "bot" (no brackets) in this list, but then
+# discovered a real person whose last name is "Bot".
 
-_BOT_NAME_WORDS = ['daemon']
+_BOT_NAME_WORDS = ['daemon', 'dependabot', 'dependabot[bot]']
 '''List of words such that, if one of the words is the last word in an account
 name, mean the account will be assumed to be a software bot of some kind.'''
 
@@ -255,9 +255,12 @@ def probable_bot(account):
     if not account:
         return False
     # Beware that some user accounts have "None" for account.name.
-    return (account.type == 'Bot'
-            or (account.name
-                and account.name.lower().split()[-1] in _BOT_NAME_WORDS))
+    is_bot = (account.type == 'Bot'
+              or account.login in _BOT_NAME_WORDS
+              or (account.name
+                  and account.name.lower().split()[-1] in _BOT_NAME_WORDS))
+    log(f'account {account.login} looks like it {"is" if is_bot else "is NOT"} a bot')
+    return is_bot
 
 
 # Helper functions
