@@ -402,6 +402,8 @@ def contributors(repo, release, include_all):
         if not any(_entity_match(entity, author) for author in authors):
             log('adding CodeMeta "maintainer" value(s) as contributor(s)')
             contributors.append(entity)
+        else:
+            log(f'skipping "maintainer" {entity} who is already in "authors"')
 
     # 2023-03-31 I'm not sure "provider" should be counted in contributors.
     # InvenioRDM lacks an explicit term for "provider", so we use "other"
@@ -418,6 +420,8 @@ def contributors(repo, release, include_all):
             entity = _entity(contributor, role='other')
             if not any(_entity_match(entity, author) for author in authors):
                 contributors.append(entity)
+            else:
+                log(f'skipping CodeMeta "contributor" {entity} who is in "authors"')
     elif include_all and (repo_contributors := github_repo_contributors(repo)):
         # If CodeMeta doesn't contain contributors, use the repo's, if any.
         # Skip bot accounts.
@@ -426,28 +430,22 @@ def contributors(repo, release, include_all):
             if not any(_entity_match(entity, author) for author in authors):
                 log(f'adding GitHub repo contributor {entity} as contributor(s)')
                 contributors.append(entity)
+            else:
+                log(f'skipping GitHub repo contributor {entity} who is in "authors"')
 
     # We're getting data from multiple sources & we might have duplicates.
     # Deduplicate based on names & roles only.
     if contributors:
         log('deduplicating overall list of contributors -- some may be removed')
     result = []
-    seen = set()
+    seen = []
     for entry in contributors:
         item = entry['person_or_org']
-        if 'name' in item.keys():
-            name = item['name']
-        elif 'family_name' in item.keys():
-            name = item['given_name'] + ' ' + item['family_name']
-        else:
-            result.append(entry)
-            continue
         role = entry['role']['id']
-        key = (name, role)
+        key = (item, role)
         if key not in seen:
-            seen.add(key)
+            seen.append(key)
             result.append(entry)
-
     return result
 
 
