@@ -663,7 +663,7 @@ def funding(repo, release, include_all):
             #          "number" if the funding item also gives a "name".
             #
             #  case 2: if there's a separate funder item within the funding
-            #          item, and case #1 doesn't apply, return just the funder
+            #          item, and case #1 doesn't apply, return just the funder.
             award_name = item.get('name', '') or item.get('@name', '')
             award_id = item.get('identifier', '') or item.get('@id', '')
             item_funder = ''
@@ -1306,14 +1306,35 @@ def _entity_from_dict(data, role):
 
 def _entity_match(first, second):
     # Match based on names only.
-    po1 = first['person_or_org']
-    po2 = second['person_or_org']
-    if 'name' in po1 and 'name' in po2:
-        return po1['name'] == po2['name']
-    elif 'family_name' in po1 and 'family_name' in po2:
-        return (po1['family_name'] == po2['family_name']
-                and po1.get('given_name', '') == po2.get('given_name', ''))
-    return False
+    p1 = first['person_or_org']
+    p2 = second['person_or_org']
+
+    p1_id = None
+    p2_id = None
+
+    matched = False
+    why = ''
+
+    for item in p1.get('identifiers', []):
+        if item.get('scheme', '') == 'orcid':
+            p1_id = item.get('identifier', '')
+    for item in p2.get('identifiers', []):
+        if item.get('scheme', '') == 'orcid':
+            p2_id = item.get('identifier', '')
+
+    if p1_id and p2_id:
+        matched = (p1_id == p2_id)
+        why = 'ORCID'
+    elif 'name' in p1 and 'name' in p2:
+        matched = (p1['name'] == p2['name'])
+        why = 'name field'
+    elif 'family_name' in p1 and 'family_name' in p2:
+        matched = (p1['family_name'] == p2['family_name']
+                   and p1.get('given_name', '') == p2.get('given_name', ''))
+        why = 'family and given name fields'
+
+    log(f'entities {p1} & {p2} {"not" if not matched else ""} matched based on {why}')
+    return matched
 
 
 def _release_author(release):
