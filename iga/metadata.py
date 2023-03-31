@@ -402,12 +402,13 @@ def contributors(repo, release, include_all):
             log('adding CodeMeta "maintainer" value(s) as contributor(s)')
             contributors.append(entity)
 
+    # 2023-03-31 I'm not sure "provider" should be counted in contributors.
     # InvenioRDM lacks an explicit term for "provider", so we use "other"
-    for provider in listified(repo.codemeta.get('provider', {})):
-        entity = _entity(provider, role='other')
-        if not any(_entity_match(entity, author) for author in authors):
-            log('adding CodeMeta "provider" value(s) as contributor(s)')
-            contributors.append(entity)
+    # for provider in listified(repo.codemeta.get('provider', {})):
+    #     entity = _entity(provider, role='other')
+    #     if not any(_entity_match(entity, author) for author in authors):
+    #         log('adding CodeMeta "provider" value(s) as contributor(s)')
+    #         contributors.append(entity)
 
     # CodeMeta has a list of contributors, but without role information.
     if contribs := listified(repo.codemeta.get('contributor', [])):
