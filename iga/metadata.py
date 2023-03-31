@@ -727,7 +727,7 @@ def identifiers(repo, release, include_all):
             # Original value is in URL form, but we recognzie the kind as a
             # particular sort of identifier. Try to extract the identifier.
             value = detected_id(value) or value
-        if kind in CV['identifier-types']:
+        if kind in CV['identifier-types'].values():
             identifiers.append({'identifier': value,
                                 'scheme': kind})
         else:
