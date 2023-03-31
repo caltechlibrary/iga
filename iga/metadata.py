@@ -293,7 +293,8 @@ def additional_descriptions(repo, release, include_all):
         else:
             if validators.url(item):
                 if url_scheme(item) in ALLOWED_URL_SCHEMES:
-                    item = f'Additional information is available at {item}'
+                    item = ("Additional information is available at"
+                            f" <a href='{item}'>{item}</a>")
                 else:
                     log(f'not using {summary} URL {item} due to disallowed scheme')
                     return
