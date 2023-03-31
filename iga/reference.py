@@ -26,6 +26,12 @@ _CACHE = {}
 '''Internal cache used to store results of some operations across calls.'''
 
 
+# Exported constants.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+RECOGNIZED_REFERENCE_SCHEMES = ['arxiv', 'doi', 'isbn', 'pmcid', 'pmid']
+
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -46,13 +52,17 @@ def reference(pub_id):
         else:
             # Sometimes ISBN can't be found. Not clear what can be done here.
             log(f'could not find data for ISBN {pub_id}')
-    else:
+    elif scheme in RECOGNIZED_REFERENCE_SCHEMES:
         # For everything other than ISBN, convert whatever ID we have to a
         # DOI, then use Crossref to get a reference as text in APA format.
         if doi := doi_for_publication(pub_id, scheme):
             formatted_reference = reference_from_doi(doi)
         else:
             log(f'could not get a DOI for {pub_id}')
+    else:
+        log(f'cannot convert a {scheme} type id into a formatted reference')
+        return ''
+
     log(f'returning formatted result for {pub_id}: ' + formatted_reference)
     return formatted_reference
 
