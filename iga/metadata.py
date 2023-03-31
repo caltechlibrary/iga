@@ -427,7 +427,8 @@ def contributors(repo, release, include_all):
 
     # We're getting data from multiple sources & we might have duplicates.
     # Deduplicate based on names & roles only.
-    log('deduplicating overall list of contributors -- some may be removed')
+    if contributors:
+        log('deduplicating overall list of contributors -- some may be removed')
     result = []
     seen = set()
     for entry in contributors:
@@ -1246,42 +1247,48 @@ def _entity_from_string(data, role):
 
 def _entity_from_dict(data, role):
     # This handles data coming from CodeMeta and CFF. CodeMeta uses Schema.org
-    # Person or Organization, which define a metric shit-ton of fields, but we
-    # can only make use of a subset anyway because there's no place in Invenio
-    # records to put the rest.
+    # Person or Organization, which define many fields, but we can only use a
+    # subset anyway because there's no place in Invenio records to put the rest.
     person = {}
     org = {}
 
-    _type = data.get('@type', '') or data.get('type', '')
-    if _type.lower().strip() == 'person':
+    type_ = data.get('@type', '') or data.get('type', '')
+    if type_.lower().strip() == 'person':
         # Deal with field name differences between CodeMeta & CFF.
-        family = data.get('family-names', '') or data.get('familyName', '')
-        given  = data.get('given-names', '') or data.get('givenName', '')
+        family  = data.get('family-names', '') or data.get('familyName', '')
+        given   = data.get('given-names', '') or data.get('givenName', '')
 
-        # Do our best to obtain names split into family & given.
+        id = detected_id(data.get('@id', ''))
+        id_type = recognized_scheme(id)
+
+        if not (family or given) and id_type == 'orcid':
+            # If we're lucky and the added an orcid, we can try to use that.
+            log('no family & given name fields but have ORCID – trying orcid.org')
+            from iga.orcid import name_from_orcid
+            (given, family) = name_from_orcid(id)
+
+        # If we didn't get family & given names, try another way.
         if not (family or given) and (name := data.get('name', '')):
-            # CodeMeta/schema.org allows a single "name" value. Try to split it.
+            # CodeMeta/schema.org allows a single "name" value. Split it.
+            log('no family & given name fields; attempting to split "name" value')
             if isinstance(name, list):
                 # The name was given as a list. Weird, but let's roll with it.
                 name = ' '.join(name)
             (given, family) = split_name(name)
+
         if family or given:
             person = {'family_name': flattened_name(family),
                       'given_name': flattened_name(given),
                       'type': 'personal'}
         else:
-            # We failed to get separate names. Currently there's some ambiguity
-            # in the InvenioRDM docs about whether "name" alone is
-            # allowed. Since we can't do anything else here anyway, we return
-            # it this way, hoping that it'll be correct in the future.
-            person = {'name': flattened_name(name),
+            # We're out of options. This is not great but the best we can do.
+            person = {'family_name': flattened_name(name),
+                      'given_name': '',
                       'type': 'personal'}
 
-        if id := detected_id(data.get('@id', '')):
-            id_type = recognized_scheme(id)
-            if id_type in ['orcid', 'isni', 'gnd', 'ror']:
-                person.update({'identifiers': [{'identifier': id,
-                                                'scheme': id_type}]})
+        if id_type in ['orcid', 'isni', 'gnd']:
+            person.update({'identifiers': [{'identifier': id,
+                                            'scheme': id_type}]})
     else:
         org = {'name': flattened_name(data.get('name', '')),
                'type': 'organizational'}
