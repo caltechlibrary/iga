@@ -62,7 +62,7 @@ from iga.github import (
 )
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
-from iga.reference import reference
+from iga.reference import reference, RECOGNIZED_REFERENCE_SCHEMES
 from iga.text_utils import cleaned_text
 
 
@@ -810,9 +810,9 @@ def references(repo, release, include_all):
         log('adding CodeMeta "referencePublication" value(s) to "references"')
     if cff_refs := _cff_reference_ids(repo):
         log('adding CFF "preferred-citation" and/or "references" to "references"')
-    # FIXME filter id types that can't be formatted as refs
     return [{'reference': reference(r), 'identifier': r, 'scheme': 'other'}
-            for r in cm_refs | cff_refs]
+            for r in (cm_refs | cff_refs)
+            if recognized_scheme(r) in RECOGNIZED_REFERENCE_SCHEMES]
 
 
 def related_identifiers(repo, release, include_all):
@@ -929,12 +929,12 @@ def related_identifiers(repo, release, include_all):
             # There's no good way to know what the resource type actually is.
             identifiers.append(id_dict(url, 'references', 'other'))
 
-    # We will add CodeMeta & CFF "references" values to InvenioRDM "references"
-    # (see function references()). To be complete, add ids as related ids here.
-    if reference_ids := (_codemeta_reference_ids(repo) | _cff_reference_ids(repo)):
+    # We add CodeMeta & CFF "references" values to InvenioRDM "references" but
+    # formatted as references. Here, add the id's alone.
+    if reference_ids := _codemeta_reference_ids(repo) | _cff_reference_ids(repo):
         log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
     for id in reference_ids:
-        # We're adding identifiers => must recreate this next list each loop
+        # Adding id's => must recreate the list in this test each iteration.
         if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
                                 'relation_type': {'id': 'isreferencedby'},
@@ -1450,11 +1450,14 @@ def _codemeta_reference_ids(repo):
                 log('unrecognized scheme in item: ' + str(item))
         elif isinstance(item, dict):
             for field in ['id', '@id', 'identifier', '@identifier']:
-                if field not in item:
-                    continue
-                id_field = item[field]
+                id_field = item.get(field, '')
                 if recognized_scheme(id_field):
-                    identifiers.add(detected_id(id_field))
+                    id = detected_id(id_field)
+                    log(f'found id {id} in CodeMeta "referencePublication"')
+                    identifiers.add(id)
+                    break
+            else:
+                log(f'cannot use {item} from CodeMeta "referencePublication"')
         else:
             log('unrecognized referencePublication format: ' + str(item))
     return identifiers
@@ -1476,11 +1479,15 @@ def _cff_reference_ids(repo):
             for item in ref.get('identifiers', []):
                 item_type = item.get('type', '')
                 if item_type == 'doi':
+                    log(f'found id {item["doi"]} in CFF "preferred-citation"')
                     identifiers.add(item['doi'])
                 elif item_type == 'other':
                     value = ref.get('value', '')
-                    if value and recognized_scheme(value):
+                    if recognized_scheme(value):
+                        log(f'found id {value} in CFF "preferred-citation"')
                         identifiers.add(detected_id(value))
+                    else:
+                        log(f'cannot use {value} from CFF "preferred-citation"')
             # Tempting to look in the "url" field if none of the other id
             # fields are present. However, people sometimes set "url" to
             # values that aren't the actual reference => can't trust it.
