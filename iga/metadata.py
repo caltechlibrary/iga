@@ -681,10 +681,15 @@ def funding(repo, release, include_all):
             if not item_funder or item_funder_id:
                 continue
             log('using CodeMeta "funding" value')
-            if award_id and not award_name:
-                results.append(_funding(item_funder, item_funder_id,
-                                        award_id=award_id))
-            elif award_id and award_name:
+            # 2023-03-31 We can't know what type of award ID the user is using,
+            # and InvenioRDM gives an error if it can't find the award id, so
+            # we can't tell if we're supplying an award id that Invenio will
+            # like. Disabling this until I can figure out what to do here.
+            #
+            # if award_id and not award_name:
+            #     results.append(_funding(item_funder, item_funder_id,
+            #                             award_id=award_id))
+            if award_id and award_name:
                 results.append(_funding(item_funder, item_funder_id,
                                         award_name=award_name, award_num=award_id))
             else:
