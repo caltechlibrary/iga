@@ -1316,32 +1316,24 @@ def _entity_match(first, second):
     p1 = first['person_or_org']
     p2 = second['person_or_org']
 
-    p1_id = None
-    p2_id = None
-
-    matched = False
-    why = ''
+    p1_orcid = None
+    p2_orcid = None
 
     for item in p1.get('identifiers', []):
         if item.get('scheme', '') == 'orcid':
-            p1_id = item.get('identifier', '')
+            p1_orcid = item.get('identifier', '')
     for item in p2.get('identifiers', []):
         if item.get('scheme', '') == 'orcid':
-            p2_id = item.get('identifier', '')
+            p2_orcid = item.get('identifier', '')
 
-    if p1_id and p2_id:
-        matched = (p1_id == p2_id)
-        why = 'ORCID'
+    if p1_orcid and p2_orcid:
+        return p1_orcid == p2_orcid
     elif 'name' in p1 and 'name' in p2:
-        matched = (p1['name'] == p2['name'])
-        why = 'name field'
+        return p1['name'] == p2['name']
     elif 'family_name' in p1 and 'family_name' in p2:
-        matched = (p1['family_name'] == p2['family_name']
-                   and p1.get('given_name', '') == p2.get('given_name', ''))
-        why = 'family and given name fields'
-
-    log(f'entities {p1} & {p2} {"not" if not matched else ""} matched based on {why}')
-    return matched
+        return (p1['family_name'] == p2['family_name']
+                and p1.get('given_name', '') == p2.get('given_name', ''))
+    return False
 
 
 def _release_author(release):
