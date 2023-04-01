@@ -12,6 +12,7 @@ boltons             == 21.0.0
 caltechdata-api     == 1.2.1
 commonpy            == 1.12.0
 demoji              == 1.1.0
+dirtyjson           == 1.0.8
 httpx               == 0.23.0
 humanize            == 4.4.0
 idutils             == 1.2.0
@@ -23,6 +24,7 @@ lxml                == 4.9.2
 Markdown            == 3.4.1
 markdown-checklist  == 0.4.4
 mdx-breakless-lists == 1.0.1
+mdx_linkify         == 2.1
 nameparser          == 1.1.2
 probablepeople      == 0.5.4
 pymdown-extensions  == 9.10
