@@ -22,3 +22,9 @@ flake8-pie                 >= 0.15.0
 flake8-simplify            >= 0.19.2
 
 twine
+
+linkify-it-py
+myst-parser
+sphinx-autobuild
+sphinx-material
+sphinxcontrib-mermaid
