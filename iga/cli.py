@@ -10,8 +10,11 @@ file "LICENSE" for more information.
 
 import bdb
 import os
+import rich
+from   rich.console import Console
+from   rich.style import Style
 import rich_click as click
-from   rich_click import File, Path, INT, IntRange, Choice
+from   rich_click import File, Path, INT, Choice
 import sys
 from   sidetrack import set_debug, log
 
@@ -35,12 +38,21 @@ from iga.invenio import (
 # Main command-line interface.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# Style preferences for rich_click module .....................................
+# Style preferences for the Rich package ......................................
+
+# The default sets the background color and I find the result too hard to read.
+rich.default_styles.DEFAULT_STYLES['markdown.code'] = Style(bold=True, color="cyan")
+
+# Style preferences for the rich-click package ................................
 
 click.rich_click.STYLE_HELPTEXT = ""
 click.rich_click.USE_MARKDOWN = True
 click.rich_click.STYLE_ERRORS_SUGGESTION = "bold italic"
 click.rich_click.ERRORS_EPILOGUE = "Suggestion: use the --help flag to get help."
+
+# For some reason, the default style uses a different color for switches vs
+# flags, which I find unhelpful and distracting. Make both the same.
+click.rich_click.STYLE_SWITCH = 'bold cyan'
 
 
 # Callback functions used in click interface ..................................
@@ -205,7 +217,6 @@ def _print_help_and_exit(ctx):
 
 def _print_text(text, color='turquoise4', end='\n', wrap=True):
     import shutil
-    from rich.console import Console
     width = (shutil.get_terminal_size().columns - 2) or 78
     if wrap:
         from textwrap import wrap
@@ -221,7 +232,6 @@ def _alert(ctx, msg, print_usage=True):
     # The following code tries to emulate what rich_click does. It doesn't use
     # private methods or properties, but it might break if rich_click changes.
     log('error: ' + msg)
-    from rich.console import Console
     from rich.markdown import Markdown
     from rich.padding import Padding
     from rich.panel import Panel
@@ -273,7 +283,6 @@ def _list_communities(ctx, param, value):
     if not value:
         return
     from rich import box
-    from rich.console import Console
     from rich.table import Table
     server = os.environ.get('INVENIO_SERVER', '')
     table = Table(title=f'Communities available at server {server}',
@@ -407,11 +416,11 @@ A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
 \r
 Here's an example using approach #1 (assuming environment variables
 INVENIO_SERVER, INVENIO_TOKEN, and GITHUB_TOKEN have all been set):
-```
+```shell
     iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 and here's the equivalent using approach #2:
-```
+```shell
     iga --github-account mhucka --github-repo taupe v1.2.0
 ```
 Note that when using this form of the command, the release tag ("v1.2.0" above)
@@ -662,7 +671,6 @@ possible values:
 
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             import pdb
-            from rich.console import Console
             import traceback
             exception = sys.exc_info()
             details = ''.join(traceback.format_exception(*exception))
