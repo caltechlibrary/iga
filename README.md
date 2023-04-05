@@ -166,6 +166,37 @@ If given the `--version` option, this program will print its version and other i
 
 Running IGA with the option `--help` will make it print help text and exit without doing anything else.
 
+
+### _Summary of command-line options_
+
+The following table summarizes all the command line options available.
+
+| Long&nbsp;form&nbsp;option&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Short&nbsp;&nbsp; | Meaning | Default |  |
+|------------------------|-------------------|--------------------------------------|---------|---|
+| `--all-assets`         | `-A`     | Attach all GitHub assets | Attach the release source ZIP| |
+| `--all-metadata`       | `-M`     | Always include GitHub metadata | Favor metadata from CodeMeta & CFF | |
+| `--community` _C_      | `-c` _C_ | Submit record to RDM community _C_ | Don't submit to any community | | 
+| `--draft`              | `-d`     | Mark the RDM record as a draft | Publish the record when done | ⚑ |
+| `--file` _F_           | `-f` _F_ | Upload local file _F_ instead of GitHub assets | Upload only GitHub assets | | 
+| `--github-account` _A_ | `-a` _A_ | Get release from GitHub account name _A_ | | | 
+| `--github-repo` _R_    | `-r` _R_ | Get release from repository _R_ of GitHub account _A_ | | | 
+| `--github-token` _T_   | `-t` _T_ | Your GitHub acccess token (**avoid – use variable**)| | |
+| `--help`               | `-h`     | Print help info and exit | | |
+| `--invenio-server` _S_ | `-s` _S_ | Send the record to InvenioRDM server at address _S_ | | | 
+| `--invenio-token` _K_  | `-k` _K_ | Your InvenioRDM server access token (**avoid – use variable**) | | | 
+| `--list-communities`   | `-L`     | List communities available for `--community` | | |
+| `--log-dest` _D_       | `-l` _D_ | Send log output to _D_ | | ⚐ |
+| `--open` _O_           | `-O` _O_ | Open the record's web page in a browser when done | | |
+| `--mode` _M_           | `-m` _M_ | Run mode: `quiet`, `normal`, `verbose`, `debug` | `normal` | |
+| `--read-record` _R_    | `-R` _R_ | Read metadata record from _R_; don\'t build one | | |
+| `--save-record` _S_    | `-S` _S_ | Save metadata record to _S_; don\'t upload it | | |
+| `--timeout` _I_        | `-T` _I_ | Wait on network operations a max of _I_ seconds | | |
+| `--version`            | `-V`     | Print program version info and exit | | |
+
+⚑ &nbsp; Can repeat for multiple files.<br>
+⚐ &nbsp; To write to the console, use the character `-` as the value of _OUT_; otherwise, _OUT_ must be the name of a file where the output should be written.<br>
+
+
 ### Return values
 
 This program exits with a return status code of 0 if no problem is encountered.  Otherwise, it returns a nonzero status code. The following table lists the possible values:
