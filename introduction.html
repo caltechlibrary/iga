@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="lang:clipboard.copy" content="Copy to clipboard">
+  <meta name="lang:clipboard.copied" content="Copied to clipboard">
+  <meta name="lang:search.language" content="en">
+  <meta name="lang:search.pipeline.stopwords" content="True">
+  <meta name="lang:search.pipeline.trimmer" content="True">
+  <meta name="lang:search.result.none" content="No matching documents">
+  <meta name="lang:search.result.one" content="1 matching document">
+  <meta name="lang:search.result.other" content="# matching documents">
+  <meta name="lang:search.tokenizer" content="[\s\-]+">
+
+  
+    <link href="https://fonts.gstatic.com/" rel="preconnect" crossorigin>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:400,500,700|Roboto:300,400,400i,700&display=fallback" rel="stylesheet">
+
+    <style>
+      body,
+      input {
+        font-family: "Roboto", "Helvetica Neue", Helvetica, Arial, sans-serif
+      }
+
+      code,
+      kbd,
+      pre {
+        font-family: "Roboto Mono", "Courier New", Courier, monospace
+      }
+    </style>
+  
+
+  <link rel="stylesheet" href="_static/stylesheets/application.css"/>
+  <link rel="stylesheet" href="_static/stylesheets/application-palette.css"/>
+  <link rel="stylesheet" href="_static/stylesheets/application-fixes.css"/>
+  
+  <link rel="stylesheet" href="_static/fonts/material-icons.css"/>
+  
+  <meta name="theme-color" content="blue-grey">
+  <script src="_static/javascripts/modernizr.js"></script>
+  
+  
+  
+    <title>Introduction &#8212; IGA</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({startOnLoad:true});</script>
+    <link rel="icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation and configuration" href="installation.html" />
+    <link rel="prev" title="InvenioRDM GitHub Archiver" href="index.html" />
+  
+   
+
+  </head>
+  <body dir=ltr
+        data-md-color-primary=deep-orange data-md-color-accent=teal>
+  
+  <svg class="md-svg">
+    <defs data-children-count="0">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448" viewBox="0 0 416 448" id="__github"><path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19T128 352t-18.125-8.5-10.75-19T96 304t3.125-20.5 10.75-19T128 256t18.125 8.5 10.75 19T160 304zm160 0q0 10-3.125 20.5t-10.75 19T288 352t-18.125-8.5-10.75-19T256 304t3.125-20.5 10.75-19T288 256t18.125 8.5 10.75 19T320 304zm40 0q0-30-17.25-51T296 232q-10.25 0-48.75 5.25Q229.5 240 208 240t-39.25-2.75Q130.75 232 120 232q-29.5 0-46.75 21T56 304q0 22 8 38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0 37.25-1.75t35-7.375 30.5-15 20.25-25.75T360 304zm56-44q0 51.75-15.25 82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5T212 416q-19.5 0-35.5-.75t-36.875-3.125-38.125-7.5-34.25-12.875T37 371.5t-21.5-28.75Q0 312 0 260q0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25 30.875Q171.5 96 212 96q37 0 70 8 26.25-20.5 46.75-30.25T376 64q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34 99.5z"/></svg>
+      
+    </defs>
+  </svg>
+  
+  <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer">
+  <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search">
+  <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+  <a href="#introduction" tabindex="1" class="md-skip"> Skip to content </a>
+  <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex navheader">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href="index.html" title="IGA"
+           class="md-header-nav__button md-logo">
+          
+            &nbsp;
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          <span class="md-header-nav__topic">InvenioRDM GitHub Archiver</span>
+          <span class="md-header-nav__topic"> Introduction </span>
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+        
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" action="search.html" method="get" name="search">
+      <input type="text" class="md-search__input" name="q" placeholder="Search"
+             autocapitalize="off" autocomplete="off" spellcheck="false"
+             data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            <a href="https://github.com/caltechlibrary/iga/" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    iga
+  </div>
+</a>
+          </div>
+        </div>
+      
+      
+    </div>
+  </nav>
+</header>
+
+  
+  <div class="md-container">
+    
+    
+    
+  <nav class="md-tabs" data-md-component="tabs">
+    <div class="md-tabs__inner md-grid">
+      <ul class="md-tabs__list">
+          <li class="md-tabs__item"><a href="index.html" class="md-tabs__link">Home</a></li>
+      </ul>
+    </div>
+  </nav>
+    <main class="md-main">
+      <div class="md-main__inner md-grid" data-md-component="container">
+        
+          <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href="index.html" title="IGA" class="md-nav__button md-logo">
+      
+        <img src="_static/" alt=" logo" width="48" height="48">
+      
+    </a>
+    <a href="index.html"
+       title="IGA">InvenioRDM GitHub Archiver</a>
+  </label>
+    <div class="md-nav__source">
+      <a href="https://github.com/caltechlibrary/iga/" title="Go to repository" class="md-source" data-md-source="github">
+
+    <div class="md-source__icon">
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 24 24" width="28" height="28">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    iga
+  </div>
+</a>
+    </div>
+  
+  
+
+  
+  <ul class="md-nav__list">
+    <li class="md-nav__item">
+    
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    <label class="md-nav__link md-nav__link--active" for="__toc"> Introduction </label>
+    
+      <a href="#" class="md-nav__link md-nav__link--active">Introduction</a>
+      
+        
+<nav class="md-nav md-nav--secondary">
+  <ul class="md-nav__list" data-md-scrollfix="">
+  </ul>
+</nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#inveniordm-records" class="md-nav__link">InvenioRDM records</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#github-releases" class="md-nav__link">GitHub releases</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="installation.html" class="md-nav__link">Installation and configuration</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="usage.html" class="md-nav__link">Usage</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="metadata.html" class="md-nav__link">Metadata mappings</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="colophon.html" class="md-nav__link">Colophon</a>
+      
+    
+    </li>
+  </ul>
+  
+
+</nav>
+              </div>
+            </div>
+          </div>
+          <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+            <div class="md-sidebar__scrollwrap">
+              <div class="md-sidebar__inner">
+                
+<nav class="md-nav md-nav--secondary">
+  <ul class="md-nav__list" data-md-scrollfix="">
+  </ul>
+</nav>
+              </div>
+            </div>
+          </div>
+        
+        <div class="md-content">
+          <article class="md-content__inner md-typeset" role="main">
+            
+  <section id="introduction">
+<h1 id="introduction--page-root">Introduction<a class="headerlink" href="#introduction--page-root" title="Permalink to this heading">¶</a></h1>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional data and software repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution.</p>
+<p>The <em>InvenioRDM GitHub Archiver</em> (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line to send releases on demand; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
+<ul class="simple">
+<li><p>Automatic extraction of metadata from the GitHub release, the GitHub repository, and <a class="reference external" href="https://codemeta.github.io"><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code></a> and/or <a class="reference external" href="https://citation-file-format.github.io"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></a> files if they exist in the repository</p></li>
+<li><p>Thorough coverage of <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata">InvenioRDM record metadata</a> using painstaking procedures</p></li>
+<li><p>Automatic recognition of common identifier types that often appear CodeMeta and CFF files, such as <a class="reference external" href="https://orcid.org">ORCID</a>, <a class="reference external" href="https://ror.org">ROR</a>, <a class="reference external" href="https://www.doi.org">DOI</a>, <a class="reference external" href="https://arxiv.org">arXiV</a>, <a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/">PMCID/PMID</a>, and others</p></li>
+<li><p>Automatic lookup of human names in <a class="reference external" href="https://orcid.org">ORCID.org</a> if needed (assuming ORCID id’s are provided)</p></li>
+<li><p>Automatic lookup of organization names in <a class="reference external" href="https://ror.org">ROR</a> (assuming ROR id’s are provided)</p></li>
+<li><p>Automatic lookup of publication data in <a class="reference external" href="https://www.doi.org">DOI.org</a>, <a class="reference internal" href="#(https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)"><span class="xref myst">PubMed</span></a>, Google Books, &amp; other sources if needed</p></li>
+<li><p>Automatic splitting of human names into family and given names using <a class="reference external" href="https://en.wikipedia.org/wiki/Machine_learning">ML</a>-based methods, if necessary, to comply with InvenioRDM requirements</p></li>
+<li><p>Support for overriding the metadata it record it creates, for complete control if you need it</p></li>
+<li><p>Support for InvenioRDM <a class="reference external" href="https://invenio-communities.readthedocs.io/en/latest/">communities</a></p></li>
+<li><p>Ability to use the GitHub API without a <a class="reference external" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">GitHub access token</a> in many cases</p></li>
+<li><p>Extensive use of logging so you can see what’s going on under the hood</p></li>
+</ul>
+<section id="inveniordm-records">
+<h2 id="inveniordm-records">InvenioRDM records<a class="headerlink" href="#inveniordm-records" title="Permalink to this heading">¶</a></h2>
+<p><a class="reference external" href="https://riojournal.com/article/56508/">Research Data Management</a> (RDM) refers to the organization, storage, preservation, and sharing of data and software that is created, collected, and used in a research project. <a class="reference external" href="https://inveniordm.docs.cern.ch">InvenioRDM</a> is a turn-key RDM platform that can be used by institutions to create repositories where data and software can be stored in order ensure long-term access to research products. Institutions such as Caltech use InvenioRDM as the basis for institutional data repositories. <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> is an example of an InvenioRDM-based repository; it enables researchers to upload research data and software, link data with their publications, and assign permanent <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s to them so that other people can reference them.</p>
+<p>Data and software archived in a repository need to be described well and richly cross-referenced in order to be widely discoverable by other people. The metadata records needed by InvenioRDM are expressed in a common file format (<a class="reference external" href="https://www.json.org">JSON</a>), with required metadata fields <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata/">defined by InvenioRDM</a>. The record fields store information about the creators of the software (or data), distribution rights, titles, funding sources, publications, and more; InvenioRDM formats the metadata records as attractive web pages for human consumption. To give an example, below is a screenshot of the page for a software project stored in <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>:</p>
+<figure>
+<img src="_static/media/example-record-landing-page.jpg"/>
+<figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
+</figure>
+<p>The nice features come at a price: the metadata contained in the record of a deposit can be tedious and error-prone to fill out by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
+</section>
+<section id="github-releases">
+<h2 id="github-releases">GitHub releases<a class="headerlink" href="#github-releases" title="Permalink to this heading">¶</a></h2>
+<p>Although IGA can be used to produce arbitrary records in InvenioRDM repositories, it’s focused on automating the process of creating records for GitHub software releases.</p>
+<p>A <a class="reference external" href="https://github.blog/2013-07-02-release-your-software/"><em>release</em> in GitHub</a> is the mechanism by which users can package up a specific version of their software in a way that makes it easy for other users to obtain a copy. Releases are associated with individual repositories and are identified by <a class="reference external" href="https://git-scm.com/book/en/v2/Git-Basics-Tagging">git tags</a>; they can contain source code archives (e.g., in <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> format), release notes, and binary assets such as compiled executables.</p>
+<p>You may wonder, why would you bother saving GitHub releases anywhere else if they’re already stored on GitHub? There are at least two reasons:</p>
+<ol class="arabic simple">
+<li><p>GitHub is not an archive. Repositories can be renamed or deleted (intentionally or accidentally), as can user accounts; moreover, the contents of releases can also be edited and changed. In other words, <em>what is available on GitHub today may not be available there tomorrow</em>. Preservation of software products demands an archiving approach capable of retaining immutable copies of software in a form that can outlive individual projects and people.</p></li>
+<li><p>Compliance with open data requirements. Many funding agencies and institutions require that research projects ensure free access to research products. Institutional repositories are specifically designed to support the needs of researchers in complying with funder or publisher data requirements. <em>They provide features that GitHub does not</em>, such as assigning globally-unique, <em>permanent</em>, citable identifiers (such as <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s) for data and software.</p></li>
+</ol>
+</section>
+<section id="codemeta-and-citation-cff">
+<h2 id="codemeta-and-citation-cff">CodeMeta and CITATION.cff<a class="headerlink" href="#codemeta-and-citation-cff" title="Permalink to this heading">¶</a></h2>
+<p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers.</p>
+<p>IGA looks for <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository. (You can also opt to make IGA add the metadata from GitHub even if it does find one or both of the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files repository; this may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are, but it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.)</p>
+</section>
+</section>
+
+
+          </article>
+        </div>
+      </div>
+    </main>
+  </div>
+  <footer class="md-footer">
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+          
+            <a href="index.html" title="InvenioRDM GitHub Archiver"
+               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+               rel="prev">
+              <div class="md-flex__cell md-flex__cell--shrink">
+                <i class="md-icon md-icon--arrow-back md-footer-nav__button"></i>
+              </div>
+              <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
+                <span class="md-flex__ellipsis">
+                  <span
+                      class="md-footer-nav__direction"> Previous </span> InvenioRDM GitHub Archiver </span>
+              </div>
+            </a>
+          
+          
+            <a href="installation.html" title="Installation and configuration"
+               class="md-flex md-footer-nav__link md-footer-nav__link--next"
+               rel="next">
+            <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
+                class="md-flex__ellipsis"> <span
+                class="md-footer-nav__direction"> Next </span> Installation and configuration </span>
+            </div>
+            <div class="md-flex__cell md-flex__cell--shrink"><i
+                class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
+            </div>
+          
+        </a>
+        
+      </nav>
+    </div>
+    <div class="md-footer-meta md-typeset">
+      <div class="md-footer-meta__inner md-grid">
+        <div class="md-footer-copyright">
+          <div class="md-footer-copyright__highlight">
+              &#169; Copyright 2023, Caltech Library.
+              
+          </div>
+            Last updated on
+              Apr 06, 2023.
+            <br/>
+            Created using
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
+             and
+            <a href="https://github.com/bashtage/sphinx-material/">Material for
+              Sphinx</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <script src="_static/javascripts/application.js"></script>
+  <script>app.initialize({version: "1.0.4", url: {base: ".."}})</script>
+  </body>
+</html>
