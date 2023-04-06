@@ -59,7 +59,7 @@ click.rich_click.STYLE_SWITCH = 'bold cyan'
 
 def _config_mode(ctx, param, mode):
     '''Handle the --mode option and configure the run mode as needed.'''
-    os.environ['IGA_RUN_MODE'] = mode
+    os.environ['IGA_RUN_MODE'] = mode or 'normal'
     if mode in ['verbose', 'debug']:
         set_debug(True)
     if mode == 'debug':
@@ -355,12 +355,12 @@ def _list_communities(ctx, param, value):
               type=File('w', lazy=False), expose_value=False, is_eager=True,
               help='Send log output to _FILE_ (use `-` for stdout)')
 #
-@click.option('--open', '-O', is_flag=True,
-              help='Open the finished record in the default web browser')
-#
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
+#
+@click.option('--open', '-O', is_flag=True,
+              help='Open the finished record in the default web browser')
 #
 @click.option('--read-record', '-R', 'source', metavar='FILE', type=File('r'),
               help='Read metadata record from _FILE_; don\'t build one')
