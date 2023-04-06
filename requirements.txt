@@ -46,4 +46,4 @@ s3fs               == 2023.3.0
 
 # Until apa7 fixes the bug I filed, we have to use our fork.
 pybtex             == 0.24.0
-pybtex-apa7-style  -e git+https://github.com/caltechlibrary/pybtex-apa7-style.git
+git+https://github.com/caltechlibrary/pybtex-apa7-style.git
