@@ -11,7 +11,8 @@ maxdepth: 2
 ---
 introduction.md
 installation.md
-usage.md
+cli-usage.md
+gha-usage.md
 metadata.md
 glossary.md
 colophon.md

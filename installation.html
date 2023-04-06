@@ -59,7 +59,7 @@
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Usage" href="usage.html" />
+    <link rel="next" title="Usage (command-line)" href="cli-usage.html" />
     <link rel="prev" title="Introduction" href="introduction.html" />
   
    
@@ -224,6 +224,13 @@
       <a href="introduction.html#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="introduction.html#igas-operation" class="md-nav__link">IGA’s operation</a>
+      
+    
     </li></ul>
     
     </li>
@@ -240,13 +247,34 @@
   <ul class="md-nav__list" data-md-scrollfix="">
   </ul>
 </nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#installing-iga-locally" class="md-nav__link">Installing IGA locally</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="usage.html" class="md-nav__link">Usage</a>
+      <a href="#iga-as-a-github-action" class="md-nav__link">IGA as a GitHub Action</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="cli-usage.html" class="md-nav__link">Usage (command-line)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="gha-usage.html" class="md-nav__link">Usage (GitHub Action)</a>
       
     
     </li>
@@ -254,6 +282,13 @@
     
     
       <a href="metadata.html" class="md-nav__link">Metadata mappings</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="glossary.html" class="md-nav__link">Glossary</a>
       
     
     </li>
@@ -288,6 +323,46 @@
             
   <section id="installation-and-configuration">
 <h1 id="installation--page-root">Installation and configuration<a class="headerlink" href="#installation--page-root" title="Permalink to this heading">¶</a></h1>
+<section id="installing-iga-locally">
+<h2 id="installing-iga-locally">Installing IGA locally<a class="headerlink" href="#installing-iga-locally" title="Permalink to this heading">¶</a></h2>
+<p>There are multiple ways of installing IGA.  Please choose the alternative that suits you.</p>
+<section id="alternative-1-installing-iga-using-pipx">
+<h3 id="alternative-1-installing-iga-using-pipx">Alternative 1: installing IGA using <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#alternative-1-installing-iga-using-pipx" title="Permalink to this heading">¶</a></h3>
+<p><a class="reference external" href="https://pypa.github.io/pipx/">Pipx</a> lets you install Python programs in a way that isolates Python dependencies, and yet the resulting <code class="docutils literal notranslate"><span class="pre">iga</span></code> command can be run from any shell and directory – like any normal program on your computer. If you use <code class="docutils literal notranslate"><span class="pre">pipx</span></code> on your system, you can install IGA with the following command:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>iga
+</pre></div>
+</div>
+<p>Pipx can also let you run IGA directly using <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span> <span class="pre">iga</span></code>, although in that case, you must always prefix every IGA command with <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code>.  Consult the <a class="reference external" href="https://github.com/pypa/pipx#walkthrough-running-an-application-in-a-temporary-virtual-environment">documentation for <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code></a> for more information.</p>
+</section>
+<section id="alternative-2-installing-iga-using-pip">
+<h3 id="alternative-2-installing-iga-using-pip">Alternative 2: installing IGA using <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#alternative-2-installing-iga-using-pip" title="Permalink to this heading">¶</a></h3>
+<p>You should be able to install <code class="docutils literal notranslate"><span class="pre">iga</span></code> with <a class="reference external" href="https://pip.pypa.io/en/stable/installing/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a> for Python 3.  To install <code class="docutils literal notranslate"><span class="pre">iga</span></code> from the <a class="reference external" href="https://pypi.org">Python package repository (PyPI)</a>, run the following command:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>iga
+</pre></div>
+</div>
+<p>As an alternative to getting it from <a class="reference external" href="https://pypi.org">PyPI</a>, you can use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install <code class="docutils literal notranslate"><span class="pre">iga</span></code> directly from GitHub:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/caltechlibrary/iga.git
+</pre></div>
+</div>
+<p><em>If you already installed IGA once before</em>, and want to update to the latest version, add <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> to the end of either command line above.</p>
+</section>
+<section id="alternative-3-installing-iga-from-sources">
+<h3 id="alternative-3-installing-iga-from-sources">Alternative 3: installing IGA from sources<a class="headerlink" href="#alternative-3-installing-iga-from-sources" title="Permalink to this heading">¶</a></h3>
+<p>If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/caltechlibrary/iga
+</pre></div>
+</div>
+<p>Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <a class="reference external" href="https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip">https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip</a></p>
+<p>Next, after getting a copy of the files,  run <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> inside the code directory:</p>
+<div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>iga
+python3<span class="w"> </span>setup.py<span class="w"> </span>install
+</pre></div>
+</div>
+</section>
+</section>
+<section id="iga-as-a-github-action">
+<h2 id="iga-as-a-github-action">IGA as a GitHub Action<a class="headerlink" href="#iga-as-a-github-action" title="Permalink to this heading">¶</a></h2>
+</section>
 </section>
 
 
@@ -314,12 +389,12 @@
             </a>
           
           
-            <a href="usage.html" title="Usage"
+            <a href="cli-usage.html" title="Usage (command-line)"
                class="md-flex md-footer-nav__link md-footer-nav__link--next"
                rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
                 class="md-flex__ellipsis"> <span
-                class="md-footer-nav__direction"> Next </span> Usage </span>
+                class="md-footer-nav__direction"> Next </span> Usage (command-line) </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink"><i
                 class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>

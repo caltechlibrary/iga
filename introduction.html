@@ -233,6 +233,13 @@
       <a href="#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#igas-operation" class="md-nav__link">IGA’s operation</a>
+      
+    
     </li></ul>
     
     </li>
@@ -240,13 +247,34 @@
     
     
       <a href="installation.html" class="md-nav__link">Installation and configuration</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="installation.html#installing-iga-locally" class="md-nav__link">Installing IGA locally</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="usage.html" class="md-nav__link">Usage</a>
+      <a href="installation.html#iga-as-a-github-action" class="md-nav__link">IGA as a GitHub Action</a>
+      
+    
+    </li></ul>
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="cli-usage.html" class="md-nav__link">Usage (command-line)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="gha-usage.html" class="md-nav__link">Usage (GitHub Action)</a>
       
     
     </li>
@@ -254,6 +282,13 @@
     
     
       <a href="metadata.html" class="md-nav__link">Metadata mappings</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="glossary.html" class="md-nav__link">Glossary</a>
       
     
     </li>
@@ -288,8 +323,8 @@
             
   <section id="introduction">
 <h1 id="introduction--page-root">Introduction<a class="headerlink" href="#introduction--page-root" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional data and software repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution.</p>
-<p>The <em>InvenioRDM GitHub Archiver</em> (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line to send releases on demand; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
+<p><a class="reference external" href="https://inveniordm.docs.cern.ch">InvenioRDM</a> is a turn-key <a class="reference external" href="https://riojournal.com/article/56508/">research data management</a> (RDM) platform that can be used by institutions to create repositories where data and software can be stored in order ensure long-term access to research products. Institutions such as Caltech use InvenioRDM as the basis for institutional repositories. <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> is an example of an InvenioRDM-based repository; it enables researchers to upload research data and software, link data with their publications, and assign permanent <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s to them so that other people can reference them.</p>
+<p>The <em>InvenioRDM GitHub Archiver</em> (IGA) is a tool for sending software releases from <a class="reference external" href="https://github.com/about">GitHub</a> to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
 <ul class="simple">
 <li><p>Automatic extraction of metadata from the GitHub release, the GitHub repository, and <a class="reference external" href="https://codemeta.github.io"><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code></a> and/or <a class="reference external" href="https://citation-file-format.github.io"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></a> files if they exist in the repository</p></li>
 <li><p>Thorough coverage of <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata">InvenioRDM record metadata</a> using painstaking procedures</p></li>
@@ -298,35 +333,73 @@
 <li><p>Automatic lookup of organization names in <a class="reference external" href="https://ror.org">ROR</a> (assuming ROR id’s are provided)</p></li>
 <li><p>Automatic lookup of publication data in <a class="reference external" href="https://www.doi.org">DOI.org</a>, <a class="reference internal" href="#(https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)"><span class="xref myst">PubMed</span></a>, Google Books, &amp; other sources if needed</p></li>
 <li><p>Automatic splitting of human names into family and given names using <a class="reference external" href="https://en.wikipedia.org/wiki/Machine_learning">ML</a>-based methods, if necessary, to comply with InvenioRDM requirements</p></li>
-<li><p>Support for overriding the metadata it record it creates, for complete control if you need it</p></li>
+<li><p>Support for overriding the metadata record it creates, for complete control if you need it</p></li>
 <li><p>Support for InvenioRDM <a class="reference external" href="https://invenio-communities.readthedocs.io/en/latest/">communities</a></p></li>
 <li><p>Ability to use the GitHub API without a <a class="reference external" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">GitHub access token</a> in many cases</p></li>
 <li><p>Extensive use of logging so you can see what’s going on under the hood</p></li>
 </ul>
 <section id="inveniordm-records">
 <h2 id="inveniordm-records">InvenioRDM records<a class="headerlink" href="#inveniordm-records" title="Permalink to this heading">¶</a></h2>
-<p><a class="reference external" href="https://riojournal.com/article/56508/">Research Data Management</a> (RDM) refers to the organization, storage, preservation, and sharing of data and software that is created, collected, and used in a research project. <a class="reference external" href="https://inveniordm.docs.cern.ch">InvenioRDM</a> is a turn-key RDM platform that can be used by institutions to create repositories where data and software can be stored in order ensure long-term access to research products. Institutions such as Caltech use InvenioRDM as the basis for institutional data repositories. <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> is an example of an InvenioRDM-based repository; it enables researchers to upload research data and software, link data with their publications, and assign permanent <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s to them so that other people can reference them.</p>
 <p>Data and software archived in a repository need to be described well and richly cross-referenced in order to be widely discoverable by other people. The metadata records needed by InvenioRDM are expressed in a common file format (<a class="reference external" href="https://www.json.org">JSON</a>), with required metadata fields <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata/">defined by InvenioRDM</a>. The record fields store information about the creators of the software (or data), distribution rights, titles, funding sources, publications, and more; InvenioRDM formats the metadata records as attractive web pages for human consumption. To give an example, below is a screenshot of the page for a software project stored in <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>:</p>
 <figure>
 <img src="_static/media/example-record-landing-page.jpg"/>
 <figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
 </figure>
-<p>The nice features come at a price: the metadata contained in the record of a deposit can be tedious and error-prone to fill out by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
+<p>The metadata contained in the record of a deposit is critical, but it can be tedious and error-prone to enter by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
 </section>
 <section id="github-releases">
 <h2 id="github-releases">GitHub releases<a class="headerlink" href="#github-releases" title="Permalink to this heading">¶</a></h2>
 <p>Although IGA can be used to produce arbitrary records in InvenioRDM repositories, it’s focused on automating the process of creating records for GitHub software releases.</p>
-<p>A <a class="reference external" href="https://github.blog/2013-07-02-release-your-software/"><em>release</em> in GitHub</a> is the mechanism by which users can package up a specific version of their software in a way that makes it easy for other users to obtain a copy. Releases are associated with individual repositories and are identified by <a class="reference external" href="https://git-scm.com/book/en/v2/Git-Basics-Tagging">git tags</a>; they can contain source code archives (e.g., in <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> format), release notes, and binary assets such as compiled executables.</p>
-<p>You may wonder, why would you bother saving GitHub releases anywhere else if they’re already stored on GitHub? There are at least two reasons:</p>
+<p>A <a class="reference external" href="https://github.blog/2013-07-02-release-your-software/"><em>release</em> in GitHub</a> is the mechanism by which users can package up a specific version of their software in a way that makes it easy for other users to obtain a copy. Releases are associated with individual repositories and are identified by <a class="reference external" href="https://git-scm.com/book/en/v2/Git-Basics-Tagging">git tags</a>; they can contain source code archives (e.g., in <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> format), release notes, and binary assets such as compiled executables. Below is the GitHub release page for the record shown in the previous figure.</p>
+<figure>
+<img src="_static/media/example-github-release.jpg"/>
+<figcaption>The page in GitHub describing the release shown archived in InvenioRDM in the previous figure.</figcaption>
+</figure>
+<p>You may be asking yourself “but … if the releases are already stored in GitHub, why bother storing them elsewhere?” There are at least two reasons:</p>
 <ol class="arabic simple">
 <li><p>GitHub is not an archive. Repositories can be renamed or deleted (intentionally or accidentally), as can user accounts; moreover, the contents of releases can also be edited and changed. In other words, <em>what is available on GitHub today may not be available there tomorrow</em>. Preservation of software products demands an archiving approach capable of retaining immutable copies of software in a form that can outlive individual projects and people.</p></li>
-<li><p>Compliance with open data requirements. Many funding agencies and institutions require that research projects ensure free access to research products. Institutional repositories are specifically designed to support the needs of researchers in complying with funder or publisher data requirements. <em>They provide features that GitHub does not</em>, such as assigning globally-unique, <em>permanent</em>, citable identifiers (such as <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s) for data and software.</p></li>
+<li><p>Compliance with open data requirements. Many funding agencies and institutions require that research projects ensure free access to research products. Institutional repositories are specifically designed to support the needs of researchers in complying with funder or publisher data requirements. <em>Institutional repositories provide features that GitHub does not</em>, such as assigning globally-unique, <em>permanent</em>, citable identifiers (such as <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s) for data and software.</p></li>
 </ol>
 </section>
 <section id="codemeta-and-citation-cff">
 <h2 id="codemeta-and-citation-cff">CodeMeta and CITATION.cff<a class="headerlink" href="#codemeta-and-citation-cff" title="Permalink to this heading">¶</a></h2>
-<p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers.</p>
-<p>IGA looks for <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository. (You can also opt to make IGA add the metadata from GitHub even if it does find one or both of the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files repository; this may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are, but it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.)</p>
+<p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers. To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for the software release shown above:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SoftwareSourceCode"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Send EPrints records to public web archiving services"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eprints2archives"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"codeRepository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"issueTracker"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/issues"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/blob/master/LICENSE"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.3.5"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Caltech Library"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="p">],</span>
+<span class="w">  </span><span class="nt">"developmentStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"downloadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/archive/master.zip"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"keywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"EPrints"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"archive"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"web archiving"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"archive"</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"maintainer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9266-5146"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"programmingLanguage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Python"</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>IGA looks for <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.</p>
+</section>
+<section id="igas-operation">
+<h2 id="igas-operation">IGA’s operation<a class="headerlink" href="#igas-operation" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
