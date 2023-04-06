@@ -73,6 +73,12 @@ ORCID
     identifiers for researchers that help disambiguate people and associate
     publications with the correct individuals.
 
+PAT
+    PAT stands for _personal access token_. A PAT is string of characters
+    used to authenticate a user when accessing a network service; it is a
+    alternative to authentication via account+password combinations. PATs
+    are used by both GitHub and InvenioRDM.
+
 RDM
     RDM stands for _research data management_. Depending on context, it may
     be used to refer to the general concept of RDM or as a nickname for

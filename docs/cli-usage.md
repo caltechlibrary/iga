@@ -87,7 +87,7 @@ If given the `--version` option, this program will print its version and other i
 Running IGA with the option `--help` will make it print help text and exit without doing anything else.
 
 
-### _Summary of command-line options_
+### Summary of command-line options
 
 As explain above, IGA takes one required argument on the command line: either (1) the full URL of a web page on GitHub of a tagged release, or (2) a release tag name which is to be used in combination with options `--github-account` and `--github-repo`. The following table summarizes all the command line options available.
 
