@@ -10,7 +10,7 @@ file "LICENSE" for more information.
 
 import commonpy.exceptions
 from   commonpy.network_utils import network
-import functools
+from   functools import cache
 import json
 import os
 from   sidetrack import log
@@ -97,12 +97,12 @@ def name_from_orcid(orcid):
     return (given, family)
 
 
-@functools.cache
+@cache
 def orcid_data(orcid):
     '''Return the data from orcid.org for the given orcid id.'''
     if not orcid:
         return ''
-    log(f'lookiing up ORCID data for "{orcid}"')
+    log(f'looking up ORCID data for "{orcid}"')
     url = f'https://orcid.org/{orcid}/public-record.json'
     try:
         data = network('get', url).json()
