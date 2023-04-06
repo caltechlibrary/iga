@@ -22,13 +22,14 @@ def requirements(file):
         with open(requirements_file, encoding='utf-8') as f:
             required = [ln for ln in filter(str.strip, f.read().splitlines())
                         if not ln.startswith('#')]
-        if any(item.startswith(('-', '.', '/')) for item in required):
+        if (any(item.startswith(('-', '.', '/')) for item in required)
+                or any('https' in item for item in required)):
             # The requirements.txt uses pip features. Try to use pip's parser.
             try:
                 from pip._internal.req import parse_requirements
                 from pip._internal.network.session import PipSession
                 parsed = parse_requirements(requirements_file, PipSession())
-                required = [item.requirement for item in parsed]
+                required = [item.requirement.strip() for item in parsed]
             except ImportError:
                 # No pip, or not the expected version. Give up & return as-is.
                 pass
