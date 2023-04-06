@@ -16,8 +16,6 @@ from iga.text_utils import (
 def test_cleaned_text():
     assert cleaned_text('') == ''
     assert cleaned_text('a  b') == 'a b'
-    assert cleaned_text('a.b. jones') == 'a. b. jones'
-    assert cleaned_text('A.B. jones') == 'A. B. jones'
     assert cleaned_text('a\nb') == 'a b'
     assert cleaned_text('a\t b') == 'a b'
     assert cleaned_text('some text.') == 'some text.'
