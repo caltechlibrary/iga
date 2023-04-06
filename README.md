@@ -21,13 +21,17 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHu
 
 ## Introduction
 
-[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional data and software repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution.
+[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution.
 
-The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line to send releases on demand; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
+The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
 * Automatic extraction of metadata from the GitHub release, the GitHub repository, and [`codemeta.json`](https://codemeta.github.io) and/or [`CITATION.cff`](https://citation-file-format.github.io) files if they exist in the repository
-* Automatic recognition of common identifier types that often appear CodeMeta and CFF files, such as [ORCID](https://orcid.org), [ROR](https://ror.org), [DOI](https://www.doi.org), [arXiV](https://arxiv.org), [PMCID/PMID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and others
 * Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
-* Support for overriding the metadata it record it creates, for complete control if you need it
+* Automatic recognition of common identifier types that often appear CodeMeta and CFF files, such as [ORCID](https://orcid.org), [ROR](https://ror.org), [DOI](https://www.doi.org), [arXiV](https://arxiv.org), [PMCID/PMID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and others
+* Automatic lookup of human names in [ORCID.org](https://orcid.org) if needed (assuming ORCID id's are provided)
+* Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
+* Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed]((https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)), Google Books, & other sources if needed
+* Automatic splitting of human names into family and given names using [ML](https://en.wikipedia.org/wiki/Machine_learning)-based methods, if necessary, to comply with InvenioRDM requirements
+* Support for overriding the metadata record it creates, for complete control if you need it
 * Support for InvenioRDM [communities](https://invenio-communities.readthedocs.io/en/latest/)
 * Ability to use the GitHub API without a [GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in many cases
 * Extensive use of logging so you can see what's going on under the hood
@@ -56,7 +60,7 @@ python3 -m pip install iga
 
 As an alternative to getting it from [PyPI](https://pypi.org), you can use `pip` to install `iga` directly from GitHub:
 ```sh
-python3 -m pip install git+https://github.com/mhucka/iga.git
+python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 ```
 
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
@@ -66,10 +70,10 @@ _If you already installed IGA once before_, and want to update to the latest ver
 
 If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:
 ```sh
-git clone https://github.com/mhucka/iga
+git clone https://github.com/caltechlibrary/iga
 ```
 
-Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <https://github.com/mhucka/iga/archive/refs/heads/main.zip>
+Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip>
 
 Next, after getting a copy of the files,  run `setup.py` inside the code directory:
 ```sh
@@ -80,7 +84,7 @@ python3 setup.py install
 
 ## Usage
 
-IGA creates a metadata record in an InvenioRDM server and attaches a GitHub release archive to the record. The GitHub release can be specified using _either_ a full release URL, _or_ a combination of GitHub account + repository \+ tag. Different command-line options can be used to adjust this behavior.
+IGA creates a metadata record in an InvenioRDM server and attaches a GitHub release archive to the record. The GitHub release can be specified using _either_ a full release URL, _or_ a combination of GitHub account + repository + tag. Different command-line options can be used to adjust this behavior.
 
 If the installation process described above is successful, you should end up with a program named `iga` in a location where software is normally installed on your computer.  Running `iga` should be as simple as running any other command-line program. For example, the following command should print a helpful message to your terminal:
 ```shell
@@ -104,11 +108,11 @@ A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
     addition, values for the options `--account` and `--repo` must be provided.
 
 Here's an example using approach #1 (assuming environment variables `INVENIO_SERVER`, `INVENIO_TOKEN`, and `GITHUB_TOKEN` have all been set):
-```
+```shell
 iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 and here's the equivalent using approach #2:
-```
+```shell
 iga --github-account mhucka --github-repo taupe v1.2.0
 ```
 Note that when using this form of the command, the release tag (`v1.2.0` above) must be the last item given on the command line.
@@ -169,33 +173,33 @@ Running IGA with the option `--help` will make it print help text and exit witho
 
 ### _Summary of command-line options_
 
-The following table summarizes all the command line options available.
+As explain above, IGA takes one required argument on the command line: either (1) the full URL of a web page on GitHub of a tagged release, or (2) a release tag name which is to be used in combination with options `--github-account` and `--github-repo`. The following table summarizes all the command line options available.
 
 | Long&nbsp;form&nbsp;option&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Short&nbsp;&nbsp; | Meaning | Default |  |
-|------------------------|-------------------|--------------------------------------|---------|---|
-| `--all-assets`         | `-A`     | Attach all GitHub assets | Attach the release source ZIP| |
-| `--all-metadata`       | `-M`     | Always include GitHub metadata | Favor metadata from CodeMeta & CFF | |
-| `--community` _C_      | `-c` _C_ | Submit record to RDM community _C_ | Don't submit to any community | | 
-| `--draft`              | `-d`     | Mark the RDM record as a draft | Publish the record when done | ⚑ |
-| `--file` _F_           | `-f` _F_ | Upload local file _F_ instead of GitHub assets | Upload only GitHub assets | | 
-| `--github-account` _A_ | `-a` _A_ | Get release from GitHub account name _A_ | | | 
-| `--github-repo` _R_    | `-r` _R_ | Get release from repository _R_ of GitHub account _A_ | | | 
-| `--github-token` _T_   | `-t` _T_ | Your GitHub acccess token (**avoid – use variable**)| | |
+|------------------------|----------|--------------------------------------|---------|---|
+| `--all-assets`         | `-A`     | Attach all GitHub assets | Attach only the release source ZIP| |
+| `--all-metadata`       | `-M`     | Include additional metadata from GitHub | Favor CodeMeta & CFF | |
+| `--community` _C_      | `-c` _C_ | Submit record to RDM community _C_ | Don't submit record to any community | | 
+| `--draft`              | `-d`     | Mark the RDM record as a draft | Publish record when done | |
+| `--file` _F_           | `-f` _F_ | Upload local file _F_ instead of GitHub assets | Upload only GitHub assets | ⚑ |
+| `--github-account` _A_ | `-a` _A_ | Look in GitHub account _A_ | Get account name from release URL | ✯ | 
+| `--github-repo` _R_    | `-r` _R_ | Look in GitHub repository _R_ of account _A_ | Get repo name from release URL | ✯ |
+| `--github-token` _T_   | `-t` _T_ | Use GitHub acccess token _T_| Use value in env. var. `GITHUB_TOKEN` | |
 | `--help`               | `-h`     | Print help info and exit | | |
-| `--invenio-server` _S_ | `-s` _S_ | Send the record to InvenioRDM server at address _S_ | | | 
-| `--invenio-token` _K_  | `-k` _K_ | Your InvenioRDM server access token (**avoid – use variable**) | | | 
-| `--list-communities`   | `-L`     | List communities available for `--community` | | |
-| `--log-dest` _D_       | `-l` _D_ | Send log output to _D_ | | ⚐ |
-| `--open` _O_           | `-O` _O_ | Open the record's web page in a browser when done | | |
-| `--mode` _M_           | `-m` _M_ | Run mode: `quiet`, `normal`, `verbose`, `debug` | `normal` | |
-| `--read-record` _R_    | `-R` _R_ | Read metadata record from _R_; don\'t build one | | |
-| `--save-record` _S_    | `-S` _S_ | Save metadata record to _S_; don\'t upload it | | |
-| `--timeout` _I_        | `-T` _I_ | Wait on network operations a max of _I_ seconds | | |
+| `--invenio-server` _S_ | `-s` _S_ | Send record to InvenioRDM server at address _S_ | Use value in env. var. `INVENIO_SERVER` | | 
+| `--invenio-token` _K_  | `-k` _K_ | Use InvenioRDM access token _K_ | Use value in env. var. `INVENIO_TOKEN` | | 
+| `--list-communities`   | `-L`     | List communities available for use with `--community` | | |
+| `--log-dest` _L_       | `-l` _L_ | Write log output to destination _L_ | Write to terminal | ⚐ |
+| `--mode` _M_           | `-m` _M_ | Run in mode `quiet`, `normal`, `verbose`, or `debug` | `normal` | |
+| `--open`               | `-O`     | Open record's RDM web page in a browser when done | Do nothing when done | |
+| `--read-record` _R_    | `-R` _R_ | Read metadata record from _R_; don\'t build one | Build metadata record | |
+| `--save-record` _D_    | `-S` _D_ | Save metadata record to _D_; don\'t upload it | Upload to InvenioRDM server | |
+| `--timeout` _X_        | `-T` _X_ | Wait on network operations a max of _X_ seconds | Auto-adjusted based on file size | |
 | `--version`            | `-V`     | Print program version info and exit | | |
 
 ⚑ &nbsp; Can repeat for multiple files.<br>
 ⚐ &nbsp; To write to the console, use the character `-` as the value of _OUT_; otherwise, _OUT_ must be the name of a file where the output should be written.<br>
-
+✯ &nbsp; When using `--github-account` and `--github-repo`, the last argument on the command line must be a release tag name.
 
 ### Return values
 
