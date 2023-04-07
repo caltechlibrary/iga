@@ -39,5 +39,4 @@ def requirements(file):
 setup(
     setup_requires=['wheel'],
     install_requires=requirements('requirements.txt'),
-    extras_require={'dev': requirements('requirements-dev.txt')},
 )
