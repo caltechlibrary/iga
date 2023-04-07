@@ -9,6 +9,7 @@ Fixes:
 * Fix bug in `requirements.txt` that caused loading the wrong copy of `pybtex-apa7-style`.
 * Fix missing spaCy requirements in `requirements.txt`.
 * Fix name tagging algorithm to account for changes in spaCy behavior in latest Transformer models.
+* Fix tests that had gotten out of sync with the codebase.
 
 Changes:
 * (Hopefully) improve colors and readability of help text printed with `--help`.
