@@ -41,6 +41,6 @@ StringDist          == 1.0.9
 url-normalize       == 1.4.3
 validators          == 0.20.0
 
-# Until apa7 fixes the bug I filed, we have to use our fork.
 pybtex             == 0.24.0
-pybtex-apa7-style@git+https://github.com/caltechlibrary/pybtex-apa7-style.git
+# Until apa7 fixes the bugs I filed, we have to use our fork.
+./iga/vendor/pybtex-apa7-style
