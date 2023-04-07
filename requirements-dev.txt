@@ -22,6 +22,7 @@ flake8-pie                 >= 0.15.0
 flake8-simplify            >= 0.19.2
 
 twine
+wheel
 
 linkify-it-py
 myst-parser
