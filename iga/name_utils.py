@@ -123,9 +123,11 @@ def is_person(name):
         return False
 
     # Delay loading the ML systems until needed because they take long to load.
+    # We check we succeded in loading it & fall back to other things if not.
     global _NLP
     if charset not in _NLP:
         _load_spacy(charset)
+    spacy_loaded = (charset in _NLP)
 
     def person_according_to_spacy(name):
         try:
@@ -136,6 +138,7 @@ def is_person(name):
                 return (entity_type == 'PERSON')
             else:
                 log(f'spaCy did not return entity labels for {name}')
+                # Note the return is None, not False, so caller can test.
                 return None
         except KeyboardInterrupt as ex:
             raise ex
@@ -156,10 +159,13 @@ def is_person(name):
             log(f'probablepeople failed for {name}')
         return False
 
-    # spaCy does the best job, but sometimes it doesn't produce any tags.
-    # We fall back to PP in that case.
-    decision = person_according_to_spacy(name)
+    # Check that we successfully loaded spaCy & fall back to PP if we didn't.
+    decision = None
+    if spacy_loaded:
+        decision = person_according_to_spacy(name)
     if decision is None:
+        # spaCy does the best job, but sometimes it doesn't produce any tags.
+        # We fall back to PP in that case.
         decision = person_according_to_pp(name)
     log(f'final decision: is_person({name}) = {decision}')
     return decision
@@ -297,18 +303,40 @@ def _load_organizations():
     from os.path import dirname, abspath, join
     here = dirname(abspath(__file__))
     for file in _ORGANIZATIONS_FILENAMES:
-        log(f'loading data/{file}')
+        log(f'loading data/{file} – this may take a little while')
         with open(join(here, f'data/{file}'), 'r') as f:
             for line in f.readlines():
                 _ORGANIZATIONS.add(_cleaned_name(line))
 
 
 def _load_spacy(charset):
+    global _NLP
     import spacy
-    if charset == 'cjk':
-        log('loading spaCy zh_core_web_trf -- this may take a long time')
-        _NLP[charset] = spacy.load('zh_core_web_trf')
+    model = 'zh_core_web_trf' if charset == 'cjk' else 'en_core_web_trf'
+    try:
+        log(f'try to load spaCy model {model} – this may some time')
+        _NLP[charset] = spacy.load(model)
+    except KeyboardInterrupt as ex:
+        raise ex
+    except OSError:
+        log(f'spaCy {model} not yet installed, so doing one-time download')
+        if _successful_spacy_download(model):
+            _NLP[charset] = spacy.load(model)
+        else:
+            log(f'unable to get download {model} – spaCy will not be usable')
     else:
-        log('loading spaCy en_core_web_trf -- this may take a long time')
-        _NLP[charset] = spacy.load('en_core_web_trf')
-    log(f'finished loading spaCy pipeline for {charset} charset')
+        log(f'finished loading spaCy pipeline for {charset} charset')
+
+
+def _successful_spacy_download(model):
+    from spacy.cli import download
+    from subprocess import SubprocessError
+    try:
+        download(model)
+    except KeyboardInterrupt as ex:
+        raise ex
+    except (FileNotFoundError, SubprocessError) as ex:
+        log(f'error trying to download spaCy model {model}: {str(ex)}')
+    else:
+        return True
+    return False

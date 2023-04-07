@@ -1,5 +1,11 @@
 # Change log for iga
 
+## Version 0.0.4
+
+Changes:
+* IGA will now download needed spaCy models itself in a one-time step at run-time, instead of putting the download into the `requirements.txt` file. The latter approach made it impossible to put IGA on PyPI because PyPI does not allow direct requirements. The change to IGA means that we take a huge run-time performance hit if spaCy is needed, but at least it'll happen only once and not again on subsequent runs of IGA.
+
+
 ## Version 0.0.3 (2023-04-06)
 
 This release fixes a problem with the syntax of `setup.py` that prevented installations via `pip install git+https://github.com/caltechlibrary/iga.git`.
