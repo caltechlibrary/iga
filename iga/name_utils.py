@@ -133,8 +133,7 @@ def is_person(name):
             if parsed.ents:
                 entity_type = parsed.ents[0].label_
                 log(f'spaCy [{charset}] entity type for {name}: {entity_type}')
-                # Get better accuracy testing "!= ORG" instead of "== PERSON"
-                return (entity_type not in ['ORG', 'GPE'])
+                return (entity_type == 'PERSON')
             else:
                 log(f'spaCy did not return entity labels for {name}')
                 return None

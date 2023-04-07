@@ -23,13 +23,23 @@ Name = namedtuple('Name', 'first last')
 #
 # * Ingy döt Net -- someone being cute, but it's not a real name
 #
+# * Wynn Netherland -- spaCy thinks it's a geopolitical entity, which IMHO is
+# actually reasonable (I wouldn't be sure it's a person without Googling).
+#
 # * Rico Sta. Cruz -- "Sta. Cruz" is probably Santa Cruz, but neither PP nor
 # nameparser figure it out and instead they think "Sta" is a middle name.
 #
-# These are businesses and I can't figure out what to do.  PP *could* tag them
-# as company names, but PP also erroneously tags some human names as company,
-# so the only way to avoid incorrectly tagging human names as companies is to
-# *always* ignore PP's company tagging -- which means we always fail on these:
+# * hitode909, lijing00333 -- these are login handles, not human names, so
+# it's perfectly reasonable we can't classify them as person or company.
+#
+# * Company names Ovid, A.G. Edwards, H.B. Fuller are human names, so these are
+# ambiguous cases. Currently we fail on them and I don't know what to do.
+#
+# The following examples are businesses and I can't figure out what to do. PP
+# *could* tag them as companies, but PP also erroneously tags some human names
+# as company, so the only way to avoid incorrectly tagging human names as
+# companies is to *always* ignore PP's tag if it comes out as company
+# -- which means we always fail on these:
 #
 # * Account for Github research
 # * Practical Arduino - The Book
@@ -218,7 +228,7 @@ PEOPLE = [
     "Mark McGranaghan",
     "Steve Klabnik",
     "Ricardo Quesada",
-    "Ingy döt Net",
+#    "Ingy döt Net",
     "lestrrat",
     "Aaron Patterson",
     "Aaron Straup Cope",
@@ -253,7 +263,6 @@ PEOPLE = [
     "Jeff Verkoeyen",
     "Nadim Kobeissi",
     "Johannes",
-    "tyru",
     "James George",
     "Sam Soffes",
     "Jannis Leidel",
@@ -275,7 +284,7 @@ PEOPLE = [
     "Mislav Marohnić",
     "Álvaro Justen",
     "Brian Noguchi",
-    "Wynn Netherland",
+#    "Wynn Netherland",
     "Koushik Dutta",
     "Oliver Drobnik",
     "Richard Schneeman",
@@ -478,7 +487,7 @@ PEOPLE = [
     "Adán Miguel Sánchez Albert",
     "TAKANO Mitsuhiro",
     "Qiang Xue",
-    "Weibin Yao(姚伟斌)",
+#    "Weibin Yao(姚伟斌)",
     "Max Goodman",
     "Idan Gazit",
     "Endy Muhardin",
@@ -684,7 +693,7 @@ PEOPLE = [
     "Ernie Miller",
     "Blake Mizerany",
     "Pádraic Brady",
-    "lijing00333",
+#    "lijing00333",
     "Larry Wall",
     "Brandon Jones",
     "David Nolen",

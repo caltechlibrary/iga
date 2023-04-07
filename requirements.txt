@@ -31,19 +31,23 @@ pymdown-extensions  == 9.10
 PyYAML              == 6.0
 rich-click          == 1.6.0
 sidetrack           == 2.0.1
-spacy               == 3.4.4
+spacy               == 3.5.0
 spacy-alignments    == 0.9.0
-spacy-legacy        == 3.0.11
+spacy-legacy        == 3.0.12
 spacy-loggers       == 1.0.4
 spacy-pkuseg        == 0.0.32
-spacy-transformers  == 1.1.9
+spacy-transformers  == 1.2.2
 StringDist          == 1.0.9
 url-normalize       == 1.4.3
 validators          == 0.20.0
 
-# Not used by IGA but it's an undeclared dependency of caltechdata_api
-s3fs               == 2023.3.0
-
 # Until apa7 fixes the bug I filed, we have to use our fork.
 pybtex             == 0.24.0
 git+https://github.com/caltechlibrary/pybtex-apa7-style.git
+
+# spaCy models need special handling.
+en_core_web_trf@https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0-py3-none-any.whl
+zh_core_web_trf@https://github.com/explosion/spacy-models/releases/download/zh_core_web_trf-3.5.0/zh_core_web_trf-3.5.0-py3-none-any.whl
+
+# Not used by IGA but it's an undeclared dependency of caltechdata_api
+s3fs               == 2023.3.0

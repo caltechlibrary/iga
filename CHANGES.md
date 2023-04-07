@@ -7,6 +7,8 @@ Fixes:
 * Fix missing dependencies in `requirements-dev.txt`.
 * Fix parsing of https dependencies in `setup.py`.
 * Fix bug in `requirements.txt` that caused loading the wrong copy of `pybtex-apa7-style`.
+* Fix missing spaCy requirements in `requirements.txt`.
+* Fix name tagging algorithm to account for changes in spaCy behavior in latest Transformer models.
 
 Changes:
 * (Hopefully) improve colors and readability of help text printed with `--help`.
