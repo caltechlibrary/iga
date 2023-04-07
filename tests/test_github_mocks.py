@@ -46,7 +46,7 @@ def test_mocking_account(mocker):
     mocked_function.return_value = GitHubAccount(account_json)
     value = mocked_function()
     assert isinstance(value, GitHubAccount)
-    assert value.url == 'https://api.github.com/users/digitaldogsbody'
+    assert value.url == 'https://api.github.com/users/datacite'
 
 
 def test_mocking_repo_file(mocker):

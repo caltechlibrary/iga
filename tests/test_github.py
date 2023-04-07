@@ -17,8 +17,12 @@ def test_github_account():
     assert account.login == "mhucka"
     assert account.type == "User"
 
-    account = github_account('55fake99zxy100')
-    assert not account
+    try:
+        account = github_account('55fake99zxy100')
+    except iga.github.GitHubError:
+        pass
+    else:
+        assert False
 
 
 def test_github_account_repo_tag():
