@@ -1,5 +1,10 @@
 # Change log for iga
 
+## Version 0.0.3 (2023-04-06)
+
+This release fixes a problem with the syntax of `setup.py` that prevented installations via `pip install git+https://github.com/caltechlibrary/iga.git`.
+
+
 ## Version 0.0.2 (2023-04-06)
 
 Fixes:
