@@ -19,6 +19,7 @@ def test_doi_for_publication():
     assert doi_for_publication('arXiv:2012.13117v1') == '10.48550/arXiv.2012.13117v1'
     assert doi_for_publication('PMC4908318') == '10.1093/bioinformatics/btw056'
     assert doi_for_publication('x965x9092') == ''
+    assert doi_for_publication('26360422') == '10.1371/journal.pone.0137946'
 
 
 def test__doi_for_pubmed():
