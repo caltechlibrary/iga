@@ -11,20 +11,26 @@
 # requirements don't have to be repeated and so that "python3 setup.py" works.
 # =============================================================================
 
+import os
+from os import path
 from setuptools import setup
 
 
+def vendored_version(requirement_path):
+    name = requirement_path.split('/')[-1]
+    return f'{name}@file://{os.getcwd()}/{requirement_path}'
+
+
 def requirements(file):
-    from os import path
     required = []
     requirements_file = path.join(path.abspath(path.dirname(__file__)), file)
     if path.exists(requirements_file):
         with open(requirements_file, encoding='utf-8') as f:
-            required = [ln for ln in filter(str.strip, f.read().splitlines())
-                        if not ln.startswith('#')]
-        if (any(item.startswith(('-', '.', '/')) for item in required)
+            lines = [line for line in filter(str.strip, f.read().splitlines())
+                     if not line.startswith('#')]
+        # If the requirements.txt uses pip features, try to use pip's parser.
+        if (any(item.startswith(('-', '.', '/')) for item in lines)
                 or any('https' in item for item in required)):
-            # The requirements.txt uses pip features. Try to use pip's parser.
             try:
                 from pip._internal.req import parse_requirements
                 from pip._internal.network.session import PipSession
@@ -33,7 +39,10 @@ def requirements(file):
             except ImportError:
                 # No pip, or not the expected version. Give up & return as-is.
                 pass
-    return required
+
+    # Turn local paths (which work in pip) into setuptools-compatible paths.
+    return [(vendored_version(item) if item.startswith('./') else item)
+            for item in required]
 
 
 setup(
