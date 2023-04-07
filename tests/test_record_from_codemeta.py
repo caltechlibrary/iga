@@ -5,7 +5,6 @@ from unittest.mock import patch
 import iga.github
 from iga.github import (
     GitHubRepo,
-    GitHubUser,
     GitHubRelease,
 )
 
@@ -16,6 +15,7 @@ from iga.github import (
 here         = path.dirname(path.abspath(__file__))
 examples_dir = path.join(here, 'data/github-examples/with-codemeta')
 repo_dir     = path.join(examples_dir, 'fairdataihub/FAIRshare-Docs')
+
 
 def mocked_github_release(account, repo, tag):
     with open(path.join(repo_dir, 'release.json'), 'r') as f:
@@ -45,8 +45,8 @@ def mocked_github_repo_filenames(repo):
 @patch('iga.github.github_repo_file', new=mocked_github_repo_file)
 @patch('iga.github.github_repo_filenames', new=mocked_github_repo_filenames)
 def test_repo_file_url(*args):
-    from iga.record import record_from_release
-    record = record_from_release('fairdataihub', 'FAIRshare-Docs', 'v4.2.19')
+    from iga.metadata import metadata_for_release
+    record = metadata_for_release('fairdataihub', 'FAIRshare-Docs', '4.2.19', False)
     expected_json = path.join(examples_dir, 'fairdataihub/FAIRshare-Docs-expected.json')
     with open(expected_json, 'r') as f:
         expected = json5.loads(f.read())

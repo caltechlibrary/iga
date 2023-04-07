@@ -29,6 +29,7 @@ here      = path.dirname(path.abspath(__file__))
 repo_dir  = path.join(here, 'data/fake-example/')
 orcid_dir = path.join(here, 'data/orcid-examples/')
 
+
 def mocked_github_account(account_name):
     log(f'returing mocked GitHubAccount for {account_name}')
     with open(path.join(repo_dir, 'account.json'), 'r') as f:
@@ -93,15 +94,15 @@ def mocked_orcid_data(orcid):
 def test_environment_vars_from_options(capsys):
     from iga.cli import cli
     runner = click.testing.CliRunner()
-    args = ['--dry-run',
-            '--invenio-server', 'foo',
+    args = ['--invenio-server', 'https://data.caltechlibrary.dev',
             '--invenio-token', 'itoken',
             '--github-token', 'gtoken',
+            '--save-record', '/tmp/fake.json',
             'https://github.com/fakeaccount/fakerepo/releases/tag/fakerelease']
     result = runner.invoke(cli, args)
     assert result.exit_code == int(ExitCode.success)
     assert 'INVENIO_SERVER' in os.environ
-    assert os.environ['INVENIO_SERVER'] == 'foo'
+    assert os.environ['INVENIO_SERVER'] == 'https://data.caltechlibrary.dev'
     assert 'INVENIO_TOKEN' in os.environ
     assert os.environ['INVENIO_TOKEN'] == 'itoken'
     assert 'GITHUB_TOKEN' in os.environ
@@ -141,10 +142,10 @@ def test_help_arg(monkeypatch):
     assert result.exit_code == int(ExitCode.success)
 
 
-def test_debug(capsys):
+def test_mode(capsys):
     from iga.cli import cli
     runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--debug'])
+    result = runner.invoke(cli, ['--mode'])
     assert 'requires an argument' in result.output
     assert result.exit_code == int(ExitCode.bad_arg)
 
