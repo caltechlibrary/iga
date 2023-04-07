@@ -328,7 +328,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#summary-of-command-line-options" class="md-nav__link"><em>Summary of command-line options</em></a>
+      <a href="cli-usage.html#summary-of-command-line-options" class="md-nav__link">Summary of command-line options</a>
       
     
     </li>
@@ -470,6 +470,13 @@
 </section>
 <section id="igas-operation">
 <h2 id="igas-operation">IGA’s operation<a class="headerlink" href="#igas-operation" title="Permalink to this heading">¶</a></h2>
+<p>As a command-line utility, IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token (<a class="reference internal" href="glossary.html#term-PAT"><span class="std std-ref">PAT</span></a>) for InvenioRDM (and optionally for GitHub too), and set the environment variables <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code> and <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>), archiving a GitHub release can be as easy as running <code class="docutils literal notranslate"><span class="pre">iga</span></code> with one argument, the release URL:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>https://github.com/caltechlibrary/eprints2archives/releases/tag/v1.3.5
+</pre></div>
+</div>
+<p>IGA will contact GitHub, extract metadata from the release and the repository, construct a metadata record in the format required by InvenioRDM, and send the record plus the GitHub release source archive (a <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> file) to the InvenioRDM indicated by the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>. Various options can modify IGA’s behavior, as explained in detail in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">command-line usage of IGA</span></a>.</p>
+<p>The availability of a command-line version of IGA means you can also use it to send past software releases to an InvenioRDM server. IGA doesn’t care if what you’re asking it to archive is the <em>latest</em> release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.</p>
+<p>As a GitHub Action, IGA allows you to set up a GitHub workflow that will automatically send new releases of software to a designated InvenioRDM server. The procedure for this is detailed in the section on <a class="reference internal" href="gha-usage.html"><span class="std std-doc">GitHub Action usage of IGA</span></a>. Once set up, you do not have to remember to send releases of a particular GitHub project to InvenioRDM – it will do it for you.</p>
 </section>
 </section>
 
@@ -520,7 +527,7 @@
               
           </div>
             Last updated on
-              Apr 06, 2023.
+              Apr 07, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.1.3.
