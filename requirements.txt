@@ -43,7 +43,7 @@ validators          == 0.20.0
 
 # Until apa7 fixes the bug I filed, we have to use our fork.
 pybtex             == 0.24.0
-git+https://github.com/caltechlibrary/pybtex-apa7-style.git
+pybtex-apa7-style@git+https://github.com/caltechlibrary/pybtex-apa7-style.git
 
 # spaCy models need special handling.
 en_core_web_trf@https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0-py3-none-any.whl
