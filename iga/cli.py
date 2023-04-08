@@ -315,7 +315,7 @@ def _list_communities(ctx, param, value):
 # lines between paragraphs. Rich_click version 1.6.0 collapses blank lines,
 # which I hate.  This use of `\r` assumes the use of Markdown (as set above).
 
-@click.command(add_help_option=False)
+@click.command(add_help_option=False, no_args_is_help=True)
 @click.option('--all-assets', '-A', is_flag=True,
               help='Attach all GitHub assets, not only a source ZIP')
 #
