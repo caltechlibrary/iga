@@ -1,3 +1,4 @@
+import os
 from os import path
 import json5
 from unittest.mock import patch
@@ -44,6 +45,9 @@ def mocked_github_repo_filenames(repo):
 @patch('iga.github.github_repo', new=mocked_github_repo)
 @patch('iga.github.github_repo_file', new=mocked_github_repo_file)
 @patch('iga.github.github_repo_filenames', new=mocked_github_repo_filenames)
+@patch.dict(os.environ, {'INVENIO_SERVER': 'data.caltechlibrary.dev',
+                         'INVENIO_TOKEN': 'faketoken',
+                         'GITHUB_TOKEN': 'faketoken'}, clear=True)
 def test_repo_file_url(*args):
     from iga.metadata import metadata_for_release
     record = metadata_for_release('fairdataihub', 'FAIRshare-Docs', '4.2.19', False)
