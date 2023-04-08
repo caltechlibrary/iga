@@ -321,6 +321,7 @@ def _load_spacy(charset):
     except OSError:
         log(f'spaCy {model} not yet installed, so doing one-time download')
         if _successful_spacy_download(model):
+            log('spaCy model has been successfully downloaded')
             _NLP[charset] = spacy.load(model)
         else:
             log(f'unable to get download {model} – spaCy will not be usable')
