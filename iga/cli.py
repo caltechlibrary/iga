@@ -663,8 +663,9 @@ possible values:
         else:
             import iga
             error_type = ex.__class__.__name__
+            log(f'exiting due to {error_type}: {str(ex)}')
             _alert(ctx, 'IGA experienced an error. Please report this to the'
-                   f' developers. This version of IGA is {iga.__version__}.'
+                   f' developers. Your version of IGA is {iga.__version__}.'
                    f' For information about how to report errors, please see'
                    f' {iga.__url__}/.\n\n{error_type}: {str(ex)}', False)
             exit_code = ExitCode.exception
