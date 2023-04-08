@@ -63,8 +63,8 @@ def _doi_for_pubmed(pub_id, scheme):
                 log(f'NCBI returned an error for {pub_id}: ' + errmsg)
             else:
                 log(f'did not get a DOI or error message for {pub_id} from NCBI')
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except commonpy.exceptions.NoContent:
         log(f'NBCI returned no result for "{pub_id}"')
     except commonpy.exceptions.CommonPyException as ex:
@@ -72,4 +72,6 @@ def _doi_for_pubmed(pub_id, scheme):
     except json.JSONDecodeError as ex:
         # This means we have to fix something.
         raise InternalError('Error trying to decode JSON from NCBI: ' + str(ex))
+    except Exception:
+        raise
     return ''

@@ -140,8 +140,8 @@ def is_person(name):
                 log(f'spaCy did not return entity labels for {name}')
                 # Note the return is None, not False, so caller can test.
                 return None
-        except KeyboardInterrupt as ex:
-            raise ex
+        except KeyboardInterrupt:
+            raise
         except Exception as ex:             # noqa: PIE786
             log('unable to use spaCy due to error: ' + str(ex))
         return False
@@ -152,8 +152,8 @@ def is_person(name):
             from_pp = pp.tag(name)
             log(f'entity type according to PP for {name}: {from_pp[1]}')
             return (from_pp[1] == 'Person')
-        except KeyboardInterrupt as ex:
-            raise ex
+        except KeyboardInterrupt:
+            raise
         except Exception:                 # noqa: PIE786
             # PP sometimes fails with an exception.
             log(f'probablepeople failed for {name}')
@@ -227,8 +227,8 @@ def split_name(name):
                 surname = parsed.get('LastInitial').title()
             else:
                 surname = parsed.get('Surname', '')
-        except KeyboardInterrupt as ex:
-            raise ex
+        except KeyboardInterrupt:
+            raise
         except Exception:                   # noqa: PIE786
             log(f'switching to nameparser b/c probablepeople failed on "{name}"')
             from nameparser import HumanName
@@ -316,8 +316,8 @@ def _load_spacy(charset):
     try:
         log(f'try to load spaCy model {model} – this may some time')
         _NLP[charset] = spacy.load(model)
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except OSError:
         log(f'spaCy {model} not yet installed, so doing one-time download')
         if _successful_spacy_download(model):
@@ -333,8 +333,8 @@ def _successful_spacy_download(model):
     from subprocess import SubprocessError
     try:
         download(model)
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except (FileNotFoundError, SubprocessError) as ex:
         log(f'error trying to download spaCy model {model}: {str(ex)}')
     else:

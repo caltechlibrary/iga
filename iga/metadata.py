@@ -190,8 +190,8 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
         codemeta_file = github_repo_file(repo, 'codemeta.json')
         try:
             repo.codemeta = json5.loads(codemeta_file)
-        except KeyboardInterrupt as ex:
-            raise ex
+        except KeyboardInterrupt:
+            raise
         except ValueError:
             from iga.json_utils import partial_json
             log('CodeMeta content has syntactic errors; trying alternate parser')
@@ -203,8 +203,8 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
             import yaml
             try:
                 repo.cff = yaml.safe_load(github_repo_file(repo, name))
-            except KeyboardInterrupt as ex:
-                raise ex
+            except KeyboardInterrupt:
+                raise
             except Exception as ex:     # noqa PIE786
                 log(f'ignoring {name} file because of error: ' + str(ex))
             break
@@ -240,8 +240,8 @@ def metadata_from_file(file):
         log(f'reading metadata provided in file {str(file)}')
         content = file.read().strip()
         metadata = json5.loads(content)
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except Exception as ex:             # noqa PIE786
         log(f'problem trying to read metadata from {str(file)}: ' + str(ex))
         return False

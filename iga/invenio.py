@@ -74,14 +74,16 @@ def invenio_api_available(server_url):
             data = response.json()
             record = data.get('hits', {}).get('hits', {})[0]
             return record['metadata']['publisher']
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except socket.error:
         log(f'{server_url} did not respond')
         return False
     except commonpy.exceptions.CommonPyException as ex:
         log(f'trying to get {server_url}{endpoint} produced an error: ' + str(ex))
         return False
+    except Exception:
+        raise
     log(f'failed to reach server {server_url}')
     return False
 
@@ -131,11 +133,14 @@ def invenio_upload(record, asset, print_status):
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
         try:
             response = network('get', asset)
-        except KeyboardInterrupt as ex:
-            raise ex
+        except KeyboardInterrupt:
+            raise
         except commonpy.exceptions.CommonPyException:
             raise InvenioRDMError(f'Failed to download GitHub asset {asset} and'
                                   ' therefore cannot attach it to the record.')
+        except Exception:
+            raise
+
         print_status('done')
         content = response.content
         size = humanize.naturalsize(len(content))
@@ -307,13 +312,15 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'got response:\n{json.dumps(response_json, indent=2)}')
         return response_json
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except commonpy.exceptions.NoContent:
         log(f'got no content for {endpoint}')
         return None
     except commonpy.exceptions.CommonPyException as ex:
         raise InvenioRDMError(f'Failed to {msg}: {str(ex)}')
+    except Exception:
+        raise
 
 
 def _network_timeout(data):

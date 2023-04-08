@@ -40,8 +40,8 @@ def partial_json(content, skip_line=None, recursion=0):
         content = '\n'.join(content)
     try:
         return dict(dirtyjson.loads(content))
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except dirtyjson.error.Error as ex:
         # Do we have a line number?
         log('error parsing JSON: ' + str(ex))

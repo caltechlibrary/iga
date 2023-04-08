@@ -26,8 +26,8 @@ def without_html(text):
     from lxml import html
     try:
         return html.fromstring(text).text_content().strip()
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except Exception:                   # noqa PIE786
         return text
 

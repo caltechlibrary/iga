@@ -17,6 +17,7 @@ from   sidetrack import log
 
 from   iga.id_utils import detected_id
 from   iga.exceptions import InternalError
+
 
 # Internal module constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,8 +87,8 @@ def ror_data(rorid):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'data received for {rorid} from ror.org:\n{str(data)}')
         return data
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except commonpy.exceptions.NoContent:
         log(f'ROR.org returned no result for "{rorid}"')
     except commonpy.exceptions.CommonPyException as ex:
@@ -95,4 +96,6 @@ def ror_data(rorid):
     except json.JSONDecodeError as ex:
         # This means we have to fix something.
         raise InternalError('Error trying to decode JSON from ror.org: ' + str(ex))
+    except Exception:
+        raise
     return ''

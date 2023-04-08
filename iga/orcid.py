@@ -109,8 +109,8 @@ def orcid_data(orcid):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'data received for {orcid} from orcid.org:\n{str(data)}')
         return data
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except commonpy.exceptions.NoContent:
         log(f'orcid.org returned no result for "{orcid}"')
     except commonpy.exceptions.CommonPyException as ex:

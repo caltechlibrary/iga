@@ -89,8 +89,8 @@ def reference_from_doi(doi):
         text = without_html(response.text)
         _CACHE[cache_key] = text
         return text
-    except KeyboardInterrupt as ex:
-        raise ex
+    except KeyboardInterrupt:
+        raise
     except commonpy.exceptions.NoContent:
         log(f'CrossRef returned no result for "{doi}"')
     except commonpy.exceptions.CommonPyException as ex:
@@ -98,6 +98,8 @@ def reference_from_doi(doi):
     except json.JSONDecodeError as ex:
         # This means we have to fix something.
         raise InternalError('Error trying to decode JSON from CrossRef: ' + str(ex))
+    except Exception:
+        raise
     return ''
 
 
