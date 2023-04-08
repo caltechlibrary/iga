@@ -115,8 +115,10 @@ def reference_from_bibtex(bibtex_string):
     else:
         log('loading pybtex plugins')
 
-        # This requires pip install pybtex-apa7-style.
-        apa_style = find_plugin('pybtex.style.formatting', 'apa7')()
+        # Currently have to use our own patched version of pybtex-apa7-style.
+        # apa_style = find_plugin('pybtex.style.formatting', 'apa7')()
+        from .vendor.pybtex_apa7_style.formatting.apa import APAStyle
+        apa_style = APAStyle()
         plain_text = find_plugin('pybtex.backends', 'text')()
         _CACHE['apa_style'] = apa_style
         _CACHE['plain_text'] = plain_text
