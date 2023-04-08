@@ -1,10 +1,14 @@
 # Change log for iga
 
-## Version 0.0.4
+## Version 0.0.4 (2023-04-07)
 
 This release works around the problem that PyPI rejects packages that have `requirements.txt` containing direct references to packages outside of PyPI. Two of our dependencies are directly affected by this:
 * It prevents us from having our `requirements.txt` install our [patched version of `pybtex-apa7-style`](https://github.com/caltechlibrary/pybtex-apa7-style) unless we also release that package on PyPI. Doing so is undesirable, so we have to vendor the package within IGA's codebase. (A detailed explanation of the problem can be found in the [README file in `iga/vendor`](./iga/vendor/README.md).
 * SpaCy models are only available from spaCy's GitHub repository and not as packages installable using `pip`. Since we can't have them as direct references in our `requirements.txt` file, IGA has to download spaCy models it needs at run-time the first time it needs them. The change to IGA means that we take a huge (but thankfully one-time) performance hit the first time spaCy is needed, but at least it'll happen only once and not again on subsequent runs of IGA.
+
+Other changes in this release:
+* Update the versions of some dependencies in `requirements.txt`.
+* Improve trapping and reporting of internal errors during network calls.
 
 
 ## Version 0.0.3 (2023-04-06)
