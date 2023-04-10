@@ -59,9 +59,9 @@ class GitHubRepo(SimpleNamespace):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
         self.owner = GitHubAccount(repo_dict['owner'])
-        if repo_dict.get('organization', None):
+        if repo_dict.get('organization'):
             self.organization = GitHubAccount(repo_dict['organization'])
-        if repo_dict.get('license', None):
+        if repo_dict.get('license'):
             self.license = GitHubLicense(repo_dict['license'])
         # Save the original data for debugging purposes.
         self._json_dict = repo_dict

@@ -105,7 +105,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
     If the value is "help", this function prints help text and causes the
     program to exit.
     '''
-    if ctx.params.get('url_or_tag', None) == 'help':
+    if ctx.params.get('url_or_tag') == 'help':
         _print_help_and_exit(ctx)
     elif value:
         log(f'using CLI option "--{param.name} {value}" for the {thing}')

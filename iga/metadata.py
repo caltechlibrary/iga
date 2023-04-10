@@ -246,7 +246,7 @@ def metadata_from_file(file):
         log(f'problem trying to read metadata from {str(file)}: ' + str(ex))
         return False
 
-    if not metadata.get('metadata', {}):
+    if 'metadata' not in metadata:
         log('record lacks a "metadata" field')
         return None
 
@@ -920,7 +920,7 @@ def related_identifiers(repo, release, include_all):
     # equivalent in the relations CV in InvenioRDM. Since the direction is
     # "this release" --> relatedLink --> "something", the closest relationship
     # term seems to be "references", as in "this release references this link".
-    if links := listified(repo.codemeta.get('relatedLink', None)):
+    if links := listified(repo.codemeta.get('relatedLink')):
         log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
         for url in filter(lambda x: validators.url(x), links):
             url = normalized_url(url)
@@ -965,7 +965,7 @@ def resource_type(repo, release, include_all):
     '''
     # The only clear source of info about whether this is software or data is
     # the CFF file field "type", so if we can't use that, default to software.
-    if repo.cff.get('type', '') == 'dataset':
+    if repo.cff.get('type') == 'dataset':
         log('using CFF "type" as "resource_type" (and it is "dataset")')
         return {'id': 'dataset'}
     else:

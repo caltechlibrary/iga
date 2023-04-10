@@ -57,9 +57,9 @@ def _doi_for_pubmed(pub_id, scheme):
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'data received for {scheme} "{pub_id}" from NCBI:\n{str(data)}')
         with suppress(KeyError, IndexError):
-            if doi := data['records'][0].get('doi', ''):
+            if doi := data['records'][0].get('doi'):
                 return doi
-            elif errmsg := data['records'][0].get('errmsg', ''):
+            elif errmsg := data['records'][0].get('errmsg'):
                 log(f'NCBI returned an error for {pub_id}: ' + errmsg)
             else:
                 log(f'did not get a DOI or error message for {pub_id} from NCBI')

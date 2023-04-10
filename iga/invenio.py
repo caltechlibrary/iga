@@ -231,7 +231,7 @@ def invenio_vocabulary(vocab):
     # case we ever do in the future, this code tries to get everything at once.
     endpoint = '/api/vocabularies/' + vocab + '?size=10000'
     result = _invenio('get', endpoint=endpoint, msg=f'get vocabulary {vocab}')
-    if hits := result.get('hits', {}):
+    if hits := result.get('hits'):
         # This is not a mistake; it really is a nested 'hits' dictionary.
         num_items = len(hits['hits'])
         log(f'received {num_items} items for vocabulary "{vocab}"')
@@ -332,7 +332,7 @@ def _network_timeout(data):
     heuristic invented by the author based on his experiences with a
     slowish network.
     '''
-    if given_timeout := os.environ.get('IGA_NETWORK_TIMEOUT', None):
+    if given_timeout := os.environ.get('IGA_NETWORK_TIMEOUT'):
         # Assume that the main cli() has done sanity-checking on the value.
         timeout = int(given_timeout)
     else:
