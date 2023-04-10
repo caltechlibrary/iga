@@ -1324,9 +1324,9 @@ def _org_from_dict(data):
     # Hopefully it has a name field or id. If it doesn't, we can't do anything
     # more anyway, and will end up with an empty structure.
     org = {}
-    if id := detected_id(data.get('@id', '')):  # noqa A001
-        if recognized_scheme(id) == 'ror':
-            org = {'id': detected_id(data)}
+    id = detected_id(data.get('@id', ''))  # noqa A001
+    if recognized_scheme(id) == 'ror':
+        org = {'id': detected_id(data)}
     elif name := (data.get('legalName', '') or data.get('name', '')):
         # In CFF the field name is 'legalName'. In CodeMeta it's 'name'.
         org = {'name': flattened_name(name)}
