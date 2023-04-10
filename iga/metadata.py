@@ -737,7 +737,7 @@ def identifiers(repo, release, include_all):
                                 'scheme': kind})
         else:
             log(f'skipping due to unsupported identifier type: {value}')
-    return identifiers
+    return deduplicated(identifiers)
 
 
 def languages(repo, release, include_all):
