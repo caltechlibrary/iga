@@ -28,7 +28,7 @@ TEST := $(foreach p,$(programs_needed),\
 	  $(if $(shell which $(p)),_,$(error Cannot find program "$(p)")))
 
 # Set some basic variables.  These are quick to set; we set additional
-# variables using "set-vars" but only when the others are needed.
+# variables using "vars" but only when the others are needed.
 
 name     := $(strip $(shell awk -F "=" '/^name/ {print $$2}' setup.cfg))
 version  := $(strip $(shell awk -F "=" '/^version/ {print $$2}' setup.cfg))
@@ -162,12 +162,12 @@ install:
 
 release: | test-branch release-on-github print-instructions
 
-test-branch: vars
+test-branch:
 ifneq ($(branch),main)
 	$(error Current git branch != main. Merge changes into main first!)
 endif
 
-update-init: vars
+update-init:
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
 	@sed -i .bak -e "s|^\(__description__ *=\).*|\1 '$(desc)'|" $(initfile)
 	@sed -i .bak -e "s|^\(__url__ *=\).*|\1 '$(url)'|"	    $(initfile)
@@ -175,26 +175,26 @@ update-init: vars
 	@sed -i .bak -e "s|^\(__email__ *=\).*|\1 '$(email)'|"	    $(initfile)
 	@sed -i .bak -e "s|^\(__license__ *=\).*|\1 '$(license)'|"  $(initfile)
 
-update-meta: vars
+update-meta:
 	$(eval date := $(shell date "+%F"))
 	@sed -i .bak -e "/version/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" codemeta.json
 	@sed -i .bak -e "/softwareVersion/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" codemeta.json
 	@sed -i .bak -e "/datePublished/ s/[0-9][0-9-]*/$(date)/" codemeta.json
 
-update-citation: vars
+update-citation:
 	$(eval date := $(shell date "+%F"))
 	@sed -i .bak -e "/^date-released/ s/[0-9][0-9-]*/$(date)/" CITATION.cff
 	@sed -i .bak -e "/^version/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" CITATION.cff
 
 edited := codemeta.json $(initfile) CITATION.cff
 
-commit-updates: vars
+commit-updates:
 	git add $(edited)
 	git diff-index --quiet HEAD $(edited) || \
 	    git commit -m"Update stored version number" $(edited)
 
-release-on-github: | vars update-init update-meta update-citation commit-updates
-	$(eval tmp_file  := $(shell mktemp /tmp/release-notes-$(name).XXXX))
+release-on-github: | update-init update-meta update-citation commit-updates
+	$(eval tmp_file := $(shell mktemp /tmp/release-notes-$(name).XXXX))
 	git push -v --all
 	git push -v --tags
 	@$(info ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓)
@@ -227,7 +227,7 @@ update-doi: vars
 	git diff-index --quiet HEAD CITATION.cff || \
 	    (git commit -m"Update DOI" CITATION.cff && git push -v --all)
 
-packages: vars
+packages: | clean
 	-mkdir -p $(builddir) $(distdir)
 	python3 setup.py sdist --dist-dir $(distdir)
 	python3 setup.py bdist_wheel --dist-dir $(distdir)
@@ -240,7 +240,7 @@ packages: vars
 #  index-servers =
 #    pypi
 #    testpypi
-# 
+#
 #  [testpypi]
 #  repository = https://test.pypi.org/legacy/
 #  username = YourPyPIlogin
@@ -268,7 +268,7 @@ really-clean: clean really-clean-dist really-clean-build
 completely-clean: really-clean clean-other
 	rm -rf $(builddir) $(distdir)
 
-clean-dist: vars
+clean-dist:
 	rm -fr $(distdir)/$(name) $(distdir)/$(name)-$(version)-py3-none-any.whl
 
 really-clean-dist:;
