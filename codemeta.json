@@ -4,8 +4,8 @@
     "name": "IGA: InvenioRDM GitHub Archiver",
     "description": "The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub software releases in an InvenioRDM repository.",
     "version": "0.0.4",
-    "softwareVersion": "0.0.4",
     "datePublished": "2023-04-07",
+    "dateCreated": "2022-12-07"
     "author": [
         {
             "@type": "Person",
@@ -27,25 +27,34 @@
         }
     ],
     "funder": { 
-        "@id": "https://doi.org/10.13039/100006961",
+        "@id": "https://ror.org/05dxps055"
         "@type": "Organization",
-        "name": "California Institute of Technology Library"
-    },
-    "copyrightHolder": {
-        "@type": "Organization",
-        "name": "California Institute of Technology",
-        "email": "library@caltech.edu"
-    },
+        "name": "California Institute of Technology Library",
+    }
+    "copyrightHolder": [
+        {
+            "@id": "https://ror.org/05dxps055"
+            "@type": "Organization",
+            "name": "California Institute of Technology",
+        }
+    ],
     "copyrightYear": 2023,
     "license": "https://github.com/caltechlibrary/iga/blob/main/LICENSE",
+    "isAccessibleForFree": true,
+    "url": "https://github.com/caltechlibrary/iga",
+    "codeRepository": "https://github.com/caltechlibrary/iga",
     "readme": "https://github.com/caltechlibrary/iga/blob/main/README.md",
+    "issueTracker": "https://github.com/caltechlibrary/iga/issues",
     "softwareHelp": "https://caltechlibrary.github.io/iga",
     "releaseNotes": "https://github.com/caltechlibrary/iga/blob/main/CHANGES.md",
-    "issueTracker": "https://github.com/caltechlibrary/iga/issues",
     "downloadUrl": "https://github.com/caltechlibrary/iga/archive/main.zip",
-    "codeRepository": "https://github.com/caltechlibrary/iga",
     "relatedLink": "https://pypi.org/project/iga",
-    "isAccessibleForFree": true,
+    "programmingLanguage": {
+        "@type": "ComputerLanguage",
+        "name": "Python",
+        "version": "3.9",
+        "url": "https://www.python.org/"
+    },
     "keywords": [
         "software",
         "science",
@@ -65,12 +74,5 @@
         "GitHub Actions",
         "GitHub Automation"
     ],
-    "programmingLanguage": {
-        "@type": "ComputerLanguage",
-        "name": "Python",
-        "version": "3.9",
-        "url": "https://www.python.org/"
-    },
     "developmentStatus": "active",
-    "dateCreated": "2022-12-07"
 }
