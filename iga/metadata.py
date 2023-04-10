@@ -1265,10 +1265,10 @@ def _entity_from_dict(data, role):
     type_ = data.get('@type', '') or data.get('type', '')
     if type_.lower().strip() == 'person':
         # Deal with field name differences between CodeMeta & CFF.
-        family  = data.get('family-names', '') or data.get('familyName', '')
-        given   = data.get('given-names', '') or data.get('givenName', '')
+        family = data.get('family-names', '') or data.get('familyName', '')
+        given  = data.get('given-names', '') or data.get('givenName', '')
 
-        id = detected_id(data.get('@id', ''))
+        id = detected_id(data.get('@id', ''))            # noqa A001
         id_type = recognized_scheme(id)
 
         if not (family or given) and id_type == 'orcid':
@@ -1300,25 +1300,37 @@ def _entity_from_dict(data, role):
             person.update({'identifiers': [{'identifier': id,
                                             'scheme': id_type}]})
     else:
-        org = {'name': flattened_name(data.get('name', '')),
-               'type': 'organizational'}
+        org = _org_from_dict(data)
+        org['type'] = 'organizational'
 
     result = {}
     if person or org:
         result = {'person_or_org': person or org}
-        for affiliation in listified(data.get('affiliation', '')):
-            if isinstance(affiliation, str):
-                name = affiliation
-            elif isinstance(affiliation, dict):
-                # In CFF the field name is 'legalName'. In CodeMeta it's 'name'.
-                name = affiliation.get('legalName', '') or affiliation.get('name', '')
-            if name:
-                affiliations = result.get('affiliations', [])
-                affiliations.append({'name': flattened_name(name)})
-                result['affiliations'] = affiliations
-        if role:
-            result['role'] = {'id': role}
+    if person:
+        affiliations = []
+        for item in listified(data.get('affiliation', '')):
+            if isinstance(item, str):
+                affiliations.append({'name': flattened_name(item)})
+            elif isinstance(item, dict) and (aff := _org_from_dict(item)):
+                affiliations.append(aff)
+        if affiliations:
+            result['affiliations'] = affiliations
+    if role:
+        result['role'] = {'id': role}
     return result
+
+
+def _org_from_dict(data):
+    # Hopefully it has a name field or id. If it doesn't, we can't do anything
+    # more anyway, and will end up with an empty structure.
+    org = {}
+    if id := detected_id(data.get('@id', '')):  # noqa A001
+        if recognized_scheme(id) == 'ror':
+            org = {'id': detected_id(data)}
+    elif name := (data.get('legalName', '') or data.get('name', '')):
+        # In CFF the field name is 'legalName'. In CodeMeta it's 'name'.
+        org = {'name': flattened_name(name)}
+    return org
 
 
 def _entity_match(first, second):
