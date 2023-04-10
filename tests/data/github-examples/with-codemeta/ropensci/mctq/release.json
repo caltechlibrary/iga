@@ -1,0 +1,41 @@
+{
+  "url": "https://api.github.com/repos/ropensci/mctq/releases/93075054",
+  "assets_url": "https://api.github.com/repos/ropensci/mctq/releases/93075054/assets",
+  "upload_url": "https://uploads.github.com/repos/ropensci/mctq/releases/93075054/assets{?name,label}",
+  "html_url": "https://github.com/ropensci/mctq/releases/tag/v0.3.2",
+  "id": 93075054,
+  "author": {
+    "login": "danielvartan",
+    "id": 29462472,
+    "node_id": "MDQ6VXNlcjI5NDYyNDcy",
+    "avatar_url": "https://avatars.githubusercontent.com/u/29462472?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/danielvartan",
+    "html_url": "https://github.com/danielvartan",
+    "followers_url": "https://api.github.com/users/danielvartan/followers",
+    "following_url": "https://api.github.com/users/danielvartan/following{/other_user}",
+    "gists_url": "https://api.github.com/users/danielvartan/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/danielvartan/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/danielvartan/subscriptions",
+    "organizations_url": "https://api.github.com/users/danielvartan/orgs",
+    "repos_url": "https://api.github.com/users/danielvartan/repos",
+    "events_url": "https://api.github.com/users/danielvartan/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/danielvartan/received_events",
+    "type": "User",
+    "site_admin": false
+  },
+  "node_id": "RE_kwDOE2jY784FjDZu",
+  "tag_name": "v0.3.2",
+  "target_commitish": "main",
+  "name": "mctq 0.3.2",
+  "draft": false,
+  "prerelease": false,
+  "created_at": "2023-02-20T01:53:33Z",
+  "published_at": "2023-02-20T20:17:39Z",
+  "assets": [
+
+  ],
+  "tarball_url": "https://api.github.com/repos/ropensci/mctq/tarball/v0.3.2",
+  "zipball_url": "https://api.github.com/repos/ropensci/mctq/zipball/v0.3.2",
+  "body": "* As of this version, a decoupling process related to some `mctq` utility functions will begin. Please pay attention to the deprecation warnings listed below.\r\n* Patch changes were made to `random_mctq()` to avoid warning messages due to [`lubridate`](https://github.com/tidyverse/lubridate) package updates.\r\n* The utility functions `assign_date()`, `cycle_time()`, `round_time()`, `shorter_interval()`, `longer_interval()`, `shorter_duration()`, `longer_duration()`, `sum_time()`, and `vct_sum_time()` are now deprecated.  These functions will be removed on the next `mctq` version. You can still find them in the [`lubritime`](https://github.com/giperbio/lubritime) package.\r\n* The utility function `qplot_walk()` is now deprecated. This function will be removed on the next `mctq` version. You can still find it in the\r\n  [`gutils`](https://github.com/giperbio/gutils) package.\r\n* `qplot_walk()` now uses `ggplot2::geom_bar()` or `ggplot2::geom_histogram()` to generate plots. It used `ggplot2::qplot()` before, now deprecated.\r\n* The `ggplot2` package was added as an import. It's needed while `qplot_walk()` remains on the package and will be removed from imports in the next `mctq` version.\r\n* Mario Pedrazzoli and Ana Amelia Benedito-Silva were removed as authors. They were Scientific Advisers that helped with the initial `mctq` development, but are not part of the `mctq` project anymore.\r\n* The Interdisciplinary Sleep Research Group (GIPSO) was removed as funder. GIPSO is a research group that Mario and Daniel Vartanian have built together. Daniel (the main author and copyright holder of `mctq`) is no longer part of this group. The \"funder\" status was always symbolic.\r\n* The dependencies versions were updated."
+}
