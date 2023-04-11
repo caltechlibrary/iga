@@ -880,7 +880,7 @@ def related_identifiers(repo, release, include_all):
         identifiers.append(id_dict(sameas_url, 'isversionof', 'software'))
 
     # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
-    for help in listified(repo.codemeta.get('softwareHelp', '')):
+    for help in listified(repo.codemeta.get('softwareHelp', '')):  # noqa A001
         if isinstance(help, str) and validators.url(help):
             url = help
         elif isinstance(help, dict):
@@ -938,7 +938,7 @@ def related_identifiers(repo, release, include_all):
     # formatted as references. Here, add the id's alone.
     if reference_ids := _codemeta_reference_ids(repo) | _cff_reference_ids(repo):
         log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
-    for id in reference_ids:
+    for id in reference_ids:            # noqa A001
         # Adding id's => must recreate the list in this test each iteration.
         if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
@@ -1469,7 +1469,7 @@ def _codemeta_reference_ids(repo):
             for field in ['id', '@id', 'identifier', '@identifier']:
                 id_field = item.get(field, '')
                 if recognized_scheme(id_field):
-                    id = detected_id(id_field)
+                    id = detected_id(id_field)  # noqa A001
                     log(f'found id {id} in CodeMeta "referencePublication"')
                     identifiers.add(id)
                     break

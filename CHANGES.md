@@ -1,5 +1,10 @@
 # Change log for iga
 
+## Version 0.0.5 (2023-04-10)
+
+This release improves IGA's detection of ROR identifiers if provided for people's affiliations in `codemeta.json` files, and checks more carefully for duplicate identifiers in the "identifiers" section of the InvenioRDM metadata record.
+
+
 ## Version 0.0.4 (2023-04-07)
 
 This release works around the problem that PyPI rejects packages that have `requirements.txt` containing direct references to packages outside of PyPI. Two of our dependencies are directly affected by this:
