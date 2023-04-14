@@ -227,6 +227,15 @@ def split_name(name):
                 surname = parsed.get('LastInitial').title()
             else:
                 surname = parsed.get('Surname', '')
+        
+            # Special case where no given name is found
+            # If a space is present in surname, assume that is given/surname
+            # split point
+            if given == '':
+                if ' ' in surname:
+                    split = surname.split(' ')
+                    surname = split.pop()
+                    given = ' '.join(split)
         except KeyboardInterrupt:
             raise
         except Exception:                   # noqa: PIE786
