@@ -1077,8 +1077,8 @@ def subjects(repo, release, include_all):
     if keywords := repo.codemeta.get('keywords', []):
         log('adding CodeMeta "keywords" value(s) to "subjects"')
     if isinstance(keywords, str):
-        # Trying the ';' first, alone, is deliberate in case the values
-        # separated by semicolons have commas within them.
+        # Try the ';' first, alone, before trying ',', in case the values
+        # separated by semicolons are subject terms containing commas.
         if ';' in keywords:
             subjects.update(keywords.split(';'))
         elif ',' in keywords:
@@ -1101,11 +1101,7 @@ def subjects(repo, release, include_all):
         else:
             log(f'skipping item with unexpected format: {item}')
 
-    # Add languages as topics too.
-    if languages := github_repo_languages(repo):
-        log('adding GitHub repo languages to "subjects"')
-    for lang in languages:
-        subjects.add(lang)
+    # Add the languages listed in the CodeMeta file.
     if cm_langs := listified(repo.codemeta.get('programmingLanguage', [])):
         log('adding CodeMeta "programmingLanguage" value(s) to "subjects"')
     for item in cm_langs:
@@ -1122,6 +1118,13 @@ def subjects(repo, release, include_all):
     if include_all:
         log('adding GitHub topics to "subjects"')
         subjects.update(repo.topics)
+
+        # Add repo languages as topics too.
+        breakpoint()
+        if languages := github_repo_languages(repo):
+            log('adding GitHub repo languages to "subjects"')
+        for lang in languages:
+            subjects.add(lang)
 
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
