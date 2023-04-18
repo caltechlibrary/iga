@@ -278,7 +278,7 @@ def split_name(name):
             given = parsed.first + ' ' + parsed.middle
             surname = parsed.last
 
-    given = _upcase_first_letters(given)
+    given = _first_letters_upcased(given)
     if _plain_word(surname):
         surname = surname.title()
     surname = surname.strip()
@@ -334,7 +334,7 @@ def _plain_word(name):
                  or not any(str.isupper(c) for c in name[1:])))
 
 
-def _upcase_first_letters(name):
+def _first_letters_upcased(name):
     # Python's .title() will downcase the letters after the 1st letter, which
     # is undesired behavior for the situation where we need this.
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
