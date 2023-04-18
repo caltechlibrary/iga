@@ -35,5 +35,5 @@ If applicable, add screenshots to help explain your problem.
 
 Please include the following information:
 * Version of the software: 
-* (If relevant) the version of Python that the changes were tested against: 
-* (If relevant) the operating system and version that the changes were tested against: 
+* (If relevant) the version of Python that you are using: 
+* (If relevant) the operating system and version that you are using: 
