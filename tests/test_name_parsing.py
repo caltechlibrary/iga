@@ -78,6 +78,7 @@ PARSED_NAMES = [
     ('Christian Van Der Henst S.', Name(first='Christian', last='Van Der Henst S.')),
     ('R.I.Pienaar', Name(first='R. I.', last='Pienaar')),
     ('ara.t.howard', Name(first='Ara T.', last='Howard')),
+    ('Georges Chreifi', Name(first='Georges', last='Chreifi')),
     # ('', Name(first='', last='')),
 ]
 
