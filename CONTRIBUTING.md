@@ -2,13 +2,18 @@
 
 Any constructive contributions &ndash; bug reports, pull requests (code or documentation), suggestions for improvements, and more &ndash; are welcome.
 
+
 ## Conduct
 
 Everyone is asked to read and respect the [code of conduct](CODE_OF_CONDUCT.md) before participating in this project.
 
+
 ## Coordinating work
 
 A quick way to find out what is currently in the near-term plans for this project is to look at the [GitHub issue tracker](https://github.com/caltechlibrary/iga/issues), but the possibilities are not limited to what you see there &ndash; if you have ideas for new features and enhancements, please feel free to write them up as a new issue or contact the developers directly!
+
+New development takes place in the `develop` branch. We try to make the `main` branch reflect the latest release, meaning that what you see in the main branch reflects what you get with the lateset released version of the software.
+
 
 ## Submitting contributions
 
