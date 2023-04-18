@@ -879,6 +879,15 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "sameAs" to "related_identifiers"')
         identifiers.append(id_dict(sameas_url, 'isversionof', 'software'))
 
+    # CodeMeta's "downloadURL" and CFF's "repository-artifact" are equivalent.
+    # Watch out that CM defines it as one URL, but some people make it a list.
+    if download_url := repo.codemeta.get('downloadUrl', ''):
+        log('adding CodeMeta "downloadUrl" to "related_identifiers"')
+    elif download_url := repo.cff.get('repository-artifact', ''):
+        log('adding CFF "repository-artifact" to "related_identifiers"')
+    for url in filter(validators.url, listified(download_url)):
+        identifiers.append(id_dict(url, 'isvariantformof', 'software'))
+
     # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
     for help in listified(repo.codemeta.get('softwareHelp', '')):  # noqa A001
         if isinstance(help, str) and validators.url(help):
@@ -922,7 +931,7 @@ def related_identifiers(repo, release, include_all):
     # term seems to be "references", as in "this release references this link".
     if links := listified(repo.codemeta.get('relatedLink')):
         log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
-        for url in filter(lambda x: validators.url(x), links):
+        for url in filter(validators.url, links):
             url = normalized_url(url)
             # We don't add URLs we've already added (possibly as another type).
             # The list needs to be recreated in the loop b/c we're adding to it.
@@ -1120,7 +1129,6 @@ def subjects(repo, release, include_all):
         subjects.update(repo.topics)
 
         # Add repo languages as topics too.
-        breakpoint()
         if languages := github_repo_languages(repo):
             log('adding GitHub repo languages to "subjects"')
         for lang in languages:
