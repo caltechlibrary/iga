@@ -237,7 +237,7 @@ def split_name(name):
             has_bad_prefix = guessed_prefix not in _COMMON_PREFIXES
             has_corp_key = any(key.startswith('Corp') for key in from_pp[0].keys())
             if guessed_type != 'Person' or has_bad_prefix or has_corp_key:
-                from_pp = pp.tag(_cleaned_name(name), type='person')
+                from_pp = pp.tag(name, type='person')
                 log(f'probablepeople 2nd result: {str(from_pp)}')
                 guessed_prefix = from_pp[0].get('PrefixOther', '')
                 if guessed_prefix not in _COMMON_PREFIXES:
