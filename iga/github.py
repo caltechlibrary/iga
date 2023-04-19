@@ -22,8 +22,11 @@ from iga.exceptions import GitHubError, InternalError
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# 2023-03-27 used to include "bot" (no brackets) in this list, but then
-# discovered a real person whose last name is "Bot".
+_BASE_URL = 'https://api.github.com'
+'''Base URL for GitHub's API endpoints.'''
+
+# 2023-03-27 the following used to include "bot" (no brackets) in this list,
+# but then I discovered a real person whose last name is "Bot"!
 
 _BOT_NAME_WORDS = ['daemon', 'dependabot', 'dependabot[bot]']
 '''List of words such that, if one of the words is the last word in an account
@@ -100,8 +103,8 @@ class GitHubFile(SimpleNamespace):
 
 def github_release(account_name, repo_name, tag_name):
     '''Return a Release object corresponding to the tagged release in GitHub.'''
-    endpoint = ('https://api.github.com/repos/' + account_name
-                + '/' + repo_name + '/releases/tags/' + tag_name)
+    endpoint = (_BASE_URL + '/repos/' + account_name + '/' + repo_name
+                + '/releases/tags/' + tag_name)
     log('getting GitHub data for release at ' + endpoint)
     result = _object_for_github(endpoint, GitHubRelease)
     if not result:
@@ -112,7 +115,7 @@ def github_release(account_name, repo_name, tag_name):
 
 def github_repo(account_name, repo_name):
     '''Return a Repo object corresponding to the named repo in GitHub.'''
-    endpoint = 'https://api.github.com/repos/' + account_name + '/' + repo_name
+    endpoint = _BASE_URL + '/repos/' + account_name + '/' + repo_name
     log('getting GitHub data for repo at ' + endpoint)
     result = _object_for_github(endpoint, GitHubRepo)
     if not result:
@@ -123,7 +126,7 @@ def github_repo(account_name, repo_name):
 
 def github_account(account_name):
     '''Return an Account object corresponding to the GitHub user account.'''
-    endpoint = 'https://api.github.com/users/' + account_name
+    endpoint = _BASE_URL + '/users/' + account_name
     log('getting GitHub data for user at ' + endpoint)
     result = _object_for_github(endpoint, GitHubAccount)
     if not result:
@@ -293,7 +296,7 @@ def _github_get(endpoint):
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
     try:
         response = network('get', endpoint, headers=headers)
-        return response
+        return response                 # noqa PIE787
     except KeyboardInterrupt:
         raise
     except commonpy.exceptions.NoContent:
