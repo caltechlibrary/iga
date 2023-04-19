@@ -888,6 +888,13 @@ def related_identifiers(repo, release, include_all):
     for url in filter(validators.url, listified(download_url)):
         identifiers.append(id_dict(url, 'isvariantformof', 'software'))
 
+    # CodeMeta "installUrl" is often used to point to (when working w/ Python)
+    # the PyPI location for a program. That's basically like downloadUrl.
+    if install_url := listified(repo.codemeta.get('installUrl', '')):
+        log('adding CodeMeta "installUrl" to "related_identifiers"')
+        for url in filter(validators.url, install_url):
+            identifiers.append(id_dict(url, 'isvariantformof', 'software'))
+
     # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
     for help in listified(repo.codemeta.get('softwareHelp', '')):  # noqa A001
         if isinstance(help, str) and validators.url(help):
@@ -943,12 +950,12 @@ def related_identifiers(repo, release, include_all):
             # There's no good way to know what the resource type actually is.
             identifiers.append(id_dict(url, 'references', 'other'))
 
-    # We add CodeMeta & CFF "references" values to InvenioRDM "references" but
-    # formatted as references. Here, add the id's alone.
+    # We add CodeMeta & CFF "references" to InvenioRDM "references" elsewhere
+    # (c.f. function references()). Here we add just the identifiers.
     if reference_ids := _codemeta_reference_ids(repo) | _cff_reference_ids(repo):
         log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
     for id in reference_ids:            # noqa A001
-        # Adding id's => must recreate the list in this test each iteration.
+        # Adding id's => must recreate the list in the test on each iteration.
         if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
                                 'relation_type': {'id': 'isreferencedby'},
