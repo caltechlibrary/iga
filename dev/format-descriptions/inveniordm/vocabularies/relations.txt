@@ -26,7 +26,7 @@ isrequiredby
 issourceof
 issupplementedby
 issupplementto
-isvariantformof
+✔ isvariantformof
 ✔ isversionof
 references
 requires
