@@ -151,8 +151,8 @@ def github_repo_filenames(repo):
     '''Return a list of file information objects for the given repo object.'''
     if getattr(repo, '_filenames', None):
         return repo._filenames
-    log('asking GitHub for list of files at ' + repo.api_url)
     files_url = repo.api_url + '/git/trees/' + repo.default_branch
+    log('asking GitHub for list of files at ' + files_url)
     response = _github_get(files_url)
     if not response:
         log(f'did not get a list of file names for {repo}')
@@ -168,12 +168,12 @@ def github_repo_filenames(repo):
 
 def github_repo_file(repo, filename):
     '''Return the text contents of the named file in the repo object.'''
-    if filename not in github_repo_filenames(repo):
-        log(f'{filename} not found in the files of {repo}')
-        return ''
     if filename in getattr(repo, '_files_contents', {}):
         log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
+    if filename not in github_repo_filenames(repo):
+        log(f'{filename} not found in the files of {repo}')
+        return ''
     log(f'getting contents of file {filename} from GitHub repo {repo.full_name}')
     file = next(f for f in repo._files if f.path == filename)
     response = _github_get(file.url)
