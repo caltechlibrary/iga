@@ -53,11 +53,11 @@ _NON_PERSON_ELEMENTS = {
 _NLP = {}
 '''Cache for the spaCy model so that we don't have to load it more than once.'''
 
-_ORGANIZATIONS = CaseFoldSet()
-'''Set of well-known company names.'''
+_ORGANIZATIONS = {}
+'''Cache for the set of well-known company names.'''
 
-_ORGANIZATIONS_FILENAMES = ['famous-orgs.txt', 'github-orgs.txt']
-'''List of files in iga/data containing organization names.'''
+_ORGANIZATIONS_FILENAME = 'org-names.p'
+'''Pickled CaseFoldSet in iga/data containing organization names.'''
 
 _COMMON_PREFIXES = [
     '',
@@ -341,13 +341,13 @@ def _first_letters_upcased(name):
 
 
 def _load_organizations():
+    global _ORGANIZATIONS
     from os.path import dirname, abspath, join
+    import pickle
+    log(f'loading data/{_ORGANIZATIONS_FILENAME} – this may take some time')
     here = dirname(abspath(__file__))
-    for file in _ORGANIZATIONS_FILENAMES:
-        log(f'loading data/{file} – this may take a little while')
-        with open(join(here, f'data/{file}'), 'r') as f:
-            for line in f.readlines():
-                _ORGANIZATIONS.add(_cleaned_name(line))
+    with open(join(here, f'data/{_ORGANIZATIONS_FILENAME}'), 'rb') as f:
+        _ORGANIZATIONS = pickle.load(f)
 
 
 def _load_spacy(charset):
