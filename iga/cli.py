@@ -353,14 +353,14 @@ def _list_communities(ctx, param, value):
 #
 @click.option('--log-dest', '-l', metavar='FILE', callback=_config_log,
               type=File('w', lazy=False), expose_value=False, is_eager=True,
-              help='Send log output to _FILE_ (use `-` for stdout)')
+              help='Send log output to _FILE_ (use "`-`" for stdout)')
 #
 @click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
-@click.option('--open', '-O', is_flag=True,
-              help='Open the finished record in the default web browser')
+@click.option('--open', '-O', 'open_in_browser', is_flag=True,
+              help='Open the finished record in your web browser')
 #
 @click.option('--read-record', '-R', 'source', metavar='FILE', type=File('r'),
               help='Read metadata record from _FILE_; don\'t build one')
@@ -378,9 +378,10 @@ def _list_communities(ctx, param, value):
 @click.pass_context
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
         files_to_upload=None, account=None, repo=None, github_token=None,
-        server=None, invenio_token=None, list_communities=False, open=False,
-        log_dest=None, mode='normal', all_metadata=False, source=None,
-        dest=None, timeout=None, help=False, version=False):  # noqa A002
+        server=None, invenio_token=None, list_communities=False,
+        open_in_browser=False, log_dest=None, mode='normal',
+        all_metadata=False, source=None, dest=None, timeout=None,
+        help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
 IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
@@ -637,7 +638,7 @@ possible values:
         if os.environ.get('IGA_RUN_MODE') == 'quiet':
             # In quiet mode nothing else will be printed, so we finish with this
             click.echo(record.record_url or record.draft_url)
-        if open:
+        if open_in_browser:
             log('opening {record.record_url or record.draft_url}')
             click.launch(record.record_url or record.draft_url)
     except KeyboardInterrupt:
