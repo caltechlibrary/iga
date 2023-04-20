@@ -191,7 +191,7 @@ As explain above, IGA takes one required argument on the command line: either (1
 | `--list-communities`   | `-L`     | List communities available for use with `--community` | | |
 | `--log-dest` _L_       | `-l` _L_ | Write log output to destination _L_ | Write to terminal | ⚐ |
 | `--mode` _M_           | `-m` _M_ | Run in mode `quiet`, `normal`, `verbose`, or `debug` | `normal` | |
-| `--open`               | `-O`     | Open record's RDM web page in a browser when done | Do nothing when done | |
+| `--open`               | `-o`     | Open record's RDM web page in a browser when done | Do nothing when done | |
 | `--read-record` _R_    | `-R` _R_ | Read metadata record from _R_; don\'t build one | Build metadata record | |
 | `--save-record` _D_    | `-S` _D_ | Save metadata record to _D_; don\'t upload it | Upload to InvenioRDM server | |
 | `--timeout` _X_        | `-T` _X_ | Wait on network operations a max of _X_ seconds | Auto-adjusted based on file size | |

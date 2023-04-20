@@ -359,7 +359,7 @@ def _list_communities(ctx, param, value):
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
-@click.option('--open', '-O', 'open_in_browser', is_flag=True,
+@click.option('--open', '-o', 'open_in_browser', is_flag=True,
               help='Open the finished record in your web browser')
 #
 @click.option('--read-record', '-R', 'source', metavar='FILE', type=File('r'),
