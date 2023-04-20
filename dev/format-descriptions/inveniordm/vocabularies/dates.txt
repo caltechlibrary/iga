@@ -1,0 +1,11 @@
+accepted
+available
+collected
+copyrighted
+created
+issued
+other
+submitted
+updated
+valid
+withdrawn

@@ -337,7 +337,6 @@ without doing anything else.
         details = ''.join(traceback.format_exception(*exception))
         log('exception: ' + str(ex) + '\n\n' + details)
         _alert(ctx, 'Experienced an unrecoverable error: ' + str(ex), False)
-        breakpoint()
     sys.exit(exit_code)
 
 

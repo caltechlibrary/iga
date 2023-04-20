@@ -53,11 +53,35 @@ _NON_PERSON_ELEMENTS = {
 _NLP = {}
 '''Cache for the spaCy model so that we don't have to load it more than once.'''
 
-_ORGANIZATIONS = CaseFoldSet()
-'''Set of well-known company names.'''
+_ORGANIZATIONS = {}
+'''Cache for the set of well-known company names.'''
 
-_ORGANIZATIONS_FILENAMES = ['famous-orgs.txt', 'github-orgs.txt']
-'''List of files in iga/data containing organization names.'''
+_ORGANIZATIONS_FILENAME = 'org-names.p'
+'''Pickled CaseFoldSet in iga/data containing organization names.'''
+
+_COMMON_PREFIXES = [
+    '',
+    'Dame',
+    'Dr',
+    'Fr',
+    'Imām',
+    'Lady',
+    'Lord',
+    'Messrs',
+    'Miss',
+    'Mr',
+    'Mrs',
+    'Ms',
+    'Mx',
+    'Pr',
+    'Prof',
+    'Professor',
+    'Rabbi',
+    'Revd',
+    'Roshi',
+    'Sensei',
+    'Sir',
+]
 
 
 # Exported module functions.
@@ -202,40 +226,48 @@ def split_name(name):
         try:
             log('trying to split name using probablepeople')
             import probablepeople as pp
-            from_pp = pp.tag(name)
+
             # PP gets better results if you DON'T supply the 'type' parameter.
-            # (I don't know why.) Use that 1st, unless it guesses wrong about
-            # the type, in which case, we run it again using type=person.
-            if from_pp[1] != 'Person':
-                from_pp = pp.tag(_cleaned_name(name), type='person')
+            # (I don't know why.) Try it that way first, let it guess the type,
+            # and if it guesses wrong, try it again but with the type that time.
+            from_pp = pp.tag(name)
+            log(f'probablepeople initial result: {str(from_pp)}')
+            guessed_type = from_pp[1]
+            guessed_prefix = from_pp[0].get('PrefixOther', '')
+            has_bad_prefix = guessed_prefix not in _COMMON_PREFIXES
+            has_corp_key = any(key.startswith('Corp') for key in from_pp[0].keys())
+            if guessed_type != 'Person' or has_bad_prefix or has_corp_key:
+                from_pp = pp.tag(name, type='person')
+                log(f'probablepeople 2nd result: {str(from_pp)}')
+                guessed_prefix = from_pp[0].get('PrefixOther', '')
+                if guessed_prefix not in _COMMON_PREFIXES:
+                    # This is a sign something is still wrong. Give up on PP.
+                    raise Exception
             parsed = from_pp[0]
+
             # If it found initials instead of full names, use those.
-            if parsed.get('FirstInitial', ''):
+            if parsed.get('FirstInitial'):
                 given = parsed.get('FirstInitial')
             else:
                 # Get rid of periods at the end, in case someone got cute.
                 given = parsed.get('GivenName', '').rstrip('.')
 
-            # For some reason, it seems the InvenioRDM records include the
-            # middle names as part of the first/given names, so:
-            if parsed.get('MiddleInitial', ''):
-                given += (' ' + parsed.get('MiddleInitial'))
-            elif parsed.get('MiddleName', ''):
-                given += (' ' + parsed.get('MiddleName'))
+            # InvenioRDM wants middle names to be part of the first/given names:
+            if middle := (parsed.get('MiddleInitial') or parsed.get('MiddleName')):
+                given += (' ' + middle)
 
-            if parsed.get('LastInitial', '') and not parsed.get('Surname', ''):
-                surname = parsed.get('LastInitial').title()
+            # If we only have a last initial, then that's all we can use.
+            if parsed.get('LastInitial') and not parsed.get('Surname'):
+                surname = parsed.get('LastInitial', '').title()
             else:
                 surname = parsed.get('Surname', '')
-        
-            # Special case where no given name is found
-            # If a space is present in surname, assume that is given/surname
-            # split point
-            if given == '':
-                if ' ' in surname:
-                    split = surname.split(' ')
-                    surname = split.pop()
-                    given = ' '.join(split)
+
+            # If we didn't find a given name but the surname has a space, use
+            # it as a split point & take all but last word as the given name.
+            if not given and ' ' in surname:
+                split = surname.split(' ')
+                surname = split.pop()
+                given = ' '.join(split)
         except KeyboardInterrupt:
             raise
         except Exception:                   # noqa: PIE786
@@ -246,7 +278,7 @@ def split_name(name):
             given = parsed.first + ' ' + parsed.middle
             surname = parsed.last
 
-    given = _upcase_first_letters(given)
+    given = _first_letters_upcased(given)
     if _plain_word(surname):
         surname = surname.title()
     surname = surname.strip()
@@ -302,20 +334,20 @@ def _plain_word(name):
                  or not any(str.isupper(c) for c in name[1:])))
 
 
-def _upcase_first_letters(name):
+def _first_letters_upcased(name):
     # Python's .title() will downcase the letters after the 1st letter, which
     # is undesired behavior for the situation where we need this.
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
 
 
 def _load_organizations():
+    global _ORGANIZATIONS
     from os.path import dirname, abspath, join
+    import pickle
+    log(f'loading data/{_ORGANIZATIONS_FILENAME} – this may take some time')
     here = dirname(abspath(__file__))
-    for file in _ORGANIZATIONS_FILENAMES:
-        log(f'loading data/{file} – this may take a little while')
-        with open(join(here, f'data/{file}'), 'r') as f:
-            for line in f.readlines():
-                _ORGANIZATIONS.add(_cleaned_name(line))
+    with open(join(here, f'data/{_ORGANIZATIONS_FILENAME}'), 'rb') as f:
+        _ORGANIZATIONS = pickle.load(f)
 
 
 def _load_spacy(charset):

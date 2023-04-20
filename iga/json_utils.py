@@ -36,7 +36,7 @@ def partial_json(content, skip_line=None, recursion=0):
         # This is an embarrassingly simple-minded approach. Maybe someday we
         # can make something better and more performant, but for now ...
         content = content.split('\n')
-        content = content[:skip_line - 1] + content[skip_line:]
+        content = content[:skip_line - 2] + content[skip_line - 1:]
         content = '\n'.join(content)
     try:
         return dict(dirtyjson.loads(content))

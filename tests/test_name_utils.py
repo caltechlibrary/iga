@@ -9,7 +9,7 @@
 from iga.name_utils import (
     _cleaned_name,
     _plain_word,
-    _upcase_first_letters,
+    _first_letters_upcased,
     contains_cjk,
     flattened_name,
 )
@@ -51,10 +51,10 @@ def test_plain_word():
 
 
 def test_upcase_first_letter():
-    assert _upcase_first_letters('aBC dEF') == 'ABC DEF'
-    assert _upcase_first_letters('Abc Def') == 'Abc Def'
-    assert _upcase_first_letters('abc def') == 'Abc Def'
-    assert _upcase_first_letters('abc DEF') == 'Abc DEF'
-    assert _upcase_first_letters('abc dEF') == 'Abc DEF'
-    assert _upcase_first_letters('a') == 'A'
-    assert _upcase_first_letters('A') == 'A'
+    assert _first_letters_upcased('aBC dEF') == 'ABC DEF'
+    assert _first_letters_upcased('Abc Def') == 'Abc Def'
+    assert _first_letters_upcased('abc def') == 'Abc Def'
+    assert _first_letters_upcased('abc DEF') == 'Abc DEF'
+    assert _first_letters_upcased('abc dEF') == 'Abc DEF'
+    assert _first_letters_upcased('a') == 'A'
+    assert _first_letters_upcased('A') == 'A'

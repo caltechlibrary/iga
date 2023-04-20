@@ -266,7 +266,7 @@ clean: clean-dist clean-build clean-release clean-other
 really-clean: clean really-clean-dist really-clean-build
 
 completely-clean: really-clean clean-other
-	rm -rf $(builddir) $(distdir)
+	rm -rf dist build
 
 clean-dist:
 	rm -fr $(distdir)/$(name) $(distdir)/$(name)-$(version)-py3-none-any.whl

@@ -40,7 +40,7 @@ def mocked_github_repo(account_name, repo_name):
     log(f'returing mocked GitHubRepo for {repo_name}')
     with open(path.join(repo_dir, 'repo.json'), 'r') as f:
         repo = GitHubRepo(json5.loads(f.read()))
-        repo._files = mocked_github_repo_filenames(repo_name)
+        repo._files = mocked_github_repo_filenames(repo_name, 'faketag')
         return repo
 
 
@@ -50,13 +50,13 @@ def mocked_github_release(account_name, repo_name, tag_name):
         return GitHubRelease(json5.loads(f.read()))
 
 
-def mocked_github_repo_filenames(repo):
+def mocked_github_repo_filenames(repo, tag_name):
     log('returing mocked filenames list')
     with open(path.join(repo_dir, 'filenames.json'), 'r') as f:
         return json5.loads(f.read())
 
 
-def mocked_github_repo_file(repo, filename):
+def mocked_github_repo_file(repo, tag_name, filename):
     log(f'returing mocked file contents for {filename}')
     with open(path.join(repo_dir, filename), 'r') as f:
         return f.read()

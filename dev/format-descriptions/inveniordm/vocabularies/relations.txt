@@ -1,0 +1,32 @@
+cites
+compiles
+continues
+describes
+documents
+haspart
+hasversion
+iscompiledby
+iscontinuedby
+isnewversionof
+isobsoletedby
+isoriginalformof
+ispreviousversionof
+isreviewedby
+obsoletes
+reviews
+
+iscitedby
+✔ isderivedfrom
+✔ isdescribedby
+✔ isdocumentedby
+✔ isidenticalto
+ispartof
+✔ isreferencedby
+isrequiredby
+issourceof
+issupplementedby
+issupplementto
+✔ isvariantformof
+✔ isversionof
+references
+requires

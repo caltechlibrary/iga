@@ -185,9 +185,9 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     # repo object with them so that field extraction functions can access them.
     repo.codemeta = {}
     repo.cff = {}
-    filenames = github_repo_filenames(repo)
+    filenames = github_repo_filenames(repo, tag)
     if 'codemeta.json' in filenames:
-        codemeta_file = github_repo_file(repo, 'codemeta.json')
+        codemeta_file = github_repo_file(repo, tag, 'codemeta.json')
         try:
             repo.codemeta = json5.loads(codemeta_file)
         except KeyboardInterrupt:
@@ -202,7 +202,7 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
         if name in filenames:
             import yaml
             try:
-                repo.cff = yaml.safe_load(github_repo_file(repo, name))
+                repo.cff = yaml.safe_load(github_repo_file(repo, tag, name))
             except KeyboardInterrupt:
                 raise
             except Exception as ex:     # noqa PIE786
@@ -879,6 +879,22 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "sameAs" to "related_identifiers"')
         identifiers.append(id_dict(sameas_url, 'isversionof', 'software'))
 
+    # CodeMeta's "downloadURL" and CFF's "repository-artifact" are equivalent.
+    # Watch out that CM defines it as one URL, but some people make it a list.
+    if download_url := repo.codemeta.get('downloadUrl', ''):
+        log('adding CodeMeta "downloadUrl" to "related_identifiers"')
+    elif download_url := repo.cff.get('repository-artifact', ''):
+        log('adding CFF "repository-artifact" to "related_identifiers"')
+    for url in filter(validators.url, listified(download_url)):
+        identifiers.append(id_dict(url, 'isvariantformof', 'software'))
+
+    # CodeMeta "installUrl" is often used to point to (when working w/ Python)
+    # the PyPI location for a program. That's basically like downloadUrl.
+    if install_url := listified(repo.codemeta.get('installUrl', '')):
+        log('adding CodeMeta "installUrl" to "related_identifiers"')
+        for url in filter(validators.url, install_url):
+            identifiers.append(id_dict(url, 'isvariantformof', 'software'))
+
     # CodeMeta softwareHelp type is CreativeWork but sometimes people use URLs.
     for help in listified(repo.codemeta.get('softwareHelp', '')):  # noqa A001
         if isinstance(help, str) and validators.url(help):
@@ -922,7 +938,7 @@ def related_identifiers(repo, release, include_all):
     # term seems to be "references", as in "this release references this link".
     if links := listified(repo.codemeta.get('relatedLink')):
         log('adding CodeMeta "relatedLink" URL value(s) to "related_identifiers"')
-        for url in filter(lambda x: validators.url(x), links):
+        for url in filter(validators.url, links):
             url = normalized_url(url)
             # We don't add URLs we've already added (possibly as another type).
             # The list needs to be recreated in the loop b/c we're adding to it.
@@ -934,12 +950,12 @@ def related_identifiers(repo, release, include_all):
             # There's no good way to know what the resource type actually is.
             identifiers.append(id_dict(url, 'references', 'other'))
 
-    # We add CodeMeta & CFF "references" values to InvenioRDM "references" but
-    # formatted as references. Here, add the id's alone.
+    # We add CodeMeta & CFF "references" to InvenioRDM "references" elsewhere
+    # (c.f. function references()). Here we add just the identifiers.
     if reference_ids := _codemeta_reference_ids(repo) | _cff_reference_ids(repo):
         log('adding id\'s of CodeMeta & CFF references to "related_identifiers"')
     for id in reference_ids:            # noqa A001
-        # Adding id's => must recreate the list in this test each iteration.
+        # Adding id's => must recreate the list in the test on each iteration.
         if id not in [detected_id(item['identifier']) for item in identifiers]:
             identifiers.append({'identifier': id,
                                 'relation_type': {'id': 'isreferencedby'},
@@ -1040,7 +1056,7 @@ def rights(repo, release, include_all):
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
-    filenames = github_repo_filenames(repo)
+    filenames = github_repo_filenames(repo, release.tag_name)
     for basename in ['LICENSE', 'License', 'license',
                      'LICENCE', 'Licence', 'licence',
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
@@ -1077,8 +1093,8 @@ def subjects(repo, release, include_all):
     if keywords := repo.codemeta.get('keywords', []):
         log('adding CodeMeta "keywords" value(s) to "subjects"')
     if isinstance(keywords, str):
-        # Trying the ';' first, alone, is deliberate in case the values
-        # separated by semicolons have commas within them.
+        # Try the ';' first, alone, before trying ',', in case the values
+        # separated by semicolons are subject terms containing commas.
         if ';' in keywords:
             subjects.update(keywords.split(';'))
         elif ',' in keywords:
@@ -1101,11 +1117,7 @@ def subjects(repo, release, include_all):
         else:
             log(f'skipping item with unexpected format: {item}')
 
-    # Add languages as topics too.
-    if languages := github_repo_languages(repo):
-        log('adding GitHub repo languages to "subjects"')
-    for lang in languages:
-        subjects.add(lang)
+    # Add the languages listed in the CodeMeta file.
     if cm_langs := listified(repo.codemeta.get('programmingLanguage', [])):
         log('adding CodeMeta "programmingLanguage" value(s) to "subjects"')
     for item in cm_langs:
@@ -1122,6 +1134,12 @@ def subjects(repo, release, include_all):
     if include_all:
         log('adding GitHub topics to "subjects"')
         subjects.update(repo.topics)
+
+        # Add repo languages as topics too.
+        if languages := github_repo_languages(repo):
+            log('adding GitHub repo languages to "subjects"')
+        for lang in languages:
+            subjects.add(lang)
 
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 

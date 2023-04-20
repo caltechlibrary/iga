@@ -1,4 +1,0 @@
-alternative-title
-subtitle
-translated-title
-other

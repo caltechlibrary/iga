@@ -182,43 +182,42 @@ exit without doing anything else.
     error = None
     exit_code = 0
     while retry < _MAX_RETRIES:
-        try:
-            start, end = _write_org_names(start, end, output, token)
-        except KeyboardInterrupt:
+        start, end, excp = _write_org_names(start, end, output, token)
+        if excp is None:
+            log('done')
+            break
+        elif isinstance(excp, KeyboardInterrupt):
             log('keyboard interrupt received')
             break
-        except requests.exceptions.HTTPError as ex:
-            response = getattr(ex, 'response', None)
-            if response is None:
-                _alert(ctx, 'Encountered an error: ' + str(ex), False)
-                exit_code = 2
-                break
-            elif response.status_code == 401:
-                _alert(ctx, 'Failed GitHub authentication.', False)
+        elif isinstance(excp, requests.exceptions.HTTPError):
+            response = getattr(excp, 'response', None)
+            if response and response.status_code == 401:
+                _alert(ctx, 'Invalid GitHub credentials: ' + str(excp), False)
                 exit_code = 2
                 break
             elif not error:
                 # Might be a transient problem. Remember the 1st error we get
                 # b/c subsequent errors might be about the retry.
-                error = ex
-                log('pausing 1 sec due to error: ' + str(ex))
+                error = excp
+                log('pausing 1 sec due to error: ' + str(excp))
                 sleep(1)
                 retry += 1
+                continue
             else:
                 # If we get here, we've already had one error.
-                log(f'pausing 5 sec due to error (retry #{retry}): ' + str(ex))
+                log(f'pausing 5 sec due to error (retry #{retry}): ' + str(excp))
                 sleep(5)
                 retry += 1
-        except Exception as ex:             # noqa: PIE786
-            import traceback
-            exit_code = 2
-            exception = sys.exc_info()
-            details = ''.join(traceback.format_exception(*exception))
-            log('exception: ' + str(ex) + '\n\n' + details)
-            error = ex
+                continue
+        else:
+            error = excp
             retry = _MAX_RETRIES
+            exit_code = 2
+            break
+        error = None
     if error and retry >= _MAX_RETRIES:
         _alert(ctx, 'Experienced an unrecoverable error: ' + str(error), False)
+        log('exception: ' + str(excp))
     sys.exit(exit_code)
 
 
@@ -236,7 +235,10 @@ def _write_org_names(start, end, output, token):
     while start < end:
         log(f'batch_start = {start}')
         vars = {'ids': _encoded_org_ids(start, start + 100)}
-        result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
+        try:
+            result = graphql.execute(query=_QUERY, variables=vars, headers=headers)
+        except Exception as excp:
+            return start, end, excp
         if 'errors' in result:
             # If we restart this program while rate limited, we won't get a
             # resetAt (GitHub will only send the 'rate_limited' item). So,
@@ -255,7 +257,7 @@ def _write_org_names(start, end, output, token):
                 continue
             elif result['errors'][0]['type'] != 'NOT_FOUND':
                 # Ignore id's not found, but stop if get other errors.
-                raise Exception(result['errors'])
+                return start, end, Exception(result['errors'])
         for node in filter(None, result['data']['nodes']):
             name = node['name'].strip()
             output.write(name + '\n')
@@ -267,7 +269,7 @@ def _write_org_names(start, end, output, token):
         last_start = start
         start += 100
     # Return where we're at, in case we have to restart.
-    return last_start, end
+    return last_start, end, None
 
 
 def _encoded_org_ids(start, end):
