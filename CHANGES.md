@@ -1,6 +1,6 @@
 # Change log for iga
 
-## Version 0.0.6 ()
+## Version 0.0.6 (2023-04-19)
 
 This release fixes some bugs and adds a few more features.
 
