@@ -147,13 +147,54 @@ def github_release_assets(account_name, repo_name, tag_name, get_all):
     return assets
 
 
-def github_repo_filenames(repo):
-    '''Return a list of file information objects for the given repo object.'''
+def github_repo_filenames(repo, tag_name):
+    '''Return a list of file information objects for the given repo object.
+
+    The tag_name must be a release tag, and is used to find the version of
+    the repository corresponding to that tag.
+    '''
     if getattr(repo, '_filenames', None):
         return repo._filenames
-    files_url = repo.api_url + '/git/trees/' + repo.default_branch
-    log('asking GitHub for list of files at ' + files_url)
-    response = _github_get(files_url)
+
+    # We need to find the SHA for the file tree corresponding to the tag. There
+    # is no direct API, so we have to start by getting info about all the tags.
+    tags_endpoint = repo.api_url + '/git/refs/tags'
+    response = _github_get(tags_endpoint)
+    if not response:
+        log(f'failed to get tags data using {tags_endpoint} – something is wrong')
+        raise GitHubError('Unable to get list of tags for GitHub repository')
+
+    # Next, we look up the specific commit by tag, then get the commit object.
+    for tag_ref in response.json():     # The json in this case is a list.
+        if tag_ref.get('ref', '').endswith(tag_name):
+            tag_commit_url = tag_ref.get('object', {}).get('url', '')
+            break
+    else:
+        log(f'failed to find tag {tag_name} in repo tag refs')
+        return []
+    response = _github_get(tag_commit_url)
+    if not response:
+        log(f'failed to get tag commit {tag_commit_url} – something is wrong')
+        raise GitHubError(f'Unable to get needed GitHub data for release {tag_name}')
+
+    # Next, we have to get the git commit object from that tag object. There
+    # are two cases: one direct, and one with ane extra level of indirection.
+    json_dict = response.json()
+    if 'tree' not in json_dict:
+        # We have to do one more lookup.
+        git_commit_url = json_dict.get('object', {}).get('url', '')
+        response = _github_get(git_commit_url)
+        if not response:
+            log(f'failed to get git commit {git_commit_url} – something is wrong')
+            raise GitHubError(f'Unable to get needed GitHub data for release {tag_name}')
+        json_dict = response.json()
+
+    # Now we can finally get the file tree.
+    tree_url = json_dict.get('tree', {}).get('url')
+    response = _github_get(tree_url)
+    if not response:
+        log(f'failed to get file tree using {tree_url} – something is wrong')
+        raise GitHubError('Unable to get list of files for GitHub repository')
     if not response:
         log(f'did not get a list of file names for {repo}')
         return []
@@ -166,12 +207,16 @@ def github_repo_filenames(repo):
     return repo._filenames
 
 
-def github_repo_file(repo, filename):
-    '''Return the text contents of the named file in the repo object.'''
+def github_repo_file(repo, tag_name, filename):
+    '''Return the text contents of the named file in the repo object.
+
+    The tag_name must be a release tag, and is used to find the version of
+    the repository corresponding to that tag.
+    '''
     if filename in getattr(repo, '_files_contents', {}):
         log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
-    if filename not in github_repo_filenames(repo):
+    if filename not in github_repo_filenames(repo, tag_name):
         log(f'{filename} not found in the files of {repo}')
         return ''
     log(f'getting contents of file {filename} from GitHub repo {repo.full_name}')
@@ -228,10 +273,11 @@ def github_account_repo_tag(release_url):
     '''Return tuple (account, repo name, tag) based on the given web URL.'''
     # Example URL: https://github.com/mhucka/taupe/releases/tag/v1.2.0
     # Note this is not the same as the "release url" below.
-    _, _, _, account, repo, _, _, tag = release_url.split('/')
-    return (account, repo, tag)
+    _, _, _, account_name, repo_name, _, _, tag_name = release_url.split('/')
+    return (account_name, repo_name, tag_name)
 
 
+# FIXME
 def github_file_url(repo, filename):
     '''Return a URL that can be used to download the given file from the repo.'''
     return repo.html_url + '/blob/' + repo.default_branch + '/' + filename

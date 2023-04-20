@@ -185,9 +185,9 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     # repo object with them so that field extraction functions can access them.
     repo.codemeta = {}
     repo.cff = {}
-    filenames = github_repo_filenames(repo)
+    filenames = github_repo_filenames(repo, tag)
     if 'codemeta.json' in filenames:
-        codemeta_file = github_repo_file(repo, 'codemeta.json')
+        codemeta_file = github_repo_file(repo, tag, 'codemeta.json')
         try:
             repo.codemeta = json5.loads(codemeta_file)
         except KeyboardInterrupt:
@@ -202,7 +202,7 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
         if name in filenames:
             import yaml
             try:
-                repo.cff = yaml.safe_load(github_repo_file(repo, name))
+                repo.cff = yaml.safe_load(github_repo_file(repo, tag, name))
             except KeyboardInterrupt:
                 raise
             except Exception as ex:     # noqa PIE786
@@ -1056,7 +1056,7 @@ def rights(repo, release, include_all):
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
-    filenames = github_repo_filenames(repo)
+    filenames = github_repo_filenames(repo, release.tag_name)
     for basename in ['LICENSE', 'License', 'license',
                      'LICENCE', 'Licence', 'licence',
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
