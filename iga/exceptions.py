@@ -33,5 +33,9 @@ class MissingData(IGAException):
     '''Could not obtain all the required data to create an InvenioRDM record.'''
 
 
+class RecordNotFound(IGAException):
+    '''Could not find the requested record in the InvenioRDM server.'''
+
+
 class InternalError(IGAException):
     '''An internal error occurred in IGA.'''
