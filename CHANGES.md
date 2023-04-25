@@ -1,11 +1,25 @@
 # Change log for iga
 
+## Version 0.0.7 (2023-04-25)
+
+This release fixes some bugs and adds a few more features.
+
+### What's new
+
+* IGA now supports creating new versions of existing InvenioRDM records, via the new option `--parent-record`.
+
+### What's changed
+
+* Option `--read-record` has been renamed `--read-metadata` and option `--save-record` has been renamed `--save-metadata`. The goal is to make it more clear that they are about the metadata portion of an InvenioRDM record, and also to avoid possible confusion that the values they take are not record identifiers like the new `--parent-record` option.
+* The short-form name of `--open` has changed from `-O` to `-o` (lower case).
+* The versions of some dependencies in `requirements.txt` have been updated.
+
+
 ## Version 0.0.6 (2023-04-19)
 
 This release fixes some bugs and adds a few more features.
 
 ### What's new
-* IGA now supports creating new versions of existing InvenioRDM records, via the new option `--parent-record`.
 * CodeMeta's `downloadUrl` and `installUrl` as well as CITATION.cff's `repository-artifact` fields are now supported.
 * A new repository branch `develop` is where new development now takes place on GitHub. Previously, the lazy repository maintainer didn't create a branch and instead worked out of `main`.
 
@@ -14,7 +28,6 @@ This release fixes some bugs and adds a few more features.
 * Fix issue #3: IGA would previously incorrectly always get the latest version of files like `codemeta.json` from the repo, even if the release requested was not the latest release.
 * Fix issue #4: improve name splitting algorithm to handle a situation where it failed to produce a result before.
 * The list of programming languages associated with the GitHub repo is only added to the `subjects` field of the metadata record if IGA is invoked with the `--all-metadata` option. This is to make the behavior more consistent with the conditions under which other metadata fields get values from the GitHub repo.
-* Option `--read-record` has been renamed `--read-metadata` and option `--save-record` has been renamed `--save-metadata`. The goal is to make it more clear that they are about the metadata portion of an InvenioRDM record, and also to avoid possible confusion that the values they take are not record identifiers like the new `--parent-record` option.
 * The name splitting algorithm has been further enhanced to handle more test cases.
 * Internally, some data loading steps are much faster.
 
