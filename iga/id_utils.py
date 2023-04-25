@@ -25,6 +25,42 @@ from idutils import (
 import re
 
 
+# We define our own type 'rdm' to pull out InvenioRDM identifiers from strings
+# and URLs, and treat them all the same was as other identifiers. The id's are
+# Douglas Crockford base 32 (https://github.com/inveniosoftware/base32-lib),
+# which means 0-9 and letters except for i, l, o, and u.
+
+rdm_regex = re.compile(r'([abcdefghjkmnpqrstvwxyz0-9]{5}-[abcdefghjkmnpqrstvwxyz0-9]{5})')
+'''Matches an InvenioRDM record id.'''
+
+
+def is_invenio_rdm(val):
+    '''Return True if the given string is an InvenioRDM record identifier.'''
+    return normalize_invenio_rdm(val)
+
+
+def normalize_invenio_rdm(val):
+    '''Normalize an InvenioRDM record identifier.
+
+    This accepts a URL that contains an InvenioRDM record identifier if the
+    URL has one of the following forms:
+
+       https://servername.domain/records/xxxxx-xxxxx
+       https://servername.domain/records/xxxxx-xxxxx/draft
+
+    If the value is not actually an InvenioRDM identifier or a URL for a
+    record containing the record identifier, this will return an empty string.
+    '''
+    candidate = val
+    if val.startswith('http'):
+        url_parts = val.split('/')
+        if url_parts[-2] != 'records' and url_parts[-3] != 'records':
+            return ''
+        candidate = url_parts[-2] if val.endswith('/draft') else url_parts[-1]
+    m = rdm_regex.match(candidate)
+    return m.group(1) if m else ''
+
+
 # The idutils regular expression for PMCID doesn't have a capturing expression
 # and also, idutils lacks a "normalize_X()" for pmcid, for some reason.
 PMCID_REGEX = re.compile(r"(PMC\d{6,8})", flags=re.IGNORECASE)
@@ -36,7 +72,10 @@ def contains_pmcid(val):
 
 
 def normalize_pmcid(val):
-    '''Normalize a PubMed ID.'''
+    '''Normalize a PubMed ID.
+
+    If the given value is not a PubMed ID, this returns an empty string.
+    '''
     if not val:
         return ''
     m = PMCID_REGEX.match(val.upper())
@@ -101,10 +140,11 @@ RECOGNIZED_SCHEMES = {
     'pmcid'  : normalize_pmcid,
     'pmid'   : normalize_pmid,
     'purl'   : normalize_purl,
+    'rdm'    : normalize_invenio_rdm,
     'ror'    : normalize_ror,
     'swh'    : normalize_swh,
-    'url'    : normalize_url,
     'urn'    : normalize_urn,
+    'url'    : normalize_url,
 }
 
 
@@ -116,6 +156,10 @@ def detected_id(text):
 
 
 def recognized_scheme(text):
+    # We allow URLs that contain InvenioRDM identifiers. They're URLs & would
+    # be reported as 'url' by detect_identifier_schemes, so test this case 1st.
+    if is_invenio_rdm(text):
+        return 'rdm'
     for scheme in detect_identifier_schemes(text):
         if scheme in RECOGNIZED_SCHEMES:
             return scheme
