@@ -28,6 +28,8 @@ sample_ids = [
     ('978-65-87773-12-4'             , 'isbn'),
     ('04dkp9463'                     , 'ror'),
     ('swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2', 'swh'),
+    ('bknz4-bch35'                   , 'rdm'),
+    ('ry4vm-wny44'                   , 'rdm'),
 ]
 
 
@@ -47,16 +49,20 @@ def test_recognized_scheme():
 
 
 sample_unnormalized_ids = [
-    ('http://orcid.org/0000-0001-9105-5960'   , '0000-0001-9105-5960'),
-    ('https://doi.org/10.5281/zenodo.1095472' , '10.5281/zenodo.1095472'),
-    ('https://ror.org/027m9bs27'              , '027m9bs27'),
-    ('10.1088/0264-9381/26/22/225003'         , '10.1088/0264-9381/26/22/225003'),
-    ('PMCID; PMC4908318'                      , ''),
-    ('PMC4908318'                             , 'PMC4908318'),
-    ('https://ror.org/04dkp9463'              , '04dkp9463'),
+    ('http://orcid.org/0000-0001-9105-5960'    , '0000-0001-9105-5960'),
+    ('https://doi.org/10.5281/zenodo.1095472'  , '10.5281/zenodo.1095472'),
+    ('https://ror.org/027m9bs27'               , '027m9bs27'),
+    ('10.1088/0264-9381/26/22/225003'          , '10.1088/0264-9381/26/22/225003'),
+    ('PMCID; PMC4908318'                       , ''),
+    ('pmc4908318'                              , 'PMC4908318'),
+    ('https://ror.org/04dkp9463'               , '04dkp9463'),
+    ('https://a.b/records/ry4vm-wny44'         , 'ry4vm-wny44'),
+    ('https://a.b/records/ry4vm-wny44/draft'   , 'ry4vm-wny44'),
+    # If it's not detected as an RDM record id, it's considered to be just a URL.
+    ('https://a.b/something/ry4vm-wny44/draft' , 'https://a.b/something/ry4vm-wny44/draft'),
 ]
 
 
 def test_detected_id():
-    for _id, scheme in sample_unnormalized_ids:
-        assert detected_id(_id) == scheme
+    for text, id_ in sample_unnormalized_ids:
+        assert detected_id(text) == id_
