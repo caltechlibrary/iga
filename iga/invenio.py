@@ -23,7 +23,9 @@ import iga
 from   iga.exceptions import (
     InternalError,
     InvenioRDMError,
+    RecordNotFound,
 )
+from   iga.id_utils import normalize_invenio_rdm
 
 
 # Exported data structures.
@@ -88,21 +90,59 @@ def invenio_api_available(server_url):
     return False
 
 
-def invenio_create(metadata):
-    '''Create a record in the InvenioRDM server using the given metadata.
+def invenio_get(record_id):
+    '''Get the InvenioRDM record with the given identifier.'''
+    log(f'asking InvenioRDM server for record {record_id}')
+    record_id = normalize_invenio_rdm(record_id)
+    result = _invenio('get', endpoint=f'/api/records/{record_id}',
+                      msg='get record {record_id}')
+    if result is None:
+        # Maybe it's a draft record -- try one more time with /draft appended.
+        result = _invenio('get', endpoint=f'/api/records/{record_id}/draft',
+                          msg='get record {record_id}')
+    if result is None:
+        raise RecordNotFound(f'Could not find record with id {record_id}')
+    return result
 
-    This only creates a record, and returns an InvenioRecord data class; it
-    does not upload file attachments, which is something handled by a separate
-    function, invenio_upload(...).
+
+def invenio_create(metadata, parent_id=None):
+    '''Create a record in the InvenioRDM server using the given metadataa.
+
+    This only creates a draft record, and returns an InvenioRecord data class;
+    it does not upload file attachments, which is something handled by a
+    separate function, invenio_upload(...), or publish the record, which is
+    handled by invenio_publish(...).
     '''
-    log('creating record in InvenioRDM')
-    result = _invenio('post', endpoint='/api/records', data=metadata,
-                      msg='create new record using metadata')
+    # Relevant InvenioRDM documentation:
+    # https://inveniordm.docs.cern.ch/reference/rest_api_drafts_records/#drafts
+    # https://inveniordm.docs.cern.ch/reference/rest_api_drafts_records/#versions
+    if parent_id:
+        # Make sure parent actually exists. The resulting record is not needed.
+        invenio_get(parent_id)
+
+        log(f'creating a new version of record {parent_id} in InvenioRDM')
+        result = _invenio('post', endpoint=f'/api/records/{parent_id}/versions',
+                          msg='create new record using metadata')
+        if not result:
+            raise InvenioRDMError(f'Unable to create new version of {parent_id}')
+        record_id = result['id']
+
+        log(f'updating metadata in new record {record_id} in InvenioRDM')
+        metadata['files'] = {'enabled': True}
+        result = _invenio('put', endpoint=f'/api/records/{record_id}/draft',
+                          data=metadata, msg='create new record using metadata')
+        # The server will make some changes to the metadata we send.
+        result['metadata'] = metadata
+    else:
+        log('creating record in InvenioRDM')
+        result = _invenio('post', endpoint='/api/records', data=metadata,
+                          msg='create new record using metadata')
+
     if validation_errors := result.get('errors', []):
         log(f'the server reported {pluralized("error", validation_errors, True)}:')
         for error in validation_errors:
             log(f' * in field "{error["field"]}": {error["messages"]}')
-        # FIXME need to report to user
+        # FIXME some should be reported to the user, but others are harmless.
     else:
         log('record created successfully with no errors')
 
@@ -286,7 +326,7 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
 
     if os.environ.get('IGA_RUN_MODE') == 'debug':
         d = json.dumps(data, indent=2) if data_type == 'json' else ''
-        log(f'doing {action} on {url} with payload' + (f':\n{d}' if d else ''))
+        log(f'doing {action} on {url}' + (f' with payload:\n{d}' if d else ''))
 
     # Construct a Python partial to gather some args for calling network().
     client = None

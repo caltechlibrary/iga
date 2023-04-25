@@ -97,7 +97,7 @@ def test_environment_vars_from_options(capsys):
     args = ['--invenio-server', 'https://data.caltechlibrary.dev',
             '--invenio-token', 'itoken',
             '--github-token', 'gtoken',
-            '--save-record', '/tmp/fake.json',
+            '--save-metadata', '/tmp/fake.json',
             'https://github.com/fakeaccount/fakerepo/releases/tag/fakerelease']
     result = runner.invoke(cli, args)
     assert result.exit_code == int(ExitCode.success)
