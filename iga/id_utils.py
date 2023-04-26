@@ -36,7 +36,7 @@ rdm_regex = re.compile(r'([abcdefghjkmnpqrstvwxyz0-9]{5}-[abcdefghjkmnpqrstvwxyz
 
 def is_invenio_rdm(val):
     '''Return True if the given string is an InvenioRDM record identifier.'''
-    return normalize_invenio_rdm(val)
+    return bool(normalize_invenio_rdm(val))
 
 
 def normalize_invenio_rdm(val):
@@ -46,17 +46,19 @@ def normalize_invenio_rdm(val):
     URL has one of the following forms:
 
        https://servername.domain/records/xxxxx-xxxxx
-       https://servername.domain/records/xxxxx-xxxxx/draft
+       https://servername.domain/uploads/xxxxx-xxxxx
 
     If the value is not actually an InvenioRDM identifier or a URL for a
     record containing the record identifier, this will return an empty string.
     '''
     candidate = val
     if val.startswith('http'):
+        val = val.split('?')[0]         # Remove stuff like &preview=1.
+        val = val.removesuffix('/draft')
         url_parts = val.split('/')
-        if url_parts[-2] != 'records' and url_parts[-3] != 'records':
+        if len(url_parts) < 2 or url_parts[-2] not in ['records', 'uploads']:
             return ''
-        candidate = url_parts[-2] if val.endswith('/draft') else url_parts[-1]
+        candidate = url_parts[-1]
     m = rdm_regex.match(candidate)
     return m.group(1) if m else ''
 
@@ -166,8 +168,6 @@ def recognized_scheme(text):
     else:
         # Special case not handled well by idutils. PMID's are a particular
         # PITA b/c they're integers & cause false-positives for other things.
-        if contains_pmcid(text):
-            return 'pmcid'
-        elif is_pmid(text):
+        if is_pmid(text):
             return 'pmid'
     return None
