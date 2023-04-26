@@ -168,8 +168,6 @@ def recognized_scheme(text):
     else:
         # Special case not handled well by idutils. PMID's are a particular
         # PITA b/c they're integers & cause false-positives for other things.
-        if contains_pmcid(text):
-            return 'pmcid'
-        elif is_pmid(text):
+        if is_pmid(text):
             return 'pmid'
     return None
