@@ -344,9 +344,10 @@ def _load_organizations():
     global _ORGANIZATIONS
     from os.path import dirname, abspath, join
     import pickle
-    log(f'loading data/{_ORGANIZATIONS_FILENAME} – this may take some time')
     here = dirname(abspath(__file__))
-    with open(join(here, f'data/{_ORGANIZATIONS_FILENAME}'), 'rb') as f:
+    org_file = join(here, f'data/{_ORGANIZATIONS_FILENAME}')
+    log(f'loading {org_file} – this may take some time')
+    with open(org_file, 'rb') as f:
         _ORGANIZATIONS = pickle.load(f)
 
 
