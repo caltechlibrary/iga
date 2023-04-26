@@ -272,42 +272,49 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#specification-of-the-inveniordm-server-and-access-token" class="md-nav__link">Specification of the InvenioRDM server and access token</a>
+      <a href="cli-usage.html#the-inveniordm-server" class="md-nav__link">The InvenioRDM server</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#specification-of-a-github-release" class="md-nav__link">Specification of a GitHub release</a>
+      <a href="cli-usage.html#inveniordm-access-token" class="md-nav__link">InvenioRDM access token</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#use-of-a-github-access-token" class="md-nav__link">Use of a GitHub access token</a>
+      <a href="cli-usage.html#github-access-token" class="md-nav__link">GitHub access token</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#gathering-metadata-for-an-inveniordm-record" class="md-nav__link">Gathering metadata for an InvenioRDM record</a>
+      <a href="cli-usage.html#github-releases" class="md-nav__link">GitHub releases</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#specification-of-github-file-assets" class="md-nav__link">Specification of GitHub file assets</a>
+      <a href="cli-usage.html#gathering-metadata" class="md-nav__link">Gathering metadata</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#handling-communities" class="md-nav__link">Handling communities</a>
+      <a href="cli-usage.html#file-assets" class="md-nav__link">File assets</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="cli-usage.html#inveniordm-communities" class="md-nav__link">InvenioRDM communities</a>
       
     
     </li>
@@ -321,21 +328,21 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#versioning-of-records" class="md-nav__link">Versioning of records</a>
+      <a href="cli-usage.html#record-versions" class="md-nav__link">Record versions</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#other-options-recognized-by-iga" class="md-nav__link">Other options recognized by IGA</a>
+      <a href="cli-usage.html#other-options" class="md-nav__link">Other options</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#summary-of-command-line-options" class="md-nav__link">Summary of command-line options</a>
+      <a href="cli-usage.html#command-line-summary" class="md-nav__link">Command-line summary</a>
       
     
     </li>
@@ -400,7 +407,7 @@
             
   <section id="introduction">
 <h1 id="introduction--page-root">Introduction<a class="headerlink" href="#introduction--page-root" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://inveniordm.docs.cern.ch">InvenioRDM</a> is a turn-key <a class="reference external" href="https://riojournal.com/article/56508/">research data management</a> (RDM) platform that can be used by institutions to create repositories where data and software can be stored in order ensure long-term access to research products. Institutions such as Caltech use InvenioRDM as the basis for institutional repositories. <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> is an example of an InvenioRDM-based repository; it enables researchers to upload research data and software, link data with their publications, and assign permanent <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s to them so that other people can reference them.</p>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on the <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution.</p>
 <p>The <em>InvenioRDM GitHub Archiver</em> (IGA) is a tool for sending software releases from <a class="reference external" href="https://github.com/about">GitHub</a> to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
 <ul class="simple">
 <li><p>Automatic extraction of metadata from the GitHub release, the GitHub repository, and <a class="reference external" href="https://codemeta.github.io"><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code></a> and/or <a class="reference external" href="https://citation-file-format.github.io"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></a> files if they exist in the repository</p></li>
