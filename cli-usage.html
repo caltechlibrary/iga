@@ -293,7 +293,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#construction-of-an-inveniordm-record" class="md-nav__link">Construction of an InvenioRDM record</a>
+      <a href="#gathering-metadata-for-an-inveniordm-record" class="md-nav__link">Gathering metadata for an InvenioRDM record</a>
       
     
     </li>
@@ -315,6 +315,13 @@
     
     
       <a href="#draft-versus-published-records" class="md-nav__link">Draft versus published records</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#versioning-of-records" class="md-nav__link">Versioning of records</a>
       
     
     </li>
@@ -428,8 +435,8 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 <h2 id="use-of-a-github-access-token">Use of a GitHub access token<a class="headerlink" href="#use-of-a-github-access-token" title="Permalink to this heading">¶</a></h2>
 <p>It is possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for many repositories, IGA will not hit the limit. However, if you run IGA multiple times in a row or your repository has many contributors, then you may need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>. Alternatively, you can use the option <code class="docutils literal notranslate"><span class="pre">--github-token</span></code> to pass the token on the command line, but <strong>you are strongly advised to avoid this practice because it is insecure</strong>.  To obtain a PAT from GitHub, visit <a class="reference external" href="https://docs.github.com/en/authentication">https://docs.github.com/en/authentication</a> and follow the instructions for creating a “classic” personal access token.</p>
 </section>
-<section id="construction-of-an-inveniordm-record">
-<h2 id="construction-of-an-inveniordm-record">Construction of an InvenioRDM record<a class="headerlink" href="#construction-of-an-inveniordm-record" title="Permalink to this heading">¶</a></h2>
+<section id="gathering-metadata-for-an-inveniordm-record">
+<h2 id="gathering-metadata-for-an-inveniordm-record">Gathering metadata for an InvenioRDM record<a class="headerlink" href="#gathering-metadata-for-an-inveniordm-record" title="Permalink to this heading">¶</a></h2>
 <p>The record created in InvenioRDM is constructed using information obtained using GitHub’s API as well as several other APIs as needed. The information includes the following:</p>
 <ul class="simple">
 <li><p>(if one exists) a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file in the GitHub repository</p></li>
@@ -445,13 +452,13 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 <li><p>data available from <a class="reference external" href="http://spdx.org">spdx.org</a> for software licenses</p></li>
 </ul>
 <p>IGA tries to use <code class="docutils literal notranslate"><span class="pre">CodeMeta.json</span></code> first and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> second to fill out the fields of the InvenioRDM record. If neither of those files are present, IGA uses values from the GitHub repository instead. You can make it always use all sources of info with the option <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code>. Depending on how complete and up-to-date your <code class="docutils literal notranslate"><span class="pre">CodeMeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> are, this may or may not make the record more comprehensive and may or may not introduce redundancies or unwanted values.</p>
-<p>To override the auto-created record, use the option <code class="docutils literal notranslate"><span class="pre">--read-record</span></code> followed by the path to a JSON file structured according to the InvenioRDM schema used by the destination server. When <code class="docutils literal notranslate"><span class="pre">--read-record</span></code> is provided, IGA does <em>not</em> extract the data above, but still obtains the file assets from GitHub.</p>
+<p>To override the auto-created metadata, use the option <code class="docutils literal notranslate"><span class="pre">--read-metadata</span></code> followed by the path to a JSON file structured according to the InvenioRDM schema used by the destination server. When <code class="docutils literal notranslate"><span class="pre">--read-metadata</span></code> is provided, IGA does <em>not</em> extract the data above, but still obtains the file assets from GitHub.</p>
 </section>
 <section id="specification-of-github-file-assets">
 <h2 id="specification-of-github-file-assets">Specification of GitHub file assets<a class="headerlink" href="#specification-of-github-file-assets" title="Permalink to this heading">¶</a></h2>
 <p>By default, IGA attaches to the InvenioRDM record <em>only</em> the ZIP file asset created by GitHub for the release. To make IGA attach all assets associated with the GitHub release, use the option <code class="docutils literal notranslate"><span class="pre">--all-assets</span></code>.</p>
 <p>To upload specific file assets and override the default selections made by IGA, you can use the option <code class="docutils literal notranslate"><span class="pre">--file</span></code> followed by a path to a file to be uploaded.  You can repeat the option <code class="docutils literal notranslate"><span class="pre">--file</span></code> to upload multiple file assets. Note that if <code class="docutils literal notranslate"><span class="pre">--file</span></code> is provided, then IGA <em>does not use any file assets from GitHub</em>; it is the user’s responsibility to supply all the files that should be uploaded.</p>
-<p>If both <code class="docutils literal notranslate"><span class="pre">--read-record</span></code> and <code class="docutils literal notranslate"><span class="pre">--file</span></code> are used, then IGA does not actually contact GitHub for any information.</p>
+<p>If both <code class="docutils literal notranslate"><span class="pre">--read-metadata</span></code> and <code class="docutils literal notranslate"><span class="pre">--file</span></code> are used, then IGA does not actually contact GitHub for any information.</p>
 </section>
 <section id="handling-communities">
 <h2 id="handling-communities">Handling communities<a class="headerlink" href="#handling-communities" title="Permalink to this heading">¶</a></h2>
@@ -461,9 +468,16 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 <h2 id="draft-versus-published-records">Draft versus published records<a class="headerlink" href="#draft-versus-published-records" title="Permalink to this heading">¶</a></h2>
 <p>If the <code class="docutils literal notranslate"><span class="pre">--community</span></code> option is not used, then by default, IGA will finalize and publish the record. To make it stop short and leave the record as a draft instead, use the option <code class="docutils literal notranslate"><span class="pre">--draft</span></code>. The draft option also takes precedence over the community option: if you use both <code class="docutils literal notranslate"><span class="pre">--draft</span></code> and <code class="docutils literal notranslate"><span class="pre">--community</span></code>, IGA will stop after creating the draft record and will <em>not</em> submit it to the community.  (You can nevertheless submit the record to a community manually once the draft is created, by visiting the record’s web page and using the InvenioRDM interface there.)</p>
 </section>
+<section id="versioning-of-records">
+<h2 id="versioning-of-records">Versioning of records<a class="headerlink" href="#versioning-of-records" title="Permalink to this heading">¶</a></h2>
+<p>The option <code class="docutils literal notranslate"><span class="pre">--parent-record</span></code> can be used to indicate that the record being constructed is a new version of an existing record. This will make IGA use the InvenioRDM API for <a class="reference external" href="https://inveniordm.docs.cern.ch/releases/versions/version-v2.0.0/#versioning-support">record versioning</a>. The newly-created record will be linked to a parent record identified by the value passed to <code class="docutils literal notranslate"><span class="pre">--parent-record</span></code>. The value must be either an InvenioRDM record identifier (which is a sequence of alphanumeric characters of the form <em>XXXXX-XXXXX</em>, such as <code class="docutils literal notranslate"><span class="pre">bknz4-bch35</span></code>, generated by the InvenioRDM server), or a URL to the landing page of the record in the InvenioRDM server. (Note that such URLs end in the record identifier.) Here is an example of using this option:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">iga</span> <span class="o">--</span><span class="n">parent</span><span class="o">-</span><span class="n">record</span> <span class="n">xbcd4</span><span class="o">-</span><span class="n">efgh5</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">mhucka</span><span class="o">/</span><span class="n">taupe</span><span class="o">/</span><span class="n">releases</span><span class="o">/</span><span class="n">tag</span><span class="o">/</span><span class="n">v1</span><span class="mf">.2.0</span>
+</pre></div>
+</div>
+</section>
 <section id="other-options-recognized-by-iga">
 <h2 id="other-options-recognized-by-iga">Other options recognized by IGA<a class="headerlink" href="#other-options-recognized-by-iga" title="Permalink to this heading">¶</a></h2>
-<p>Running IGA with the option <code class="docutils literal notranslate"><span class="pre">--save-record</span></code> will make it create a metadata record, but instead of uploading the record (and any assets) to the InvenioRDM server, IGA will write the result to the given destination. This can be useful not only for debugging but also for creating a starting point for a custom metadata record: first run IGA with <code class="docutils literal notranslate"><span class="pre">--save-record</span></code> to save a record to a file, edit the result, then finally run IGA with the <code class="docutils literal notranslate"><span class="pre">--read-record</span></code> option to use the modified record to create a release in the InvenioRDM server.</p>
+<p>Running IGA with the option <code class="docutils literal notranslate"><span class="pre">--save-metadata</span></code> will make it create a metadata record, but instead of uploading the record (and any assets) to the InvenioRDM server, IGA will write the result to the given destination. This can be useful not only for debugging but also for creating a starting point for a custom metadata record: first run IGA with <code class="docutils literal notranslate"><span class="pre">--save-metadata</span></code> to save a record to a file, edit the result, then finally run IGA with the <code class="docutils literal notranslate"><span class="pre">--read-metadata</span></code> option to use the modified record to create a release in the InvenioRDM server.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">--mode</span></code> option can be used to change the run mode. Four run modes are available: <code class="docutils literal notranslate"><span class="pre">quiet</span></code>, <code class="docutils literal notranslate"><span class="pre">normal</span></code>, <code class="docutils literal notranslate"><span class="pre">verbose</span></code>, and <code class="docutils literal notranslate"><span class="pre">debug</span></code>. The default mode is <code class="docutils literal notranslate"><span class="pre">normal</span></code>, in which IGA prints a few messages while it’s working. The mode <code class="docutils literal notranslate"><span class="pre">quiet</span></code> will make it avoid printing anything unless an error occurs, the mode <code class="docutils literal notranslate"><span class="pre">verbose</span></code> will make it print a detailed trace of what it is doing, and the mode <code class="docutils literal notranslate"><span class="pre">debug</span></code> will make IGA even more verbose. In addition, in <code class="docutils literal notranslate"><span class="pre">debug</span></code> mode, IGA will drop into the <code class="docutils literal notranslate"><span class="pre">pdb</span></code> debugger if it encounters an exception during execution. On Linux and macOS, debug mode also installs a signal handler on signal USR1 that causes IGA to drop into the <code class="docutils literal notranslate"><span class="pre">pdb</span></code> debugger if the signal USR1 is received. (Use <code class="docutils literal notranslate"><span class="pre">kill</span> <span class="pre">-USR1</span> <span class="pre">NNN</span></code>, where NNN is the IGA process id.)</p>
 <p>Networks latencies are unpredicatable. Reading and writing large files may take a long time; on the other hand, IGA should not wait forever before reporting an error if a server or network becomes unresponsive. To balance these conflicting needs, IGA automatically scales its network timeout based on file sizes. To override its adaptive algorithm and set an explicit timeout value, use the option <code class="docutils literal notranslate"><span class="pre">--timeout</span></code> with a value in seconds.</p>
 <p>By default, the output of the <code class="docutils literal notranslate"><span class="pre">verbose</span></code> and <code class="docutils literal notranslate"><span class="pre">debug</span></code> run modes is sent to the standard output (normally the terminal console). The option <code class="docutils literal notranslate"><span class="pre">--log-dest</span></code> can be used to send the output to the given destination instead. The value can be <code class="docutils literal notranslate"><span class="pre">-</span></code> to indicate console output, or a file path to send the output to the file.</p>
@@ -567,31 +581,37 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 <td><p><code class="docutils literal notranslate"><span class="pre">normal</span></code></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--open</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">-O</span></code></p></td>
-<td><p>Open record’s RDM web page in a browser when done</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--parent-record</span></code> <em>N</em></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-p</span></code> <em>N</em></p></td>
+<td><p>Make this a new version of existing record <em>N</em></p></td>
+<td><p>New record is unrelated to other records</p></td>
+<td><p>❖</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--open</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">-o</span></code></p></td>
+<td><p>Open record’s web page in a browser when done</p></td>
 <td><p>Do nothing when done</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--read-record</span></code> <em>R</em></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--read-metadata</span></code> <em>R</em></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-R</span></code> <em>R</em></p></td>
-<td><p>Read metadata record from <em>R</em>; don’t build one</p></td>
+<td><p>Read metadata record from file <em>R</em>; don’t build one</p></td>
 <td><p>Build metadata record</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--save-record</span></code> <em>D</em></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--save-metadata</span></code> <em>D</em></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-S</span></code> <em>D</em></p></td>
-<td><p>Save metadata record to <em>D</em>; don’t upload it</p></td>
+<td><p>Save metadata record to file <em>D</em>; don’t upload it</p></td>
 <td><p>Upload to InvenioRDM server</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--timeout</span></code> <em>X</em></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--timeout</span></code> <em>X</em></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-T</span></code> <em>X</em></p></td>
 <td><p>Wait on network operations a max of <em>X</em> seconds</p></td>
 <td><p>Auto-adjusted based on file size</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--version</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--version</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">-V</span></code></p></td>
 <td><p>Print program version info and exit</p></td>
 <td><p></p></td>
@@ -599,9 +619,10 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 </tr>
 </tbody>
 </table>
-<p>⚑   Can repeat for multiple files.<br/>
+<p>⚑   Can repeat the option to specify multiple files.<br/>
 ⚐   To write to the console, use the character <code class="docutils literal notranslate"><span class="pre">-</span></code> as the value of <em>OUT</em>; otherwise, <em>OUT</em> must be the name of a file where the output should be written.<br/>
-✯   When using <code class="docutils literal notranslate"><span class="pre">--github-account</span></code> and <code class="docutils literal notranslate"><span class="pre">--github-repo</span></code>, the last argument on the command line must be a release tag name.</p>
+✯   When using <code class="docutils literal notranslate"><span class="pre">--github-account</span></code> and <code class="docutils literal notranslate"><span class="pre">--github-repo</span></code>, the last argument on the command line must be a release tag name.<br/>
+❖   The record identifier must be given either as a sequence of alphanumeric characters of the form <em>XXXXX-XXXXX</em> (e.g., <code class="docutils literal notranslate"><span class="pre">bknz4-bch35</span></code>), or as a URL to the landing page of an existing record in the InvenioRDM server.</p>
 </section>
 <section id="return-values">
 <h2 id="return-values">Return values<a class="headerlink" href="#return-values" title="Permalink to this heading">¶</a></h2>
@@ -686,7 +707,7 @@ addition, values for the options <code class="docutils literal notranslate"><spa
               
           </div>
             Last updated on
-              Apr 25, 2023.
+              Apr 26, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
