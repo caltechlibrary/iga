@@ -7,7 +7,7 @@ If the [installation process](installation.md) is successful, you should end up 
 iga --help
 ```
 
-### The InvenioRDM server
+### InvenioRDM server
 
 The server address must be provided either as the value of the option `--invenio-server` or in an environment variable named `INVENIO_SERVER`.  If the server address does not begin with `https://`, IGA will prepend it automatically.
 
@@ -41,7 +41,7 @@ iga --github-account mhucka --github-repo taupe v1.2.0
 ```
 Note that when using this form of the command, the release tag (`v1.2.0` above) must be the last item given on the command line.
 
-### Gathering metadata
+### Metadata gathering methods
 
 The record created in InvenioRDM is constructed using information obtained using GitHub's API as well as several other APIs as needed. The information includes the following:
  * (if one exists) a `codemeta.json` file in the GitHub repository

@@ -44,7 +44,7 @@ You may be asking yourself "but … if the releases are already stored in GitHub
 2. Compliance with open data requirements. Many funding agencies and institutions require that research projects ensure free access to research products. Institutional repositories are specifically designed to support the needs of researchers in complying with funder or publisher data requirements. _Institutional repositories provide features that GitHub does not_, such as assigning globally-unique, _permanent_, citable identifiers (such as [DOI](https://en.wikipedia.org/wiki/Digital_object_identifier)s) for data and software.
 
 
-## CodeMeta and CITATION.cff
+## CodeMeta & CITATION.cff
 
 GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: [CodeMeta](https://codemeta.github.io) and [CITATION.cff](https://citation-file-format.github.io). Both are becoming increasingly well-known, especially among research software developers. To give a sense for what a `codemeta.json` file looks like, here is the one for the software release shown above:
 
