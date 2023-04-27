@@ -230,7 +230,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
+      <a href="#codemeta-citation-cff" class="md-nav__link">CodeMeta & CITATION.cff</a>
       
     
     </li>
@@ -272,7 +272,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#the-inveniordm-server" class="md-nav__link">The InvenioRDM server</a>
+      <a href="cli-usage.html#inveniordm-server" class="md-nav__link">InvenioRDM server</a>
       
     
     </li>
@@ -300,7 +300,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#gathering-metadata" class="md-nav__link">Gathering metadata</a>
+      <a href="cli-usage.html#metadata-gathering-methods" class="md-nav__link">Metadata gathering methods</a>
       
     
     </li>
@@ -365,8 +365,22 @@
     <li class="md-nav__item">
     
     
-      <a href="metadata.html" class="md-nav__link">Metadata mappings</a>
+      <a href="metadata.html" class="md-nav__link">Record metadata</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      
+    
+    </li></ul>
     
     </li>
     <li class="md-nav__item">
@@ -445,8 +459,8 @@
 <li><p>Compliance with open data requirements. Many funding agencies and institutions require that research projects ensure free access to research products. Institutional repositories are specifically designed to support the needs of researchers in complying with funder or publisher data requirements. <em>Institutional repositories provide features that GitHub does not</em>, such as assigning globally-unique, <em>permanent</em>, citable identifiers (such as <a class="reference external" href="https://en.wikipedia.org/wiki/Digital_object_identifier">DOI</a>s) for data and software.</p></li>
 </ol>
 </section>
-<section id="codemeta-and-citation-cff">
-<h2 id="codemeta-and-citation-cff">CodeMeta and CITATION.cff<a class="headerlink" href="#codemeta-and-citation-cff" title="Permalink to this heading">¶</a></h2>
+<section id="codemeta-citation-cff">
+<h2 id="codemeta-citation-cff">CodeMeta &amp; CITATION.cff<a class="headerlink" href="#codemeta-citation-cff" title="Permalink to this heading">¶</a></h2>
 <p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers. To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for the software release shown above:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
@@ -541,7 +555,7 @@
               
           </div>
             Last updated on
-              Apr 26, 2023.
+              Apr 27, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.

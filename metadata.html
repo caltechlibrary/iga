@@ -47,7 +47,7 @@
   
   
   
-    <title>Metadata mappings &#8212; IGA</title>
+    <title>Record metadata &#8212; IGA</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/material.css" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
@@ -97,7 +97,7 @@
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           <span class="md-header-nav__topic">InvenioRDM GitHub Archiver</span>
-          <span class="md-header-nav__topic"> Metadata mappings </span>
+          <span class="md-header-nav__topic"> Record metadata </span>
         </div>
       </div>
       <div class="md-flex__cell md-flex__cell--shrink">
@@ -221,7 +221,7 @@
     <li class="md-nav__item">
     
     
-      <a href="introduction.html#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
+      <a href="introduction.html#codemeta-citation-cff" class="md-nav__link">CodeMeta & CITATION.cff</a>
       
     
     </li>
@@ -263,7 +263,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#the-inveniordm-server" class="md-nav__link">The InvenioRDM server</a>
+      <a href="cli-usage.html#inveniordm-server" class="md-nav__link">InvenioRDM server</a>
       
     
     </li>
@@ -291,7 +291,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#gathering-metadata" class="md-nav__link">Gathering metadata</a>
+      <a href="cli-usage.html#metadata-gathering-methods" class="md-nav__link">Metadata gathering methods</a>
       
     
     </li>
@@ -357,16 +357,30 @@
     
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    <label class="md-nav__link md-nav__link--active" for="__toc"> Metadata mappings </label>
+    <label class="md-nav__link md-nav__link--active" for="__toc"> Record metadata </label>
     
-      <a href="#" class="md-nav__link md-nav__link--active">Metadata mappings</a>
+      <a href="#" class="md-nav__link md-nav__link--active">Record metadata</a>
       
         
 <nav class="md-nav md-nav--secondary">
   <ul class="md-nav__list" data-md-scrollfix="">
   </ul>
 </nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      
+    
+    </li></ul>
     
     </li>
     <li class="md-nav__item">
@@ -405,8 +419,155 @@
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
             
-  <section id="metadata-mappings">
-<h1 id="metadata--page-root">Metadata mappings<a class="headerlink" href="#metadata--page-root" title="Permalink to this heading">¶</a></h1>
+  <section id="record-metadata">
+<h1 id="metadata--page-root">Record metadata<a class="headerlink" href="#metadata--page-root" title="Permalink to this heading">¶</a></h1>
+<p>A record in <a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is serialized to/from <a class="reference external" href="https://en.wikipedia.org/wiki/JSON">JSON</a> format. A complete record has the following top-level fields, but to create a new record, a client only needs to provide the data for the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field – the others are added by the InvenioRDM server.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">   </span><span class="s2">"access"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"created"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">   </span><span class="s2">"files"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"id"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">   </span><span class="s2">"links"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"metadata"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"parent"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"pids"</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">"revision_id"</span><span class="o">:</span><span class="w"> </span><span class="nx">N</span><span class="p">,</span>
+<span class="w">   </span><span class="s2">"status"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">   </span><span class="s2">"updated"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The purpose of IGA is to construct the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field according to the <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata">InvenioRDM metadata definition</a>. The subfields inside <code class="docutils literal notranslate"><span class="pre">metadata</span></code> are described below.</p>
+<section id="subfields-of-metadata">
+<h2 id="subfields-of-metadata">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code><a class="headerlink" href="#subfields-of-metadata" title="Permalink to this heading">¶</a></h2>
+<p>The following are the possible subfields inside the <code class="docutils literal notranslate"><span class="pre">metadata</span></code> field and their meanings, as well as some information about how IGA treats them.</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="s2">"metadata"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"additional_descriptions"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"additional_titles"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"contributors"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"creators"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"dates"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"description"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"formats"</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="s2">"funding"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"identifiers"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"languages"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"locations"</span><span class="o">:</span><span class="w"> </span><span class="p">{},</span>
+<span class="w">    </span><span class="s2">"publication_date"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"publisher"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"references"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"related_identifiers"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"resource_type"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">"rights"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"sizes"</span><span class="o">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">    </span><span class="s2">"subjects"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"title"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"version"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">additional_descriptions</span></code>: a record for a software release has a primary <code class="docutils literal notranslate"><span class="pre">description</span></code> field (see below) that IGA obtains from the description of the software release in GitHub. The “additional” descriptions are other descriptions (e.g., release notes) meant to supplement the primary description.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">additional_titles</span></code>: a record for a software release has a primary <code class="docutils literal notranslate"><span class="pre">title</span></code> field (see below) that IGA creates using a combination of the software name and the version. The “additional” titles are other descriptions that IGA finds in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">contributors</span></code>: persons or organizations who contributed somehow to the development or maintenance of the software. IGA draws on <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, and optionally, the GitHub repository’s list of contributors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">creators</span></code>: the persons and/or organizations credited for creating the software. IGA draws on the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files to determine this; if the files are not available or don’t contain the necessary fields, IGA falls back to using the author of the GitHub release or the repository owner (in that order).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dates</span></code>: various dates relevant to the software (apart from the publication date in the InvenioRDM server, which is stored separately). IGA looks in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files for these dates.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code>: the description given to the software release in GitHub. If none is provided, IGA looks into the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">formats</span></code>: currently left unfilled by IGA as it does not appear to be of any use to InvenioRDM.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">funding</span></code>: information about financial support (funding) for the software. The <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file is the only source for this information that IGA can use for this; neither <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> nor GitHub provide explicit fields for funding information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">identifiers</span></code>: this field is confusingly named in InvenioRDM – a better name would have been <code class="docutils literal notranslate"><span class="pre">additional_identifiers</span></code>, because InvenioRDM assigns a primary identifier automatically in a separate field. In any case, the <code class="docutils literal notranslate"><span class="pre">identifiers</span></code> field is used to store additional persistent identifiers such as arXiv identifiers for publications.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">languages</span></code>: the language(s) used in the software resource. Currently, this is hardwired by IGA to English.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">locations</span></code>: InvenioRDM defines this field as “spatial region or named place where the data was gathered or about which the data is focused”. Unfortunately, there are no relevant data fields in <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, or the GitHub release and repository from where location information can be extracted, so IGA has to leave this field blank.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">publication_date</span></code>: this is defined as the date “when the resource was made available”, which is not necessarily the date when it was submitted to InvenioRDM. IGA looks for the publicateion date in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, if given; otherwise, it uses the date of the release in GitHub.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">publisher</span></code>: this is defined as “the name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource.” IGA sets this to the name of the InvenioRDM server.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">references</span></code>: this field holds a list of formatted references to publications about the software or data resource. Both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> provide fields for storing reference information; IGA looks there and constructs text strings containing references formatted according to <a class="reference external" href="https://apastyle.apa.org/style-grammar-guidelines/references">APA 7</a> guidelines.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">related_identifiers</span></code>: this is a list of identifiers to resources related (somehow) to the software or data release. IGA takes this broadly and uses a large number of fields in <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files to generate the value of this field in the InvenioRDM record. This includes a home page URL for the software or data, issue trackers, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code>: this is assigned the value <code class="docutils literal notranslate"><span class="pre">dataset</span></code> if and only if the <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file exists in the repository and has a value of <code class="docutils literal notranslate"><span class="pre">dataset</span></code> in the <code class="docutils literal notranslate"><span class="pre">type</span></code> field. Otherwise, IGA sets this InvenioRDM metadata field to <code class="docutils literal notranslate"><span class="pre">software</span></code>. There is no other way for IGA to assess the true contents of a repository, and as most GitHub repositories are for software projects, this is deemed a reasonable default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rights</span></code>: this refers to the license under which the software or data is made available. Both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> have fields to express this information; if neither file is available or the relevant field is not set in the files, IGA checks the GitHub repository metadata for the license inferred by GitHub; and if that fails, IGA tries to look in the repository for a file named according to common conventions, like <code class="docutils literal notranslate"><span class="pre">LICENSE</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sizes</span></code>: currently left unfilled by IGA as it does not appear to be of any use to InvenioRDM.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subjects</span></code>: a list of subject keywords. IGA looks in the <code class="docutils literal notranslate"><span class="pre">keywords</span></code> field offered by both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>; it also uses the <code class="docutils literal notranslate"><span class="pre">programmingLanguages</span></code> field of <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, and optionally, the subject keywords provided in the GitHub repository metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">title</span></code>: IGA constructs the title from two parts. For the first part, it looks to the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files for the fields <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code>, respectively; if neither are available, it uses the GitHub repository name. For the second part, IGA uses the name of the GitHub release, or if that is missing, it uses the git tag name of the GitHub release.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code>: for this, IGA uses the git tag of the GitHub release. If the tag is of the form “<em>vX.Y.Z</em>” or “<em>version X.Y.Z</em>” or similar, IGA strips off the leading <code class="docutils literal notranslate"><span class="pre">v</span></code> or <code class="docutils literal notranslate"><span class="pre">version</span></code>.</p></li>
+</ul>
+</section>
+<section id="detailed-field-mappings">
+<h2 id="detailed-field-mappings">Detailed field mappings<a class="headerlink" href="#detailed-field-mappings" title="Permalink to this heading">¶</a></h2>
+<p>The algorithms implemented in IGA are designed to try very hard to extract automatically as much metadata as possible. Because there are four possible sources of metadata (<code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, the GitHub release, and the GitHub repository), and some of them overlap in what they store, it leads to a complex set of possibilities. The table below attempts to summarize how IGA goes about filling each field. Note that some fields contain a single value, while others contain a list of multiple values.</p>
+<div id="metadata-table">
+<table>
+<thead>
+<tr class="row-odd"><th class="head"><p>Metadata</p></th>
+<th class="head"><p>Method</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">additional_descriptions</span></code></p></td>
+<td><p>Add separate items as follows: <br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">releaseNotes</span></code> is set and it’s not a URL and we didn’t use it as the value of the main <code class="docutils literal notranslate"><span class="pre">description</span></code>, add it with the InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">"other"</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">description</span></code> is set and we didn’t use it as the value of the main <code class="docutils literal notranslate"><span class="pre">description</span></code>, add it with the InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">"other"</span></code>. <br/>   • If the CFF <code class="docutils literal notranslate"><span class="pre">abstract</span></code> is set and we didn’t use it as the value of the main <code class="docutils literal notranslate"><span class="pre">description</span></code>, add it with the InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">"other"</span></code>. <br/>   • If the GitHub repo <code class="docutils literal notranslate"><span class="pre">description</span></code> is set and we didn’t use it as the value of the main <code class="docutils literal notranslate"><span class="pre">description</span></code>, add it with the InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">"other"</span></code>. <br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">readme</span></code> is set and it’s not a URL, add it with the InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">"technical-info"</span></code>. (If the value is a URL, create a string of the form <em>“Additional information is available at {URL}”</em> and add that instead.)<br/><br/>Deduplicate the resulting list of descriptions to avoid duplicate values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">additional_titles</span></code></p></td>
+<td><p>Add separate items as follows:<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">name</span></code> is set, add it with InvenioRDM CV type <code class="docutils literal notranslate"><span class="pre">“alternate-title”</span></code>.<br/>   • If the CFF <code class="docutils literal notranslate"><span class="pre">title</span></code> is set, add it with InvenioRDM CV type <code class="docutils literal notranslate"><span class="pre">“alternate-title”</span></code>.<br/><br/>Deduplicate the resulting list of descriptions to avoid duplicate values.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">contributors</span></code></p></td>
+<td><p>Add separate items as follows:<br/>   • If the CFF <code class="docutils literal notranslate"><span class="pre">contact</span></code> is set, add the (single) identity with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“contactperson”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">sponsor</span></code> is set, add each identity in the list with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“sponsor”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">producer</span></code> is set, add each identity in the list with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“producer”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">editor</span></code> is set, add each identity in the list with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“editor”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">copyrightHolder</span></code> is set, add each identity in the list with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“rightsholder”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">maintainer</span></code> is set, add each identity in the list with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“other”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">contributor</span></code> is set, add the identities with role <code class="docutils literal notranslate"><span class="pre">“other”</span></code>; else, if CodeMeta <code class="docutils literal notranslate"><span class="pre">contributor</span></code> is not set, use the GitHub repo <code class="docutils literal notranslate"><span class="pre">contributors</span></code> field to create a list of contributors, using the GitHub API to look up people’s names, and add them with an InvenioRDM role CV value of <code class="docutils literal notranslate"><span class="pre">“other</span></code>”.<br/><br/>Remove identities that have a role of <code class="docutils literal notranslate"><span class="pre">“other”</span></code> and are also listed in the <code class="docutils literal notranslate"><span class="pre">creators</span></code> field.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">creators</span></code></p></td>
+<td><p>Add separate items for each identity in the list of values from CodeMeta <code class="docutils literal notranslate"><span class="pre">author</span></code> or CFF <code class="docutils literal notranslate"><span class="pre">author</span></code> (but not both) if any are present; else, use the (single) GitHub release <code class="docutils literal notranslate"><span class="pre">author</span></code> if present; else, use the (single) GitHub repo <code class="docutils literal notranslate"><span class="pre">owner</span></code>. The method uses ORCID to look up names if only ORCID ID’s are given, as well as multiple NLP methods to split names into given/family name parts if names are given as single strings.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">dates</span></code></p></td>
+<td><p>Add separate items as follows:<br/>   • An item with InvenioRDM date CV type <code class="docutils literal notranslate"><span class="pre">“created”</span></code> using the value of CodeMeta <code class="docutils literal notranslate"><span class="pre">dateCreated</span></code> (if set) or the GitHub repo <code class="docutils literal notranslate"><span class="pre">created_at</span></code>.<br/>   • An item with InvenioRDM date CV type <code class="docutils literal notranslate"><span class="pre">“updated”</span></code> using the value of CodeMeta <code class="docutils literal notranslate"><span class="pre">dateModified</span></code> (if set) or the GitHub repo <code class="docutils literal notranslate"><span class="pre">updated_at</span></code>.<br/>   • An item with InvenioRDM date CV type <code class="docutils literal notranslate"><span class="pre">“available”</span></code> using the value of the GitHub release <code class="docutils literal notranslate"><span class="pre">published_at</span></code>.<br/>   • If CodeMeta <code class="docutils literal notranslate"><span class="pre">copyrightYear</span></code> is set, an item with InvenioRDM date CV type <code class="docutils literal notranslate"><span class="pre">“copyrighted”</span></code> using the value of CodeMeta <code class="docutils literal notranslate"><span class="pre">copyrightYear</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">description</span></code></p></td>
+<td><p>If the GitHub release <code class="docutils literal notranslate"><span class="pre">body</span></code> is not empty, use that; else, if the CodeMeta <code class="docutils literal notranslate"><span class="pre">releaseNotes</span></code> is not empty and not a URL, use that; else, try CFF <code class="docutils literal notranslate"><span class="pre">description</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">abstract</span></code>, and the GitHub repo’s <code class="docutils literal notranslate"><span class="pre">description</span></code> field, in that order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">formats</span></code></p></td>
+<td><p>If the GitHub release has a value for <code class="docutils literal notranslate"><span class="pre">tarball_url</span></code>, add <code class="docutils literal notranslate"><span class="pre">“application/x-tar-gz”</span></code>. If the GitHub release has a value for <code class="docutils literal notranslate"><span class="pre">zipball_url</span></code>, add <code class="docutils literal notranslate"><span class="pre">“application/zip”</span></code>. If there are values in the GitHub release assets list, infer additional MIME types based on file extensions.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">funding</span></code></p></td>
+<td><p>Use CodeMeta <code class="docutils literal notranslate"><span class="pre">funding</span></code> and <code class="docutils literal notranslate"><span class="pre">funder</span></code> values, intelligently constructing InvenioRDM funding objects with names of funders (looking up ROR identifiers in <a class="reference external" href="http://ROR.org">ROR.org</a> if necessary).</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">identifiers</span></code></p></td>
+<td><p>For every item in CodeMeta <code class="docutils literal notranslate"><span class="pre">identifier</span></code> and CFF <code class="docutils literal notranslate"><span class="pre">identifiers</span></code>, detect recognizable identifiers of type ARXIV, DOI, GND, ISBN, ISNI, ORCID, PMCID, PMID, ROR, and SWH, and add InvenioRDM objects with scheme based on InvenioRDM identifier-types CV terms.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">languages</span></code></p></td>
+<td><p>Hardwired to the value representing English.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">locations</span></code></p></td>
+<td><p>Hardwired to an empty list.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">publication_date</span></code></p></td>
+<td><p>Use CodeMeta <code class="docutils literal notranslate"><span class="pre">datePublished</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">date-released</span></code>, or the GitHub release <code class="docutils literal notranslate"><span class="pre">published_at</span></code>, tried in that order.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">publisher</span></code></p></td>
+<td><p>Use the name of the InvenioRDM server. The name is determined by downloading an existing record from the server and using the value of the <code class="docutils literal notranslate"><span class="pre">publisher</span></code> field in taht record.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">references</span></code></p></td>
+<td><p>Look at each item in CodeMeta <code class="docutils literal notranslate"><span class="pre">referencePublication</span></code> and CFF <code class="docutils literal notranslate"><span class="pre">preferred-citation</span></code> and <code class="docutils literal notranslate"><span class="pre">references</span></code> and collect identifiers of type DOI, ARXIV, ISBN, PMCID, and PMID. Use a combination of Crossref and Python’s <code class="docutils literal notranslate"><span class="pre">isbnlib</span></code> module to get the corresponding reference metadata, then generate plain-text references in APA format, and finally add each item to the InvenioRDM references field.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">related_identifiers</span></code></p></td>
+<td><p>Add separate items as follows:<br/>   • The GitHub release <code class="docutils literal notranslate"><span class="pre">html_url</span></code> field value with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isidenticalto”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code><br/>   • The value of one of the fields CodeMeta <code class="docutils literal notranslate"><span class="pre">codeRepository</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">repository-code</span></code>, or the GitHub repo <code class="docutils literal notranslate"><span class="pre">html_url</span></code> (whichever has a value first) with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isderivedfrom”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code>.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">issueTracker</span></code> is set, add it with the invenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“issupplementedby”</span></code>; else if the GitHub repo <code class="docutils literal notranslate"><span class="pre">issues_url</span></code> is set, add it instead.<br/>   • If the CodeMeta <code class="docutils literal notranslate"><span class="pre">releaseNotes</span></code> is a URL, add it with the invenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isdescribedby”</span></code>.<br/>   • The value of one of the fields CodeMeta <code class="docutils literal notranslate"><span class="pre">url</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">url</span></code>, or the GitHub repo <code class="docutils literal notranslate"><span class="pre">homepage</span></code> field (whichever has a value first) with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isdescribedby”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code><br/>   • The value of CodeMeta <code class="docutils literal notranslate"><span class="pre">sameAs</span></code> with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isversionof”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code><br/>   • If CodeMeta <code class="docutils literal notranslate"><span class="pre">softwareHelp</span></code> is set, or if the GitHub repo has an associated GitHub Pages URL, add one of them with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isdocumentedby”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code><br/>   • The value(s) of CodeMeta <code class="docutils literal notranslate"><span class="pre">relatedLink</span></code> with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“references”</span></code> and scheme <code class="docutils literal notranslate"><span class="pre">“url”</span></code><br/>   • For each value in the CodeMeta <code class="docutils literal notranslate"><span class="pre">referencePublication</span></code> and CFF <code class="docutils literal notranslate"><span class="pre">preferred-citation</span></code> and <code class="docutils literal notranslate"><span class="pre">references</span></code> that has not already been added as a related identifier (see above), add the identifier with InvenioRDM relation CV term <code class="docutils literal notranslate"><span class="pre">“isreferencedby”</span></code> and scheme according to the identifier type.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code></p></td>
+<td><p>If the CFF field <code class="docutils literal notranslate"><span class="pre">type</span></code> is set to <code class="docutils literal notranslate"><span class="pre">“dataset”</span></code>, use InvenioRDM CV value <code class="docutils literal notranslate"><span class="pre">“dataset”</span></code>, otherwise in all other cases use <code class="docutils literal notranslate"><span class="pre">“software”</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rights</span></code></p></td>
+<td><p>Look for CodeMeta <code class="docutils literal notranslate"><span class="pre">license</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">license</span></code>, and CFF <code class="docutils literal notranslate"><span class="pre">license-url</span></code> in that order; if none are available, look for GitHub repo <code class="docutils literal notranslate"><span class="pre">license</span></code> field value; if not set, look in the GitHub repository’s files for a file named <code class="docutils literal notranslate"><span class="pre">“LICENSE”</span></code>, <code class="docutils literal notranslate"><span class="pre">“License”</span></code>, <code class="docutils literal notranslate"><span class="pre">“COPYING”</span></code>, or similar. If the info found includes a name or a URL, match it against known SPDX licenses and use the identifier (e.g. “bsd-1-clause”) as the value of the rights object’s “id” field, with the title of the license as the “title” value and the URL of the license as the “link” value. If only a license file is found in the repo, create a value of the form <code class="docutils literal notranslate"><span class="pre">{"title":</span> <span class="pre">{"en":</span> <span class="pre">"License"},</span> <span class="pre">"link":</span> <span class="pre">URL}</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">sizes</span></code></p></td>
+<td><p>Not currently set, as the InvenioRDM server does not make use of it.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">subjects</span></code></p></td>
+<td><p>Create a union of all terms found in the repo <code class="docutils literal notranslate"><span class="pre">topics</span></code> field, CodeMeta <code class="docutils literal notranslate"><span class="pre">keywords</span></code>, CFF <code class="docutils literal notranslate"><span class="pre">keywords</span></code>, CodeMeta <code class="docutils literal notranslate"><span class="pre">programmingLanguage</span></code>, and the GitHub repo <code class="docutils literal notranslate"><span class="pre">languages_url</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">title</span></code></p></td>
+<td><p>Construct a string of the form <em>“title_part – version_part”</em>, using an en-dash instead of a colon to separate the parts in order to avoid accidentally introducing two colons into the string.<br/>   • For <em>title_part</em>, use the CodeMeta <code class="docutils literal notranslate"><span class="pre">name</span></code>; if that’s not set, use the CFF <code class="docutils literal notranslate"><span class="pre">title</span></code>; and if that’s not set, use the GitHub repository <code class="docutils literal notranslate"><span class="pre">full_name</span></code>.<br/>   • For <em>version_part</em>, use the GitHub <code class="docutils literal notranslate"><span class="pre">release</span></code> name, or if that’s not set, the GitHub release <code class="docutils literal notranslate"><span class="pre">tag_name</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">version</span></code></p></td>
+<td><p>Use the GitHub release <code class="docutils literal notranslate"><span class="pre">tag_name</span></code>, first removing any leading text of “v” or “version” if it appears as part of the tag name.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 </section>
 
 
@@ -456,7 +617,7 @@
               
           </div>
             Last updated on
-              Apr 26, 2023.
+              Apr 27, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.

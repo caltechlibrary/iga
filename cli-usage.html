@@ -221,7 +221,7 @@
     <li class="md-nav__item">
     
     
-      <a href="introduction.html#codemeta-and-citation-cff" class="md-nav__link">CodeMeta and CITATION.cff</a>
+      <a href="introduction.html#codemeta-citation-cff" class="md-nav__link">CodeMeta & CITATION.cff</a>
       
     
     </li>
@@ -272,7 +272,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#the-inveniordm-server" class="md-nav__link">The InvenioRDM server</a>
+      <a href="#inveniordm-server" class="md-nav__link">InvenioRDM server</a>
       
     
     </li>
@@ -300,7 +300,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#gathering-metadata" class="md-nav__link">Gathering metadata</a>
+      <a href="#metadata-gathering-methods" class="md-nav__link">Metadata gathering methods</a>
       
     
     </li>
@@ -365,8 +365,22 @@
     <li class="md-nav__item">
     
     
-      <a href="metadata.html" class="md-nav__link">Metadata mappings</a>
+      <a href="metadata.html" class="md-nav__link">Record metadata</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      
+    
+    </li></ul>
     
     </li>
     <li class="md-nav__item">
@@ -412,8 +426,8 @@
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>--help
 </pre></div>
 </div>
-<section id="the-inveniordm-server">
-<h2 id="the-inveniordm-server">The InvenioRDM server<a class="headerlink" href="#the-inveniordm-server" title="Permalink to this heading">¶</a></h2>
+<section id="inveniordm-server">
+<h2 id="inveniordm-server">InvenioRDM server<a class="headerlink" href="#inveniordm-server" title="Permalink to this heading">¶</a></h2>
 <p>The server address must be provided either as the value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-server</span></code> or in an environment variable named <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>.  If the server address does not begin with <code class="docutils literal notranslate"><span class="pre">https://</span></code>, IGA will prepend it automatically.</p>
 </section>
 <section id="inveniordm-access-token">
@@ -446,8 +460,8 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 </div>
 <p>Note that when using this form of the command, the release tag (<code class="docutils literal notranslate"><span class="pre">v1.2.0</span></code> above) must be the last item given on the command line.</p>
 </section>
-<section id="gathering-metadata">
-<h2 id="gathering-metadata">Gathering metadata<a class="headerlink" href="#gathering-metadata" title="Permalink to this heading">¶</a></h2>
+<section id="metadata-gathering-methods">
+<h2 id="metadata-gathering-methods">Metadata gathering methods<a class="headerlink" href="#metadata-gathering-methods" title="Permalink to this heading">¶</a></h2>
 <p>The record created in InvenioRDM is constructed using information obtained using GitHub’s API as well as several other APIs as needed. The information includes the following:</p>
 <ul class="simple">
 <li><p>(if one exists) a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file in the GitHub repository</p></li>
@@ -718,7 +732,7 @@ addition, values for the options <code class="docutils literal notranslate"><spa
               
           </div>
             Last updated on
-              Apr 26, 2023.
+              Apr 27, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
