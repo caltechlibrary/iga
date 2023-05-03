@@ -5,7 +5,7 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHu
 [![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases)
 [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-390/)
-[![PyPI](https://img.shields.io/pypi/v/commonpy.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/commonpy/)
+[![PyPI](https://img.shields.io/pypi/v/iga.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/iga/)
 
 
 ## Table of contents
