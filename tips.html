@@ -419,7 +419,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#how-do-they-get-used" class="md-nav__link">How do they get used?</a>
+      <a href="#how-are-they-used-by-iga" class="md-nav__link">How are they used by IGA?</a>
       
     
     </li></ul>
@@ -442,19 +442,12 @@
     <li class="md-nav__item">
     
     
-      <a href="appendix-metadata.html" class="md-nav__link">Appendix: record metadata</a>
+      <a href="appendix-metadata.html" class="md-nav__link">Appendix</a>
       <ul class="md-nav__list"> 
     <li class="md-nav__item">
     
     
-      <a href="appendix-metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
-      
-    
-    </li>
-    <li class="md-nav__item">
-    
-    
-      <a href="appendix-metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      <a href="appendix-metadata.html#record-metadata" class="md-nav__link">Record metadata</a>
       
     
     </li></ul>
@@ -504,7 +497,7 @@
 <li><p>Provided that a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file exists in the repository and the relevant data fields are present in the file, it is used as a secondary source of metadata if there is no <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> in the repository or it lacks certain fields. (It is also the primary source for a couple of fields that have no equivalent anywhere else, as noted above.)</p></li>
 <li><p>The metadata provided by GitHub for the repository is used as a tertiary source of information if neither <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files are provided, or IGA is invoked with the flag <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code>. (See the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">Usage</span></a>.)</p></li>
 </ol>
-<p>A detailed mapping of how IGA uses <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, and GitHub repository and release data is given in the <a class="reference internal" href="appendix-metadata.html"><span class="std std-doc">Appendix</span></a>.</p>
+<p>A detailed mapping of how IGA uses <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, and GitHub repository and release data is given in the <a class="reference internal" href="appendix-metadata.html#record-metadata"><span class="std std-ref">Appendix on record metadata</span></a>.</p>
 </section>
 <section id="what-if-you-have-neither">
 <h2 id="what-if-you-have-neither">What if you have neither?<a class="headerlink" href="#what-if-you-have-neither" title="Permalink to this heading">¶</a></h2>
@@ -519,8 +512,8 @@
 <li><p>The <a class="reference external" href="https://pypi.org/project/CodeMetaPy/">CodeMetaPy</a> package for Python</p></li>
 <li><p>The <a class="reference external" href="https://citation-file-format.github.io/cff-initializer-javascript/#/">CFFINIT</a> online tool for <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></p></li>
 </ul>
-<section id="codemeta-json">
-<h3 id="codemeta-json"><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code><a class="headerlink" href="#codemeta-json" title="Permalink to this heading">¶</a></h3>
+<section id="example-codemeta-json-file">
+<h3 id="example-codemeta-json-file">Example <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file<a class="headerlink" href="#example-codemeta-json-file" title="Permalink to this heading">¶</a></h3>
 <p>To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for an early version of IGA itself:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">    </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
@@ -529,7 +522,7 @@
 <span class="w">    </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub software releases in an InvenioRDM repository."</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0.7"</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"datePublished"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-04-25"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"dateCreated"</span><span class="p">:</span><span class="w"> </span><span class="nt">"2022-12-07"</span>
+<span class="w">    </span><span class="nt">"dateCreated"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-12-07"</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">        </span><span class="p">{</span>
 <span class="w">            </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
@@ -603,8 +596,8 @@
 </pre></div>
 </div>
 </section>
-<section id="citation-cff">
-<h3 id="citation-cff"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code><a class="headerlink" href="#citation-cff" title="Permalink to this heading">¶</a></h3>
+<section id="example-citation-cff-file">
+<h3 id="example-citation-cff-file">Example <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file<a class="headerlink" href="#example-citation-cff-file" title="Permalink to this heading">¶</a></h3>
 <p>To give a sense for what a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file looks like, here is the one for an early version of IGA:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">cff-version</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.2</span>
 <span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">"If</span><span class="nv"> </span><span class="s">you</span><span class="nv"> </span><span class="s">use</span><span class="nv"> </span><span class="s">this</span><span class="nv"> </span><span class="s">software,</span><span class="nv"> </span><span class="s">please</span><span class="nv"> </span><span class="s">cite</span><span class="nv"> </span><span class="s">it</span><span class="nv"> </span><span class="s">using</span><span class="nv"> </span><span class="s">these</span><span class="nv"> </span><span class="s">metadata."</span>
@@ -641,8 +634,58 @@
 </div>
 </section>
 </section>
-<section id="how-do-they-get-used">
-<h2 id="how-do-they-get-used">How do they get used?<a class="headerlink" href="#how-do-they-get-used" title="Permalink to this heading">¶</a></h2>
+<section id="how-are-they-used-by-iga">
+<h2 id="how-are-they-used-by-iga">How are they used by IGA?<a class="headerlink" href="#how-are-they-used-by-iga" title="Permalink to this heading">¶</a></h2>
+<p>The main metadata portion of an InvenioRDM record looks like this:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="s2">"metadata"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="s2">"additional_descriptions"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"additional_titles"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"contributors"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"creators"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"dates"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"description"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"formats"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"funding"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"identifiers"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"languages"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"locations"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">"publication_date"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"publisher"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"references"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"related_identifiers"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"resource_type"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="s2">"rights"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"sizes"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"subjects"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
+<span class="w">    </span><span class="s2">"title"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"version"</span><span class="o">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>It can be helpful to have a sense for how IGA computes the values of the fields above. The following summarizes the scheme, while the <a class="reference internal" href="appendix-metadata.html#record-metadata"><span class="std std-ref">Appendix on record metadata</span></a> provides a more detailed explanation:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">additional_descriptions</span></code>: the InvenioRDM record has a primary <code class="docutils literal notranslate"><span class="pre">description</span></code> field (see below) that IGA obtains from the description of the software release in GitHub. The “additional descriptions” are other descriptions such as release notes.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">additional_titles</span></code>: the InvenioRDM record has a primary <code class="docutils literal notranslate"><span class="pre">title</span></code> field (see below) that IGA creates using a combination of the software name and the version. The “additional titles” are other descriptions that IGA finds in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">contributors</span></code>: these are persons or organizations who contributed somehow to the development or maintenance of the software. IGA draws on <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, and optionally, the GitHub repository’s list of contributors.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">creators</span></code>: the persons and/or organizations credited for creating the software. IGA draws on the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files to determine this; if the files are not available or don’t contain the necessary fields, IGA falls back to using the author of the GitHub release or the repository owner (in that order).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dates</span></code>: various dates relevant to the software (apart from the publication date in the InvenioRDM server, which is stored separately). IGA looks in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files for these dates.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">description</span></code>: the description given to the software release in GitHub. If none is provided, IGA looks into the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">formats</span></code>: set to the MIME types of the files attached to the record in InvenioRDM.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">funding</span></code>: information about financial support (funding) for the software. The <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file is the only source for this information that IGA can use for this; neither <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> nor GitHub provide explicit fields for funding information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">identifiers</span></code>: this field is confusingly named in InvenioRDM – a better name would have been <code class="docutils literal notranslate"><span class="pre">additional_identifiers</span></code>, because InvenioRDM assigns a primary identifier automatically in a separate field of the record. In any case, the metadata <code class="docutils literal notranslate"><span class="pre">identifiers</span></code> field is used to store additional persistent identifiers such as arXiv identifiers for publications.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">languages</span></code>: the language(s) used in the software resource. Currently, this is hardwired by IGA to English.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">locations</span></code>: InvenioRDM defines this field as “spatial region or named place where the data was gathered or about which the data is focused”. Unfortunately, there are no relevant data fields in <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, or the GitHub release and repository from where location information can be extracted, so IGA has to leave this field blank.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">publication_date</span></code>: this is defined as the date “when the resource was made available”, which is not necessarily the date when it was submitted to InvenioRDM. IGA looks for the publicateion date in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, if given; otherwise, it uses the date of the release in GitHub.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">publisher</span></code>: this is defined as “the name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource.” IGA sets this to the name of the InvenioRDM server.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">references</span></code>: this field holds a list of formatted references to publications about the software or data resource. Both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> provide fields for storing reference information; IGA looks there and constructs text strings containing references formatted according to <a class="reference external" href="https://apastyle.apa.org/style-grammar-guidelines/references">APA 7</a> guidelines.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">related_identifiers</span></code>: this is a list of identifiers to resources related (somehow) to the software or data release. IGA takes this broadly and uses a large number of fields in <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files to generate the value of this field in the InvenioRDM record. This includes a home page URL for the software or data, issue trackers, and more.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">resource_type</span></code>: this is assigned the value <code class="docutils literal notranslate"><span class="pre">dataset</span></code> if and only if the <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file exists in the repository and has a value of <code class="docutils literal notranslate"><span class="pre">dataset</span></code> in the <code class="docutils literal notranslate"><span class="pre">type</span></code> field. Otherwise, IGA sets this InvenioRDM metadata field to <code class="docutils literal notranslate"><span class="pre">software</span></code>. There is no other way for IGA to assess the true contents of a repository, and as most GitHub repositories are for software projects, this is deemed a reasonable default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rights</span></code>: this refers to the license under which the software or data is made available. Both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> have fields to express this information; if neither file is available or the relevant field is not set in the files, IGA checks the GitHub repository metadata for the license inferred by GitHub; and if that fails, IGA tries to look in the repository for a file named according to common conventions, like <code class="docutils literal notranslate"><span class="pre">LICENSE</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sizes</span></code>: currently left unfilled by IGA as it does not appear to be of any use to InvenioRDM.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">subjects</span></code>: a list of subject keywords. IGA looks in the <code class="docutils literal notranslate"><span class="pre">keywords</span></code> field offered by both <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>; it also uses the <code class="docutils literal notranslate"><span class="pre">programmingLanguages</span></code> field of <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, and optionally, the subject keywords provided in the GitHub repository metadata.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">title</span></code>: IGA constructs the title from two parts. For the first part, it looks to the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files for the fields <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code>, respectively; if neither are available, it uses the GitHub repository name. For the second part, IGA uses the name of the GitHub release, or if that is missing, it uses the git tag name of the GitHub release.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code>: for this, IGA uses the git tag of the GitHub release. If the tag is of the form “<em>vX.Y.Z</em>” or “<em>version X.Y.Z</em>” or similar, IGA strips off the leading <code class="docutils literal notranslate"><span class="pre">v</span></code> or <code class="docutils literal notranslate"><span class="pre">version</span></code>.</p></li>
+</ul>
 </section>
 </section>
 
