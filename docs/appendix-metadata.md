@@ -1,4 +1,4 @@
-# Record metadata
+# Appendix: record metadata
 
 A record in [InvenioRDM](https://inveniosoftware.org/products/rdm/) is serialized to/from [JSON](https://en.wikipedia.org/wiki/JSON) format. A complete record has the following top-level fields, but to create a new record, a client only needs to provide the data for the `metadata` field – the others are added by the InvenioRDM server.
 ```{code-block} javascript
