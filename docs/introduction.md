@@ -1,8 +1,17 @@
 # Introduction
 
-[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution.
+[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution. Here is a screenshot of an example software project release archived in [CaltechDATA](https://data.caltech.edu):
 
-The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases from [GitHub](https://github.com/about) to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
+<figure>
+    <img src="_static/media/example-record-landing-page.jpg">
+    <figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
+</figure>
+
+The metadata contained in the record of a deposit is critical to making the record widely discoverable by other people, but it can be tedious and error-prone to enter the metadata by hand.  This is where automation such as IGA come in: _IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically._
+
+## IGA features
+
+The _InvenioRDM GitHub Archiver_ (IGA) creates metadata records and sends software releases from [GitHub](https://github.com/about) to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
 * Automatic extraction of metadata from the GitHub release, the GitHub repository, and [`codemeta.json`](https://codemeta.github.io) and/or [`CITATION.cff`](https://citation-file-format.github.io) files if they exist in the repository
 * Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
 * Automatic recognition of common identifier types that often appear CodeMeta and CFF files, such as [ORCID](https://orcid.org), [ROR](https://ror.org), [DOI](https://www.doi.org), [arXiV](https://arxiv.org), [PMCID/PMID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and others
@@ -10,22 +19,10 @@ The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases f
 * Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
 * Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed]((https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)), Google Books, & other sources if needed
 * Automatic splitting of human names into family and given names using [ML](https://en.wikipedia.org/wiki/Machine_learning)-based methods, if necessary, to comply with InvenioRDM requirements
-* Support for overriding the metadata record it creates, for complete control if you need it
 * Support for InvenioRDM [communities](https://invenio-communities.readthedocs.io/en/latest/)
+* Support for overriding the metadata record it creates, for complete control if you need it
 * Ability to use the GitHub API without a [GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in many cases
 * Extensive use of logging so you can see what's going on under the hood
-
-
-## InvenioRDM records
-
-Data and software archived in a repository need to be described well and richly cross-referenced in order to be widely discoverable by other people. The metadata records needed by InvenioRDM are expressed in a common file format ([JSON](https://www.json.org)), with required metadata fields [defined by InvenioRDM](https://inveniordm.docs.cern.ch/reference/metadata/). The record fields store information about the creators of the software (or data), distribution rights, titles, funding sources, publications, and more; InvenioRDM formats the metadata records as attractive web pages for human consumption. To give an example, below is a screenshot of the page for a software project stored in [CaltechDATA](https://data.caltech.edu):
-
-<figure>
-    <img src="_static/media/example-record-landing-page.jpg">
-    <figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
-</figure>
-
-The metadata contained in the record of a deposit is critical, but it can be tedious and error-prone to enter by hand.  This is where automation such as IGA come in: _IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically._
 
 
 ## GitHub releases
@@ -84,7 +81,7 @@ GitHub by itself only records relatively sparse metadata about software releases
 IGA looks for `codemeta.json` and `CITATION.cff` files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.
 
 
-## IGA's operation
+## Basic IGA usage
 
 As a command-line utility, IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token ([PAT](glossary.md#term-PAT)) for InvenioRDM (and optionally for GitHub too), and set the environment variables `INVENIO_TOKEN` and `INVENIO_SERVER` (and optionally `GITHUB_TOKEN`), archiving a GitHub release can be as easy as running `iga` with one argument, the release URL:
 ```shell
@@ -92,6 +89,8 @@ iga https://github.com/caltechlibrary/eprints2archives/releases/tag/v1.3.5
 ```
 IGA will contact GitHub, extract metadata from the release and the repository, construct a metadata record in the format required by InvenioRDM, and send the record plus the GitHub release source archive (a [ZIP](https://en.wikipedia.org/wiki/ZIP_(file_format)) file) to the InvenioRDM indicated by the environment variable `INVENIO_SERVER`. Various options can modify IGA's behavior, as explained in detail in the section on [command-line usage of IGA](cli-usage.md).
 
-The availability of a command-line version of IGA means you can also use it to send past software releases to an InvenioRDM server. IGA doesn't care if what you're asking it to archive is the _latest_ release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.
+The availability of a command-line version of IGA means you can also use it to send _past_ software releases to an InvenioRDM server. IGA doesn't care if what you're asking it to archive is the _latest_ release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.
 
 As a GitHub Action, IGA allows you to set up a GitHub workflow that will automatically send new releases of software to a designated InvenioRDM server. The procedure for this is detailed in the section on [GitHub Action usage of IGA](gha-usage.md). Once set up, you do not have to remember to send releases of a particular GitHub project to InvenioRDM &ndash; it will do it for you.
+
+Complete information about IGA's usage and options can be found in the rest of this manual.
