@@ -43,40 +43,7 @@ You may be asking yourself "but … if the releases are already stored in GitHub
 
 ## CodeMeta & CITATION.cff
 
-GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: [CodeMeta](https://codemeta.github.io) and [CITATION.cff](https://citation-file-format.github.io). Both are becoming increasingly well-known, especially among research software developers. To give a sense for what a `codemeta.json` file looks like, here is the one for the software release shown above:
-
-```json
-{
-  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-  "@type": "SoftwareSourceCode",
-  "description": "Send EPrints records to public web archiving services",
-  "name": "eprints2archives",
-  "codeRepository": "https://github.com/caltechlibrary/eprints2archives",
-  "issueTracker": "https://github.com/caltechlibrary/eprints2archives/issues",
-  "license": "https://github.com/caltechlibrary/eprints2archives/blob/master/LICENSE",
-  "version": "1.3.5",
-  "author": [
-    {
-      "@type": "Person",
-      "givenName": "Michael",
-      "familyName": "Hucka",
-      "affiliation": "Caltech Library",
-      "email": "mhucka@caltech.edu",
-      "@id": "https://orcid.org/0000-0001-9105-5960"
-    },
-],
-  "developmentStatus": "active",
-  "downloadUrl": "https://github.com/caltechlibrary/eprints2archives/archive/master.zip",
-  "keywords": [
-    "EPrints",
-    "archive",
-    "web archiving",
-    "archive"
-  ],
-  "maintainer": "https://orcid.org/0000-0001-9266-5146",
-  "programmingLanguage": "Python"
-}
-```
+GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: [CodeMeta](https://codemeta.github.io) and [CITATION.cff](https://citation-file-format.github.io). Both are becoming increasingly well-known, especially among research software developers. Tips for creating them can be found in [a separate section](tips.md#how-do-you-create-them) of this document.
 
 IGA looks for `codemeta.json` and `CITATION.cff` files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.
 
