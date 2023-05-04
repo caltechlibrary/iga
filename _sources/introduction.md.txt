@@ -50,7 +50,7 @@ IGA looks for `codemeta.json` and `CITATION.cff` files in a repository and uses 
 
 ## Using IGA
 
-IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token ([PAT](glossary.md#term-PAT)) for InvenioRDM (and optionally for GitHub too) and set the environment variable `INVENIO_TOKEN` (and optionally `GITHUB_TOKEN`), you can archive a GitHub release as easily as in this example:
+IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token ([PAT](glossary.md#term-PAT)) for InvenioRDM (and optionally for GitHub too) and have set the environment variable `INVENIO_TOKEN` (and optionally `GITHUB_TOKEN`), you can archive a GitHub release as easily as in this example:
 ```shell
 iga -s data.caltech.edu https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
