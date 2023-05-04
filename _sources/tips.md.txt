@@ -25,13 +25,6 @@ IGA relies most on the `codemeta.json` file. It considers information sources in
 3. Provided that a `CITATION.cff` file exists in the repository and the relevant data fields are present in the file, it is used as a secondary source of metadata if there is no `codemeta.json` in the repository or it lacks certain fields. (It is also the primary source for a couple of fields that have no equivalent anywhere else, as noted above.)
 4. The metadata provided by GitHub for the repository is used as a tertiary source of information if neither `codemeta.json` nor `CITATION.cff` files are provided, or IGA is invoked with the flag `--all-metadata`. (See the section on [Usage](cli-usage.md).)
 
-A detailed mapping of how IGA uses `codemeta.json`, `CITATION.cff`, and GitHub repository and release data is given in the [Appendix on record metadata](appendix-metadata.md#record-metadata). 
-
-
-## What if you have neither?
-
-If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will automatically act as if the `--all-metadata` option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
-
 
 ## How do you create them?
 
@@ -168,7 +161,7 @@ date-released: "2023-04-25"
 
 ## How are they used by IGA?
 
-The main metadata portion of an InvenioRDM record looks like this:
+The metadata records needed by InvenioRDM are expressed in [JSON](https://www.json.org) format with certain required metadata fields [defined by InvenioRDM](https://inveniordm.docs.cern.ch/reference/metadata/). The main metadata portion of an InvenioRDM record looks like this:
 ```{code-block} javascript
 "metadata": {
     "additional_descriptions": [ ... ],
@@ -217,3 +210,13 @@ It can be helpful to have a sense for how IGA computes the values of the fields 
 * `subjects`: a list of subject keywords. IGA looks in the `keywords` field offered by both `codemeta.json` and `CITATION.cff`; it also uses the `programmingLanguages` field of `codemeta.json`, and optionally, the subject keywords provided in the GitHub repository metadata.
 * `title`: IGA constructs the title from two parts. For the first part, it looks to the `codemeta.json` and `CITATION.cff` files for the fields `name` and `title`, respectively; if neither are available, it uses the GitHub repository name. For the second part, IGA uses the name of the GitHub release, or if that is missing, it uses the git tag name of the GitHub release.
 * `version`: for this, IGA uses the git tag of the GitHub release. If the tag is of the form "_vX.Y.Z_" or "_version X.Y.Z_" or similar, IGA strips off the leading `v` or `version`.
+
+
+## What if you have neither?
+
+If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will automatically act as if the `--all-metadata` option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
+
+
+## What if IGA misses things?
+
+If you have a `codemeta.json` and/or a `CITATION.cff` file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the `--all-metadata` option. This may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.

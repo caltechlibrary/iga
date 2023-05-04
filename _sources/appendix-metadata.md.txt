@@ -43,7 +43,7 @@ The purpose of IGA is to construct the `metadata` field according to the [Inveni
 }
 ```
 
-The algorithms implemented in IGA are designed to try very hard to extract automatically as much metadata as possible. Because there are four possible sources of metadata (`codemeta.json`, `CITATION.cff`, the GitHub release, and the GitHub repository), and some of them overlap in what they store, it leads to a complex set of possibilities. The table below attempts to summarize how IGA goes about filling each field. Note that some fields contain a single value, while others contain a list of multiple values.
+The algorithms implemented in IGA are designed to try very hard to extract automatically as much metadata as possible. Because there are four possible sources of metadata (`codemeta.json`, `CITATION.cff`, the GitHub release, and the GitHub repository), and some of them overlap in what they store, it leads to a complex set of possibilities. The table below attempts to summarize how IGA goes about filling each field. (It is also available in a more detailed [online spreadsheet](https://docs.google.com/spreadsheets/d/e/2PACX-1vSVULvxYT3b7MXc6GfmLdZyOozB1uf302zKGI5IweEopfyS88Ymr6abjsC_5kdHwg/pubhtml?gid=924965025&single=true).) Note that some fields contain a single value, while others contain a list of multiple values.
 
 <div id="metadata-table">
 

@@ -405,13 +405,6 @@
     <li class="md-nav__item">
     
     
-      <a href="#what-if-you-have-neither" class="md-nav__link">What if you have neither?</a>
-      
-    
-    </li>
-    <li class="md-nav__item">
-    
-    
       <a href="#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
       
     
@@ -420,6 +413,20 @@
     
     
       <a href="#how-are-they-used-by-iga" class="md-nav__link">How are they used by IGA?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#what-if-you-have-neither" class="md-nav__link">What if you have neither?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#what-if-iga-misses-things" class="md-nav__link">What if IGA misses things?</a>
       
     
     </li></ul>
@@ -497,11 +504,6 @@
 <li><p>Provided that a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file exists in the repository and the relevant data fields are present in the file, it is used as a secondary source of metadata if there is no <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> in the repository or it lacks certain fields. (It is also the primary source for a couple of fields that have no equivalent anywhere else, as noted above.)</p></li>
 <li><p>The metadata provided by GitHub for the repository is used as a tertiary source of information if neither <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files are provided, or IGA is invoked with the flag <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code>. (See the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">Usage</span></a>.)</p></li>
 </ol>
-<p>A detailed mapping of how IGA uses <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code>, <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code>, and GitHub repository and release data is given in the <a class="reference internal" href="appendix-metadata.html#record-metadata"><span class="std std-ref">Appendix on record metadata</span></a>.</p>
-</section>
-<section id="what-if-you-have-neither">
-<h2 id="what-if-you-have-neither">What if you have neither?<a class="headerlink" href="#what-if-you-have-neither" title="Permalink to this heading">¶</a></h2>
-<p>If the repository you are archiving has neither a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, IGA will automatically act as if the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or at least a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, it will be better than nothing.</p>
 </section>
 <section id="how-do-you-create-them">
 <h2 id="how-do-you-create-them">How do you create them?<a class="headerlink" href="#how-do-you-create-them" title="Permalink to this heading">¶</a></h2>
@@ -636,7 +638,7 @@
 </section>
 <section id="how-are-they-used-by-iga">
 <h2 id="how-are-they-used-by-iga">How are they used by IGA?<a class="headerlink" href="#how-are-they-used-by-iga" title="Permalink to this heading">¶</a></h2>
-<p>The main metadata portion of an InvenioRDM record looks like this:</p>
+<p>The metadata records needed by InvenioRDM are expressed in <a class="reference external" href="https://www.json.org">JSON</a> format with certain required metadata fields <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata/">defined by InvenioRDM</a>. The main metadata portion of an InvenioRDM record looks like this:</p>
 <div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="s2">"metadata"</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="s2">"additional_descriptions"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
 <span class="w">    </span><span class="s2">"additional_titles"</span><span class="o">:</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">],</span>
@@ -686,6 +688,14 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">title</span></code>: IGA constructs the title from two parts. For the first part, it looks to the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files for the fields <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">title</span></code>, respectively; if neither are available, it uses the GitHub repository name. For the second part, IGA uses the name of the GitHub release, or if that is missing, it uses the git tag name of the GitHub release.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">version</span></code>: for this, IGA uses the git tag of the GitHub release. If the tag is of the form “<em>vX.Y.Z</em>” or “<em>version X.Y.Z</em>” or similar, IGA strips off the leading <code class="docutils literal notranslate"><span class="pre">v</span></code> or <code class="docutils literal notranslate"><span class="pre">version</span></code>.</p></li>
 </ul>
+</section>
+<section id="what-if-you-have-neither">
+<h2 id="what-if-you-have-neither">What if you have neither?<a class="headerlink" href="#what-if-you-have-neither" title="Permalink to this heading">¶</a></h2>
+<p>If the repository you are archiving has neither a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, IGA will automatically act as if the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or at least a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, it will be better than nothing.</p>
+</section>
+<section id="what-if-iga-misses-things">
+<h2 id="what-if-iga-misses-things">What if IGA misses things?<a class="headerlink" href="#what-if-iga-misses-things" title="Permalink to this heading">¶</a></h2>
+<p>If you have a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option. This may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.</p>
 </section>
 </section>
 
