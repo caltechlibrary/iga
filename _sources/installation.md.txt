@@ -1,4 +1,4 @@
-# Installation and configuration
+# Installation
 
 ## IGA as a normal program
 
@@ -46,4 +46,3 @@ python3 setup.py install
 
 
 ## IGA as a GitHub Action
-
