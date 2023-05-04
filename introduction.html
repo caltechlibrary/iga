@@ -495,39 +495,7 @@
 </section>
 <section id="codemeta-citation-cff">
 <h2 id="codemeta-citation-cff">CodeMeta &amp; CITATION.cff<a class="headerlink" href="#codemeta-citation-cff" title="Permalink to this heading">¶</a></h2>
-<p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers. To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for the software release shown above:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SoftwareSourceCode"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Send EPrints records to public web archiving services"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eprints2archives"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"codeRepository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"issueTracker"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/issues"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/blob/master/LICENSE"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.3.5"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Caltech Library"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
-<span class="w">    </span><span class="p">},</span>
-<span class="p">],</span>
-<span class="w">  </span><span class="nt">"developmentStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"downloadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/eprints2archives/archive/master.zip"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"keywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="s2">"EPrints"</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">"archive"</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">"web archiving"</span><span class="p">,</span>
-<span class="w">    </span><span class="s2">"archive"</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"maintainer"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9266-5146"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"programmingLanguage"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Python"</span>
-<span class="p">}</span>
-</pre></div>
-</div>
+<p>GitHub by itself only records relatively sparse metadata about software releases and users associated with them. Thankfully, two efforts in recent years provide the means for software authors to describe software projects in more detail: <a class="reference external" href="https://codemeta.github.io">CodeMeta</a> and <a class="reference external" href="https://citation-file-format.github.io">CITATION.cff</a>. Both are becoming increasingly well-known, especially among research software developers. Tips for creating them can be found in <a class="reference internal" href="tips.html#how-do-you-create-them"><span class="std std-ref">a separate section</span></a> of this document.</p>
 <p>IGA looks for <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.</p>
 </section>
 <section id="basic-iga-usage">
