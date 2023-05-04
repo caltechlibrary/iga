@@ -47,7 +47,7 @@
   
   
   
-    <title>Quick-start configuration &#8212; IGA</title>
+    <title>Quick start &#8212; IGA</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/material.css" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
@@ -97,7 +97,7 @@
       <div class="md-flex__cell md-flex__cell--stretch">
         <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
           <span class="md-header-nav__topic">InvenioRDM GitHub Archiver</span>
-          <span class="md-header-nav__topic"> Quick-start configuration </span>
+          <span class="md-header-nav__topic"> Quick start </span>
         </div>
       </div>
       <div class="md-flex__cell md-flex__cell--shrink">
@@ -259,16 +259,30 @@
     
     
     <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    <label class="md-nav__link md-nav__link--active" for="__toc"> Quick-start configuration </label>
+    <label class="md-nav__link md-nav__link--active" for="__toc"> Quick start </label>
     
-      <a href="#" class="md-nav__link md-nav__link--active">Quick-start configuration</a>
+      <a href="#" class="md-nav__link md-nav__link--active">Quick start</a>
       
         
 <nav class="md-nav md-nav--secondary">
   <ul class="md-nav__list" data-md-scrollfix="">
   </ul>
 </nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#essential-configuration" class="md-nav__link">Essential configuration</a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#examples-of-use" class="md-nav__link">Examples of use</a>
+      
+    
+    </li></ul>
     
     </li>
     <li class="md-nav__item">
@@ -401,6 +415,13 @@
       <a href="tips.html#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#how-do-they-get-used" class="md-nav__link">How do they get used?</a>
+      
+    
     </li></ul>
     
     </li>
@@ -461,40 +482,63 @@
         <div class="md-content">
           <article class="md-content__inner md-typeset" role="main">
             
-  <section id="quick-start-configuration">
-<h1 id="quick-start--page-root">Quick-start configuration<a class="headerlink" href="#quick-start--page-root" title="Permalink to this heading">¶</a></h1>
-<p>After a successful <a class="reference internal" href="installation.html"><span class="std std-doc">installation</span></a>, At mininum, IGA needs the following information to do its work:</p>
+  <section id="quick-start">
+<h1 id="quick-start--page-root">Quick start<a class="headerlink" href="#quick-start--page-root" title="Permalink to this heading">¶</a></h1>
+<p>After a successful <a class="reference internal" href="installation.html"><span class="std std-doc">installation</span></a> of IGA, here is how you can get started quickly.</p>
+<section id="essential-configuration">
+<h2 id="essential-configuration">Essential configuration<a class="headerlink" href="#essential-configuration" title="Permalink to this heading">¶</a></h2>
+<p>IGA needs only a few pieces of information to do its work, and the information can be provided in more than one way:</p>
 <ol class="arabic simple">
-<li><p>(Required) The identity of the GitHub release to be sent to InvenioRDM</p>
+<li><p>(Required) The identity of the GitHub release. Methods available:</p>
 <ul class="simple">
-<li><p>The URL of the web page on GitHub of a tagged release, <em>or</em></p></li>
-<li><p>The arguments <code class="docutils literal notranslate"><span class="pre">--account</span></code> and <code class="docutils literal notranslate"><span class="pre">--repo</span></code> together with a release tag</p></li>
+<li><p>The URL of the web page of a tagged release in GitHub, <em>or</em></p></li>
+<li><p>Values for the options <code class="docutils literal notranslate"><span class="pre">--account</span></code>, <code class="docutils literal notranslate"><span class="pre">--repo</span></code>, and a release tag.</p></li>
 </ul>
 </li>
-<li><p>(Required) The address of the InvenioRDM server</p>
+<li><p>(Required) The address of the InvenioRDM server. Methods available:</p>
 <ul class="simple">
 <li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>, <em>or</em></p></li>
 <li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-server</span></code></p></li>
 </ul>
 </li>
-<li><p>(Required) A Personal Access Token (PAT) for the InvenioRDM server’s API</p>
+<li><p>(Required) A Personal Access Token (PAT) for the InvenioRDM server. Methods available:</p>
 <ul class="simple">
 <li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code>, <em>or</em></p></li>
 <li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-token</span></code></p></li>
 </ul>
 </li>
-<li><p>(Optional) A Personal Access Token for GitHub</p>
+<li><p>(Optional) A Personal Access Token for GitHub. Methods available:</p>
 <ul class="simple">
 <li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>, <em>or</em></p></li>
-<li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-token</span></code></p></li>
+<li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--github-token</span></code></p></li>
 </ul>
 </li>
 </ol>
-<p>Here’s an example of using IGA with environment variables <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>, <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code>, and <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code> all set, and providing the URL of a release in GitHub:</p>
+<p>More information about other IGA options, such as how to create a new version of an existing InvenioRDM record, is provided in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">detailed usage information</span></a>.</p>
+</section>
+<section id="examples-of-use">
+<h2 id="examples-of-use">Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this heading">¶</a></h2>
+<p>A common way of configuring IGA is to set environment variables in your shell script or your interactive shell. Here is an example using Bash shell syntax, with realistic-looking but fake
+token values:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">INVENIO_SERVER</span><span class="o">=</span>https://data.caltech.edu
+<span class="nb">export</span><span class="w"> </span><span class="nv">INVENIO_TOKEN</span><span class="o">=</span>qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
+<span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span>ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
+</pre></div>
+</div>
+<p>Once these environment variables set in your shell, you can more easily invoke IGA. Usage can be as simple as providing a URL for a release in GitHub. For example:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
 </pre></div>
 </div>
-<p>More information about other IGA options, such as how to create a new version of an existing InvenioRDM record, is provided in the <a class="reference internal" href="cli-usage.html"><span class="std std-doc">section on detailed usage information</span></a>.</p>
+<p>If you give the option <code class="docutils literal notranslate"><span class="pre">--open</span></code> (or <code class="docutils literal notranslate"><span class="pre">-o</span></code> for short) to IGA, it will open the newly-created InvenioRDM entry in your default web browser when it’s done:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-o<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
+</pre></div>
+</div>
+<p>If you want the record to be only a draft and not a final version (perhaps so that you can inspect the result and edit it before finalizing it), use the option <code class="docutils literal notranslate"><span class="pre">--draft</span></code> (or <code class="docutils literal notranslate"><span class="pre">-d</span></code> for short):</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-d<span class="w"> </span>-o<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
+</pre></div>
+</div>
+<p>More options and examples can be found in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">detailed usage information</span></a>.</p>
+</section>
 </section>
 
 
