@@ -11,6 +11,7 @@ maxdepth: 2
 ---
 introduction.md
 installation.md
+quick-start.md
 cli-usage.md
 gha-usage.md
 tips.md
