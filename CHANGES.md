@@ -1,4 +1,9 @@
-# Change log for iga
+# Change log for IGA
+
+## Version 0.0.8 (2023-05-04)
+
+This version fixes a few minor bugs, and improves documentation.
+
 
 ## Version 0.0.7 (2023-04-25)
 

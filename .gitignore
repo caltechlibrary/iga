@@ -47,3 +47,5 @@ docs/_build
 e.sh
 iga/tmp
 *.log
+fake.txt
+debug.out

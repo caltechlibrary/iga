@@ -641,6 +641,12 @@ possible values:
             dest.write(json.dumps(metadata, indent=2))
             dest.write('\n')
             _inform(f'Wrote metadata to {dest.name}.')
+
+            if open_in_browser:
+                from os import path
+                file = path.realpath(dest.name)
+                log(f'opening {file}')
+                click.launch(file)
         else:
             _inform('Sending metadata to InvenioRDM server', end='...')
             record = invenio_create(metadata, parent_id)
@@ -660,12 +666,13 @@ possible values:
             else:
                 invenio_publish(record)
                 _inform(f'The published record is available at {record.record_url}')
-        if os.environ.get('IGA_RUN_MODE') == 'quiet':
-            # In quiet mode nothing else will be printed, so we finish with this
-            click.echo(record.record_url or record.draft_url)
-        if open_in_browser:
-            log(f'opening {record.record_url or record.draft_url}')
-            click.launch(record.record_url or record.draft_url)
+
+            if os.environ.get('IGA_RUN_MODE') == 'quiet':
+                # Quiet mode => nothing else is printed, so tell user this much.
+                click.echo(record.record_url or record.draft_url)
+            if open_in_browser:
+                log(f'opening {record.record_url or record.draft_url}')
+                click.launch(record.record_url or record.draft_url)
     except KeyboardInterrupt:
         log('keyboard interrupt received')
         exit_code = ExitCode.user_interrupt

@@ -112,7 +112,7 @@ FIELDS = [
     "related_identifiers",
     "resource_type",
     "rights",
-#    "sizes",,            # 2023-03-23 not clear we need this. Skip for now.
+#    "sizes",             # 2023-03-23 not clear we need this. Skip for now.
     "subjects",
     "title",
     "version",
@@ -1408,7 +1408,7 @@ def _identity_from_github(account, role=None):
         person_or_org = {'name': name,
                          'type': 'organizational'}
     result = {'person_or_org': person_or_org}
-    if account.company:
+    if account.company and account.type == 'User':
         account.company = account.company.strip()
         if account.company.startswith('@'):
             # Some people write @foo to indicate org account "foo" in GitHub.

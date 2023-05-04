@@ -11,9 +11,11 @@ maxdepth: 2
 ---
 introduction.md
 installation.md
+quick-start.md
 cli-usage.md
 gha-usage.md
-metadata.md
+tips.md
 glossary.md
 colophon.md
+appendix-metadata.md
 ```

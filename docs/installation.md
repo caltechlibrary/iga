@@ -1,8 +1,8 @@
-# Installation and configuration
+# Installation
 
-## Installing IGA locally
+## IGA as a normal program
 
-There are multiple ways of installing IGA.  Please choose the alternative that suits you.
+IGA can be used as an ordinary command-line program in macOS, Windows, and Linux.There are multiple ways of installing IGA on your computer.  Please choose the alternative that suits you.
 
 ### Alternative 1: installing IGA using `pipx`
 
@@ -46,4 +46,3 @@ python3 setup.py install
 
 
 ## IGA as a GitHub Action
-
