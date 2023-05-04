@@ -1,4 +1,6 @@
-# Appendix: record metadata
+# Appendix
+
+## Record metadata
 
 A record in [InvenioRDM](https://inveniosoftware.org/products/rdm/) is serialized to/from [JSON](https://en.wikipedia.org/wiki/JSON) format. A complete record has the following top-level fields, but to create a new record, a client only needs to provide the data for the `metadata` field – the others are added by the InvenioRDM server.
 ```{code-block} javascript
@@ -17,12 +19,7 @@ A record in [InvenioRDM](https://inveniosoftware.org/products/rdm/) is serialize
 }
 ```
 
-The purpose of IGA is to construct the `metadata` field according to the [InvenioRDM metadata definition](https://inveniordm.docs.cern.ch/reference/metadata). The subfields inside `metadata` are described below.
-
-
-## Subfields of `metadata`
-
- The following are the possible subfields inside the `metadata` field and their meanings, as well as some information about how IGA treats them.
+The purpose of IGA is to construct the `metadata` field according to the [InvenioRDM metadata definition](https://inveniordm.docs.cern.ch/reference/metadata).  This part of the record has the following structure:
 ```{code-block} javascript
 "metadata": {
     "additional_descriptions": [ ... ],
@@ -31,48 +28,20 @@ The purpose of IGA is to construct the `metadata` field according to the [Inveni
     "creators": [ ... ],
     "dates": [ ... ],
     "description": "...",
-    "formats": [],
     "funding": [ ... ],
     "identifiers": [ ... ],
     "languages": [ ... ],
-    "locations": {},
     "publication_date": "...",
     "publisher": "...",
     "references": [ ... ],
     "related_identifiers": [ ... ],
     "resource_type": { ... },
     "rights": [ ... ],
-    "sizes": [],
     "subjects": [ ... ],
     "title": "...",
     "version": "...",
 }
 ```
-
-* `additional_descriptions`: a record for a software release has a primary `description` field (see below) that IGA obtains from the description of the software release in GitHub. The "additional" descriptions are other descriptions (e.g., release notes) meant to supplement the primary description.
-* `additional_titles`: a record for a software release has a primary `title` field (see below) that IGA creates using a combination of the software name and the version. The "additional" titles are other descriptions that IGA finds in the `codemeta.json` and/or `CITATION.cff` files.
-* `contributors`: persons or organizations who contributed somehow to the development or maintenance of the software. IGA draws on `codemeta.json`, `CITATION.cff`, and optionally, the GitHub repository's list of contributors.
-* `creators`: the persons and/or organizations credited for creating the software. IGA draws on the `codemeta.json` and `CITATION.cff` files to determine this; if the files are not available or don't contain the necessary fields, IGA falls back to using the author of the GitHub release or the repository owner (in that order).
-* `dates`: various dates relevant to the software (apart from the publication date in the InvenioRDM server, which is stored separately). IGA looks in the `codemeta.json` and `CITATION.cff` files for these dates.
-* `description`: the description given to the software release in GitHub. If none is provided, IGA looks into the `codemeta.json` or `CITATION.cff` files.
-* `formats`: currently left unfilled by IGA as it does not appear to be of any use to InvenioRDM.
-* `funding`: information about financial support (funding) for the software. The `codemeta.json` file is the only source for this information that IGA can use for this; neither `CITATION.cff` nor GitHub provide explicit fields for funding information.
-* `identifiers`: this field is confusingly named in InvenioRDM – a better name would have been `additional_identifiers`, because InvenioRDM assigns a primary identifier automatically in a separate field. In any case, the `identifiers` field is used to store additional persistent identifiers such as arXiv identifiers for publications.
-* `languages`: the language(s) used in the software resource. Currently, this is hardwired by IGA to English.
-* `locations`: InvenioRDM defines this field as "spatial region or named place where the data was gathered or about which the data is focused". Unfortunately, there are no relevant data fields in `codemeta.json`, `CITATION.cff`, or the GitHub release and repository from where location information can be extracted, so IGA has to leave this field blank.
-* `publication_date`: this is defined as the date "when the resource was made available", which is not necessarily the date when it was submitted to InvenioRDM. IGA looks for the publicateion date in the `codemeta.json` or `CITATION.cff` file, if given; otherwise, it uses the date of the release in GitHub.
-* `publisher`: this is defined as "the name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource." IGA sets this to the name of the InvenioRDM server.
-* `references`: this field holds a list of formatted references to publications about the software or data resource. Both `codemeta.json` and `CITATION.cff` provide fields for storing reference information; IGA looks there and constructs text strings containing references formatted according to [APA 7](https://apastyle.apa.org/style-grammar-guidelines/references) guidelines.
-* `related_identifiers`: this is a list of identifiers to resources related (somehow) to the software or data release. IGA takes this broadly and uses a large number of fields in `codemeta.json` and `CITATION.cff` files to generate the value of this field in the InvenioRDM record. This includes a home page URL for the software or data, issue trackers, and more.
-* `resource_type`: this is assigned the value `dataset` if and only if the `CITATION.cff` file exists in the repository and has a value of `dataset` in the `type` field. Otherwise, IGA sets this InvenioRDM metadata field to `software`. There is no other way for IGA to assess the true contents of a repository, and as most GitHub repositories are for software projects, this is deemed a reasonable default.
-* `rights`: this refers to the license under which the software or data is made available. Both `codemeta.json` and `CITATION.cff` have fields to express this information; if neither file is available or the relevant field is not set in the files, IGA checks the GitHub repository metadata for the license inferred by GitHub; and if that fails, IGA tries to look in the repository for a file named according to common conventions, like `LICENSE`.
-* `sizes`: currently left unfilled by IGA as it does not appear to be of any use to InvenioRDM.
-* `subjects`: a list of subject keywords. IGA looks in the `keywords` field offered by both `codemeta.json` and `CITATION.cff`; it also uses the `programmingLanguages` field of `codemeta.json`, and optionally, the subject keywords provided in the GitHub repository metadata.
-* `title`: IGA constructs the title from two parts. For the first part, it looks to the `codemeta.json` and `CITATION.cff` files for the fields `name` and `title`, respectively; if neither are available, it uses the GitHub repository name. For the second part, IGA uses the name of the GitHub release, or if that is missing, it uses the git tag name of the GitHub release.
-* `version`: for this, IGA uses the git tag of the GitHub release. If the tag is of the form "_vX.Y.Z_" or "_version X.Y.Z_" or similar, IGA strips off the leading `v` or `version`.
-
-
-## Detailed field mappings
 
 The algorithms implemented in IGA are designed to try very hard to extract automatically as much metadata as possible. Because there are four possible sources of metadata (`codemeta.json`, `CITATION.cff`, the GitHub release, and the GitHub repository), and some of them overlap in what they store, it leads to a complex set of possibilities. The table below attempts to summarize how IGA goes about filling each field. Note that some fields contain a single value, while others contain a list of multiple values.
 
