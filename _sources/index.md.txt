@@ -13,7 +13,8 @@ introduction.md
 installation.md
 cli-usage.md
 gha-usage.md
-metadata.md
+tips.md
 glossary.md
 colophon.md
+appendix-metadata.md
 ```

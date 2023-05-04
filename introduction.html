@@ -216,7 +216,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#inveniordm-records" class="md-nav__link">InvenioRDM records</a>
+      <a href="#iga-features" class="md-nav__link">IGA features</a>
       
     
     </li>
@@ -237,7 +237,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#igas-operation" class="md-nav__link">IGA’s operation</a>
+      <a href="#basic-iga-usage" class="md-nav__link">Basic IGA usage</a>
       
     
     </li></ul>
@@ -251,7 +251,7 @@
     <li class="md-nav__item">
     
     
-      <a href="installation.html#installing-iga-locally" class="md-nav__link">Installing IGA locally</a>
+      <a href="installation.html#iga-as-a-normal-program" class="md-nav__link">IGA as a normal program</a>
       
     
     </li>
@@ -300,7 +300,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#metadata-gathering-methods" class="md-nav__link">Metadata gathering methods</a>
+      <a href="cli-usage.html#metadata-sources" class="md-nav__link">Metadata sources</a>
       
     
     </li>
@@ -321,7 +321,7 @@
     <li class="md-nav__item">
     
     
-      <a href="cli-usage.html#draft-versus-published-records" class="md-nav__link">Draft versus published records</a>
+      <a href="cli-usage.html#draft-vs-published-records" class="md-nav__link">Draft vs. published records</a>
       
     
     </li>
@@ -365,19 +365,33 @@
     <li class="md-nav__item">
     
     
-      <a href="metadata.html" class="md-nav__link">Record metadata</a>
+      <a href="tips.html" class="md-nav__link">Getting the most out of IGA</a>
       <ul class="md-nav__list"> 
     <li class="md-nav__item">
     
     
-      <a href="metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
+      <a href="tips.html#use-codemeta-or-cff-files" class="md-nav__link">Use CodeMeta or CFF files?</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      <a href="tips.html#which-is-more-important" class="md-nav__link">Which is more important?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#what-if-you-have-neither" class="md-nav__link">What if you have neither?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
       
     
     </li></ul>
@@ -395,6 +409,27 @@
     
       <a href="colophon.html" class="md-nav__link">Colophon</a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html" class="md-nav__link">Appendix: record metadata</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      
+    
+    </li></ul>
     
     </li>
   </ul>
@@ -421,8 +456,15 @@
             
   <section id="introduction">
 <h1 id="introduction--page-root">Introduction<a class="headerlink" href="#introduction--page-root" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on the <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution.</p>
-<p>The <em>InvenioRDM GitHub Archiver</em> (IGA) is a tool for sending software releases from <a class="reference external" href="https://github.com/about">GitHub</a> to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on the <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution. Here is a screenshot of an example software project release archived in <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>:</p>
+<figure>
+<img src="_static/media/example-record-landing-page.jpg"/>
+<figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
+</figure>
+<p>The metadata contained in the record of a deposit is critical to making the record widely discoverable by other people, but it can be tedious and error-prone to enter the metadata by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
+<section id="iga-features">
+<h2 id="iga-features">IGA features<a class="headerlink" href="#iga-features" title="Permalink to this heading">¶</a></h2>
+<p>The <em>InvenioRDM GitHub Archiver</em> (IGA) creates metadata records and sends software releases from <a class="reference external" href="https://github.com/about">GitHub</a> to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA’s other notable features:</p>
 <ul class="simple">
 <li><p>Automatic extraction of metadata from the GitHub release, the GitHub repository, and <a class="reference external" href="https://codemeta.github.io"><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code></a> and/or <a class="reference external" href="https://citation-file-format.github.io"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></a> files if they exist in the repository</p></li>
 <li><p>Thorough coverage of <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata">InvenioRDM record metadata</a> using painstaking procedures</p></li>
@@ -431,19 +473,11 @@
 <li><p>Automatic lookup of organization names in <a class="reference external" href="https://ror.org">ROR</a> (assuming ROR id’s are provided)</p></li>
 <li><p>Automatic lookup of publication data in <a class="reference external" href="https://www.doi.org">DOI.org</a>, <a class="reference internal" href="#(https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)"><span class="xref myst">PubMed</span></a>, Google Books, &amp; other sources if needed</p></li>
 <li><p>Automatic splitting of human names into family and given names using <a class="reference external" href="https://en.wikipedia.org/wiki/Machine_learning">ML</a>-based methods, if necessary, to comply with InvenioRDM requirements</p></li>
-<li><p>Support for overriding the metadata record it creates, for complete control if you need it</p></li>
 <li><p>Support for InvenioRDM <a class="reference external" href="https://invenio-communities.readthedocs.io/en/latest/">communities</a></p></li>
+<li><p>Support for overriding the metadata record it creates, for complete control if you need it</p></li>
 <li><p>Ability to use the GitHub API without a <a class="reference external" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">GitHub access token</a> in many cases</p></li>
 <li><p>Extensive use of logging so you can see what’s going on under the hood</p></li>
 </ul>
-<section id="inveniordm-records">
-<h2 id="inveniordm-records">InvenioRDM records<a class="headerlink" href="#inveniordm-records" title="Permalink to this heading">¶</a></h2>
-<p>Data and software archived in a repository need to be described well and richly cross-referenced in order to be widely discoverable by other people. The metadata records needed by InvenioRDM are expressed in a common file format (<a class="reference external" href="https://www.json.org">JSON</a>), with required metadata fields <a class="reference external" href="https://inveniordm.docs.cern.ch/reference/metadata/">defined by InvenioRDM</a>. The record fields store information about the creators of the software (or data), distribution rights, titles, funding sources, publications, and more; InvenioRDM formats the metadata records as attractive web pages for human consumption. To give an example, below is a screenshot of the page for a software project stored in <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>:</p>
-<figure>
-<img src="_static/media/example-record-landing-page.jpg"/>
-<figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
-</figure>
-<p>The metadata contained in the record of a deposit is critical, but it can be tedious and error-prone to enter by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
 </section>
 <section id="github-releases">
 <h2 id="github-releases">GitHub releases<a class="headerlink" href="#github-releases" title="Permalink to this heading">¶</a></h2>
@@ -496,15 +530,16 @@
 </div>
 <p>IGA looks for <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files in a repository and uses the information found therein as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.</p>
 </section>
-<section id="igas-operation">
-<h2 id="igas-operation">IGA’s operation<a class="headerlink" href="#igas-operation" title="Permalink to this heading">¶</a></h2>
+<section id="basic-iga-usage">
+<h2 id="basic-iga-usage">Basic IGA usage<a class="headerlink" href="#basic-iga-usage" title="Permalink to this heading">¶</a></h2>
 <p>As a command-line utility, IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token (<a class="reference internal" href="glossary.html#term-PAT"><span class="std std-ref">PAT</span></a>) for InvenioRDM (and optionally for GitHub too), and set the environment variables <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code> and <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>), archiving a GitHub release can be as easy as running <code class="docutils literal notranslate"><span class="pre">iga</span></code> with one argument, the release URL:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>https://github.com/caltechlibrary/eprints2archives/releases/tag/v1.3.5
 </pre></div>
 </div>
 <p>IGA will contact GitHub, extract metadata from the release and the repository, construct a metadata record in the format required by InvenioRDM, and send the record plus the GitHub release source archive (a <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> file) to the InvenioRDM indicated by the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>. Various options can modify IGA’s behavior, as explained in detail in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">command-line usage of IGA</span></a>.</p>
-<p>The availability of a command-line version of IGA means you can also use it to send past software releases to an InvenioRDM server. IGA doesn’t care if what you’re asking it to archive is the <em>latest</em> release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.</p>
+<p>The availability of a command-line version of IGA means you can also use it to send <em>past</em> software releases to an InvenioRDM server. IGA doesn’t care if what you’re asking it to archive is the <em>latest</em> release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.</p>
 <p>As a GitHub Action, IGA allows you to set up a GitHub workflow that will automatically send new releases of software to a designated InvenioRDM server. The procedure for this is detailed in the section on <a class="reference internal" href="gha-usage.html"><span class="std std-doc">GitHub Action usage of IGA</span></a>. Once set up, you do not have to remember to send releases of a particular GitHub project to InvenioRDM – it will do it for you.</p>
+<p>Complete information about IGA’s usage and options can be found in the rest of this manual.</p>
 </section>
 </section>
 
@@ -555,7 +590,7 @@
               
           </div>
             Last updated on
-              May 03, 2023.
+              May 04, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.

@@ -41,7 +41,7 @@ iga --github-account mhucka --github-repo taupe v1.2.0
 ```
 Note that when using this form of the command, the release tag (`v1.2.0` above) must be the last item given on the command line.
 
-### Metadata gathering methods
+### Metadata sources
 
 The record created in InvenioRDM is constructed using information obtained using GitHub's API as well as several other APIs as needed. The information includes the following:
  * (if one exists) a `codemeta.json` file in the GitHub repository
@@ -72,7 +72,7 @@ If both `--read-metadata` and `--file` are used, then IGA does not actually cont
 
 To submit your record to a community, use the `--community` option together with a community name. The option `--list-communities` can be used to get a list of communities supported by the InvenioRDM server. Note that submitting a record to a community means that the record will not be finalized and will not be publicly visible when IGA finishes; instead, the record URL that you receive will be for a draft version, pending review by the community moderators.
 
-### Draft versus published records
+### Draft vs. published records
 
 If the `--community` option is not used, then by default, IGA will finalize and publish the record. To make it stop short and leave the record as a draft instead, use the option `--draft`. The draft option also takes precedence over the community option: if you use both `--draft` and `--community`, IGA will stop after creating the draft record and will _not_ submit it to the community.  (You can nevertheless submit the record to a community manually once the draft is created, by visiting the record's web page and using the InvenioRDM interface there.)
 

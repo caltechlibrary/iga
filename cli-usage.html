@@ -207,7 +207,7 @@
     <li class="md-nav__item">
     
     
-      <a href="introduction.html#inveniordm-records" class="md-nav__link">InvenioRDM records</a>
+      <a href="introduction.html#iga-features" class="md-nav__link">IGA features</a>
       
     
     </li>
@@ -228,7 +228,7 @@
     <li class="md-nav__item">
     
     
-      <a href="introduction.html#igas-operation" class="md-nav__link">IGA’s operation</a>
+      <a href="introduction.html#basic-iga-usage" class="md-nav__link">Basic IGA usage</a>
       
     
     </li></ul>
@@ -242,7 +242,7 @@
     <li class="md-nav__item">
     
     
-      <a href="installation.html#installing-iga-locally" class="md-nav__link">Installing IGA locally</a>
+      <a href="installation.html#iga-as-a-normal-program" class="md-nav__link">IGA as a normal program</a>
       
     
     </li>
@@ -300,7 +300,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#metadata-gathering-methods" class="md-nav__link">Metadata gathering methods</a>
+      <a href="#metadata-sources" class="md-nav__link">Metadata sources</a>
       
     
     </li>
@@ -321,7 +321,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#draft-versus-published-records" class="md-nav__link">Draft versus published records</a>
+      <a href="#draft-vs-published-records" class="md-nav__link">Draft vs. published records</a>
       
     
     </li>
@@ -365,19 +365,33 @@
     <li class="md-nav__item">
     
     
-      <a href="metadata.html" class="md-nav__link">Record metadata</a>
+      <a href="tips.html" class="md-nav__link">Getting the most out of IGA</a>
       <ul class="md-nav__list"> 
     <li class="md-nav__item">
     
     
-      <a href="metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
+      <a href="tips.html#use-codemeta-or-cff-files" class="md-nav__link">Use CodeMeta or CFF files?</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      <a href="tips.html#which-is-more-important" class="md-nav__link">Which is more important?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#what-if-you-have-neither" class="md-nav__link">What if you have neither?</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
       
     
     </li></ul>
@@ -395,6 +409,27 @@
     
       <a href="colophon.html" class="md-nav__link">Colophon</a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html" class="md-nav__link">Appendix: record metadata</a>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html#subfields-of-metadata" class="md-nav__link">Subfields of <code class="docutils literal notranslate"><span class="pre">metadata</span></code></a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html#detailed-field-mappings" class="md-nav__link">Detailed field mappings</a>
+      
+    
+    </li></ul>
     
     </li>
   </ul>
@@ -460,8 +495,8 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 </div>
 <p>Note that when using this form of the command, the release tag (<code class="docutils literal notranslate"><span class="pre">v1.2.0</span></code> above) must be the last item given on the command line.</p>
 </section>
-<section id="metadata-gathering-methods">
-<h2 id="metadata-gathering-methods">Metadata gathering methods<a class="headerlink" href="#metadata-gathering-methods" title="Permalink to this heading">¶</a></h2>
+<section id="metadata-sources">
+<h2 id="metadata-sources">Metadata sources<a class="headerlink" href="#metadata-sources" title="Permalink to this heading">¶</a></h2>
 <p>The record created in InvenioRDM is constructed using information obtained using GitHub’s API as well as several other APIs as needed. The information includes the following:</p>
 <ul class="simple">
 <li><p>(if one exists) a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file in the GitHub repository</p></li>
@@ -489,8 +524,8 @@ addition, values for the options <code class="docutils literal notranslate"><spa
 <h2 id="inveniordm-communities">InvenioRDM communities<a class="headerlink" href="#inveniordm-communities" title="Permalink to this heading">¶</a></h2>
 <p>To submit your record to a community, use the <code class="docutils literal notranslate"><span class="pre">--community</span></code> option together with a community name. The option <code class="docutils literal notranslate"><span class="pre">--list-communities</span></code> can be used to get a list of communities supported by the InvenioRDM server. Note that submitting a record to a community means that the record will not be finalized and will not be publicly visible when IGA finishes; instead, the record URL that you receive will be for a draft version, pending review by the community moderators.</p>
 </section>
-<section id="draft-versus-published-records">
-<h2 id="draft-versus-published-records">Draft versus published records<a class="headerlink" href="#draft-versus-published-records" title="Permalink to this heading">¶</a></h2>
+<section id="draft-vs-published-records">
+<h2 id="draft-vs-published-records">Draft vs. published records<a class="headerlink" href="#draft-vs-published-records" title="Permalink to this heading">¶</a></h2>
 <p>If the <code class="docutils literal notranslate"><span class="pre">--community</span></code> option is not used, then by default, IGA will finalize and publish the record. To make it stop short and leave the record as a draft instead, use the option <code class="docutils literal notranslate"><span class="pre">--draft</span></code>. The draft option also takes precedence over the community option: if you use both <code class="docutils literal notranslate"><span class="pre">--draft</span></code> and <code class="docutils literal notranslate"><span class="pre">--community</span></code>, IGA will stop after creating the draft record and will <em>not</em> submit it to the community.  (You can nevertheless submit the record to a community manually once the draft is created, by visiting the record’s web page and using the InvenioRDM interface there.)</p>
 </section>
 <section id="record-versions">
@@ -732,7 +767,7 @@ addition, values for the options <code class="docutils literal notranslate"><spa
               
           </div>
             Last updated on
-              May 03, 2023.
+              May 04, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
