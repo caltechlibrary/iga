@@ -12,6 +12,7 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHu
 
 * [Introduction](#introduction)
 * [Installation](#installation)
+* [Quick start](#quick-start)
 * [Usage](#usage)
 * [Known issues and limitations](#known-issues-and-limitations)
 * [Getting help](#getting-help)
@@ -22,27 +23,37 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHu
 
 ## Introduction
 
-[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution.
+[InvenioRDM](https://inveniosoftware.org/products/rdm/) is the basis for many institutional repositories such as [CaltechDATA](https://data.caltech.edu) that enable users to preserve software and datasets in long-term archive. Though such repositories are critical resources, creating detailed records and uploading assets can be a tedious and error-prone process if done manually. This is where the InvenioRDM GitHub Archiver (IGA) comes in.
 
-The _InvenioRDM GitHub Archiver_ (IGA) is a tool for sending software releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to automate the archiving of GitHub software releases in an InvenioRDM repository. Here are some of IGA's other notable features:
-* Automatic extraction of metadata from the GitHub release, the GitHub repository, and [`codemeta.json`](https://codemeta.github.io) and/or [`CITATION.cff`](https://citation-file-format.github.io) files if they exist in the repository
-* Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
-* Automatic recognition of common identifier types that often appear CodeMeta and CFF files, such as [ORCID](https://orcid.org), [ROR](https://ror.org), [DOI](https://www.doi.org), [arXiV](https://arxiv.org), [PMCID/PMID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and others
-* Automatic lookup of human names in [ORCID.org](https://orcid.org) if needed (assuming ORCID id's are provided)
-* Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
+IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to archive GitHub releases automatically for a repository each time they are made.
+
+<p align=center>
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%">
+➜
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" width="40%">
+</p>
+
+IGA offers many notable features:
+* Automatic metadata extraction from GitHub releases plus [`codemeta.json`](https://codemeta.github.io) and [`CITATION.cff`](https://citation-file-format.github.io) files
+* Thorough coverage of [InvenioRDM record metadata fields](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
+* Recognition of id's that appear in CodeMeta & CFF files: [ORCID](https://orcid.org), [ROR](https://ror.org), [DOI](https://www.doi.org), [arXiv](https://arxiv.org),  [PMCID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and more
 * Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed]((https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)), Google Books, & other sources if needed
-* Automatic splitting of human names into family and given names using [ML](https://en.wikipedia.org/wiki/Machine_learning)-based methods, if necessary, to comply with InvenioRDM requirements
-* Support for overriding the metadata record it creates, for complete control if you need it
+* Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
+* Automatic lookup of human names in [ORCID.org](https://orcid.org) if needed (assuming ORCID id's are provided)
+* Automatic splitting of human names into family and given names using [ML](https://en.wikipedia.org/wiki/Machine_learning)-based methods
 * Support for InvenioRDM [communities](https://invenio-communities.readthedocs.io/en/latest/)
-* Ability to use the GitHub API without a [GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in many cases
+* Support for overriding the metadata record that IGA creates, for complete control if you need it
+* Support for using the GitHub API without a [GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in simple cases
 * Extensive use of logging so you can see what's going on under the hood
 
 
 ## Installation
 
-(Note: at this time, only the command-line version of IGA is available.) There are multiple ways of installing IGA.  Please choose the alternative that suits you.
+### As a standalone command-line program
 
-### _Alternative 1: installing IGA using `pipx`_
+There are multiple ways of installing IGA.  Please choose the alternative that suits you.
+
+#### _Alternative 1: installing IGA using `pipx`_
 
 [Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
 ```sh
@@ -52,7 +63,7 @@ pipx install iga
 Pipx can also let you run IGA directly using `pipx run iga`, although in that case, you must always prefix every IGA command with `pipx run`.  Consult the [documentation for `pipx run`](https://github.com/pypa/pipx#walkthrough-running-an-application-in-a-temporary-virtual-environment) for more information.
 
 
-### _Alternative 2: installing IGA using `pip`_
+#### _Alternative 2: installing IGA using `pip`_
 
 You should be able to install `iga` with [`pip`](https://pip.pypa.io/en/stable/installing/) for Python&nbsp;3.  To install `iga` from the [Python package repository (PyPI)](https://pypi.org), run the following command:
 ```sh
@@ -67,7 +78,7 @@ python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
 
 
-### _Alternative 3: installing IGA from sources_
+#### _Alternative 3: installing IGA from sources_
 
 If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:
 ```sh
@@ -83,14 +94,61 @@ python3 setup.py install
 ```
 
 
-## Usage
+### As a GitHub Action
 
-IGA creates a metadata record in an InvenioRDM server and attaches a GitHub release archive to the record. The GitHub release can be specified using _either_ a full release URL, _or_ a combination of GitHub account + repository + tag. Different command-line options can be used to adjust this behavior.
+[...forthcoming...]
 
-If the installation process described above is successful, you should end up with a program named `iga` in a location where software is normally installed on your computer.  Running `iga` should be as simple as running any other command-line program. For example, the following command should print a helpful message to your terminal:
+
+## Quick start
+
+After a successful [installation](#installation) of IGA, here is how you can get started quickly.
+
+### Command-line use
+
+If the [installation](#installation) process described above is successful, you should end up with a program named `iga` in a location where software is normally installed on your computer.  Running `iga` should be as simple as running any other command-line program. For example, the following command should print a helpful message to your terminal:
 ```shell
 iga --help
 ```
+
+IGA's main purpose is to create a metadata record in an InvenioRDM server and attach a GitHub release archive to the record. IGA needs 4 pieces of information to do its work, though for simple repositories you can often get by with just 3:
+1. (Required) The identity of the GitHub release to be archived
+2. (Required) The address of the destination InvenioRDM server
+3. (Required) A Personal Access Token (PAT) for the InvenioRDM server
+4. (Optional) A Personal Access Token for GitHub
+
+The first one (the identity of the GitHub release) is given as arguments to IGA on the command line; the rest can be provided either via command-line options or by setting environment variables. A common way of configuring IGA is to set environment variables in your shell script or your interactive shell. Here is an example using Bash shell syntax, with realistic-looking but fake token values:
+```shell
+export INVENIO_SERVER=https://data.caltech.edu
+export INVENIO_TOKEN=qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
+export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
+```
+
+Once these environment variables set in your shell, you can more easily invoke IGA. Usage can be as simple as providing a URL for a release in GitHub. For example:
+```shell
+iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
+```
+
+If you give the option `--open` (or `-o` for short) to IGA, it will open the newly-created InvenioRDM entry in your default web browser when it's done:
+```shell
+iga -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
+```
+
+If you want the record to be only a draft and not a final version (perhaps so that you can inspect the result and edit it before finalizing it), use the option `--draft` (or `-d` for short):
+```shell
+iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
+```
+
+More options and examples can be found in the section on [detailed usage information](cli-usage.md).
+
+
+### GitHub Action use
+
+[...forthcoming...]
+
+
+## Usage
+
+This section provides detailed information about IGA's operation and options to control it.
 
 ### Identifying the InvenioRDM server
 
