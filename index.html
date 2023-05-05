@@ -474,7 +474,14 @@
             
   <section id="inveniordm-github-archiver">
 <h1 id="index--page-root">InvenioRDM GitHub Archiver<a class="reference internal" href="#index--page-root"><img alt="_images/cloud-upload.svg" class="align-right" src="_images/cloud-upload.svg" width="50em"/></a><a class="headerlink" href="#index--page-root" title="Permalink to this heading">¶</a></h1>
-<p>IGA is the <a class="reference external" href="https://github.com/caltechlibrary/iga"><em>InvenioRDM GitHub Archiver</em></a>, a standalone program as well as a GitHub Action that lets you automatically archive <a class="reference external" href="https://github.com">GitHub</a> software releases in an <a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> repository.</p>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is the basis for many institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> that enable users to preserve software and datasets in long-term archive. Though such repositories are critical resources, creating detailed records and uploading assets can be a tedious and error-prone process if done manually. This is where the <a class="reference external" href="https://github.com/caltechlibrary/iga"><em>InvenioRDM GitHub Archiver</em></a> (IGA) comes in.</p>
+<p>IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to archive GitHub releases automatically for a repository each time they are made.</p>
+<figure>
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%"/>
+<span style="font-size: 150%">➜</span>
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" width="40%"/>
+<figcaption>IGA sends metadata and assets from GitHub to an InvenioRDM server..</figcaption>
+</figure>
 <section id="sections">
 <h2 id="sections">Sections<a class="headerlink" href="#sections" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
