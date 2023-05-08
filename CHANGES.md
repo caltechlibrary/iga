@@ -1,5 +1,13 @@
 # Change log for IGA
 
+## Version 0.0.9 (TBD)
+
+Changes in this release:
+* `IGA` and `GitHub` are now added automatically to the list of subject tags in the InvenioRDM record created by IGA.
+* Debug mode will not cause `pdb` to be invoked upon an exception if IGA is running as a GitHub Action.
+* Documentation has been further expanded and improved.
+
+
 ## Version 0.0.8 (2023-05-04)
 
 This version fixes a few minor bugs, and improves documentation.

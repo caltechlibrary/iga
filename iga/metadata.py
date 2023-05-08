@@ -1141,6 +1141,13 @@ def subjects(repo, release, include_all):
         for lang in languages:
             subjects.add(lang)
 
+    # Always add GitHub as a tag.
+    subjects.add('GitHub')
+
+    # Always add a tag about IGA. Users are free to edit it out, but it helps
+    # repository maintainers to gauge manual vs automated record creation.
+    subjects.add('IGA')
+
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
 
