@@ -26,7 +26,7 @@ IGA relies most on the `codemeta.json` file. It considers information sources in
 4. The metadata provided by GitHub for the repository is used as a tertiary source of information if neither `codemeta.json` nor `CITATION.cff` files are provided, or IGA is invoked with the flag `--all-metadata`. (See the section on [Usage](cli-usage.md).)
 
 
-## How do you create them?
+## How can you create them?
 
 `codemeta.json` and `CITATION.cff` files are text files, and can be written by hand in a text editor. However, `codemeta.json` is more difficult to write by hand becasue of the JSON-LD syntax it uses, and in both cases, it is easier if you can use a software tool to generate the files. Here are some options available at this time:
 * The main [CodeMeta generator](https://codemeta.github.io/codemeta-generator/)
@@ -214,9 +214,9 @@ It can be helpful to have a sense for how IGA computes the values of the fields 
 
 ## What if you have neither?
 
-If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will automatically act as if the `--all-metadata` option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
+If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will do its best using only the metata provided by GitHub for the release and the repository. While the resulting InvenioRDM record will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
 
 
 ## What if IGA misses things?
 
-If you have a `codemeta.json` and/or a `CITATION.cff` file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the `--all-metadata` option. This may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.
+If you have a `codemeta.json` and/or a `CITATION.cff` file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the `--all-metadata` option. This will make IGA add more metadata obtained using the GitHub API, such as the list of contributors on the repository. The result may or may not be a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, there is also a risk that it will lead to more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.
