@@ -29,7 +29,7 @@ IGA creates metadata records and sends releases from GitHub to an InvenioRDM-bas
 
 <p align=center>
 <img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%">
-➜
+<span style="font-size: 150%">➜</span>
 <img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" width="40%">
 </p>
 
@@ -138,7 +138,7 @@ If you want the record to be only a draft and not a final version (perhaps so th
 iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
-More options and examples can be found in the section on [detailed usage information](cli-usage.md).
+More options and examples can be found in the section on [detailed usage information](#usage) below.
 
 
 ### GitHub Action use
