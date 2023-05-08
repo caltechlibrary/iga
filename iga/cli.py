@@ -706,7 +706,9 @@ possible values:
                    f' {iga.__url__}/.\n\n{error_type}: {str(ex)}', False)
             exit_code = ExitCode.exception
 
-        if os.environ.get('IGA_RUN_MODE') == 'debug':
+        # If mode is debug, drop into pdb unless we're running as a GHA.
+        if (os.environ.get('IGA_RUN_MODE') == 'debug'
+                and 'GITHUB_ACTION' not in os.environ):
             import pdb
             import traceback
             exception = sys.exc_info()
