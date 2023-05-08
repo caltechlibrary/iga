@@ -68,4 +68,4 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        echo ${{github.repository_owner}} " " ${{github.repository#*/}} " " ${{github.ref}}
+        echo ${{github.repository_owner}} " " ${{ github.event.repository.name }} " " ${{github.ref}}
