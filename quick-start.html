@@ -272,14 +272,14 @@
     <li class="md-nav__item">
     
     
-      <a href="#essential-configuration" class="md-nav__link">Essential configuration</a>
+      <a href="#command-line-use" class="md-nav__link">Command-line use</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="#examples-of-use" class="md-nav__link">Examples of use</a>
+      <a href="#github-action-use" class="md-nav__link">GitHub Action use</a>
       
     
     </li></ul>
@@ -405,7 +405,7 @@
     <li class="md-nav__item">
     
     
-      <a href="tips.html#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
+      <a href="tips.html#how-can-you-create-them" class="md-nav__link">How can you create them?</a>
       
     
     </li>
@@ -484,42 +484,20 @@
             
   <section id="quick-start">
 <h1 id="quick-start--page-root">Quick start<a class="headerlink" href="#quick-start--page-root" title="Permalink to this heading">¶</a></h1>
-<p>After a successful <a class="reference internal" href="installation.html"><span class="std std-doc">installation</span></a> of IGA, here is how you can get started quickly.</p>
-<section id="essential-configuration">
-<h2 id="essential-configuration">Essential configuration<a class="headerlink" href="#essential-configuration" title="Permalink to this heading">¶</a></h2>
-<p>IGA needs only a few pieces of information to do its work, and the information can be provided in more than one way:</p>
+<section id="command-line-use">
+<h2 id="command-line-use">Command-line use<a class="headerlink" href="#command-line-use" title="Permalink to this heading">¶</a></h2>
+<p>If the <a class="reference internal" href="installation.html"><span class="std std-doc">installation</span></a> process is successful, you should end up with a program named <code class="docutils literal notranslate"><span class="pre">iga</span></code> in a location where software is normally installed on your computer.  Running <code class="docutils literal notranslate"><span class="pre">iga</span></code> should be as simple as running any other command-line program. For example, the following command should print a helpful message to your terminal:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>IGA’s main purpose is to create a metadata record in an InvenioRDM server and attach a GitHub release archive to the record. IGA needs 4 pieces of information to do its work, though for simple repositories you can often get by with just 3:</p>
 <ol class="arabic simple">
-<li><p>(Required) The identity of the GitHub release. Methods available:</p>
-<ul class="simple">
-<li><p>The URL of the web page of a tagged release in GitHub, <em>or</em></p></li>
-<li><p>Values for the options <code class="docutils literal notranslate"><span class="pre">--account</span></code>, <code class="docutils literal notranslate"><span class="pre">--repo</span></code>, and a release tag.</p></li>
-</ul>
-</li>
-<li><p>(Required) The address of the InvenioRDM server. Methods available:</p>
-<ul class="simple">
-<li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code>, <em>or</em></p></li>
-<li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-server</span></code></p></li>
-</ul>
-</li>
-<li><p>(Required) A Personal Access Token (PAT) for the InvenioRDM server. Methods available:</p>
-<ul class="simple">
-<li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code>, <em>or</em></p></li>
-<li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--invenio-token</span></code></p></li>
-</ul>
-</li>
-<li><p>(Optional) A Personal Access Token for GitHub. Methods available:</p>
-<ul class="simple">
-<li><p>The value of the environment variable <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>, <em>or</em></p></li>
-<li><p>The value of the option <code class="docutils literal notranslate"><span class="pre">--github-token</span></code></p></li>
-</ul>
-</li>
+<li><p>(Required) The identity of the GitHub release to be archived</p></li>
+<li><p>(Required) The address of the destination InvenioRDM server</p></li>
+<li><p>(Required) A Personal Access Token (PAT) for the InvenioRDM server</p></li>
+<li><p>(Optional) A Personal Access Token for GitHub</p></li>
 </ol>
-<p>More information about other IGA options, such as how to create a new version of an existing InvenioRDM record, is provided in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">detailed usage information</span></a>.</p>
-</section>
-<section id="examples-of-use">
-<h2 id="examples-of-use">Examples of use<a class="headerlink" href="#examples-of-use" title="Permalink to this heading">¶</a></h2>
-<p>A common way of configuring IGA is to set environment variables in your shell script or your interactive shell. Here is an example using Bash shell syntax, with realistic-looking but fake
-token values:</p>
+<p>The first one (the identity of the GitHub release) is given as arguments to IGA on the command line; the rest can be provided either via command-line options or by setting environment variables. A common way of configuring IGA is to set environment variables in your shell script or your interactive shell. Here is an example using Bash shell syntax, with realistic-looking but fake token values:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">INVENIO_SERVER</span><span class="o">=</span>https://data.caltech.edu
 <span class="nb">export</span><span class="w"> </span><span class="nv">INVENIO_TOKEN</span><span class="o">=</span>qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
 <span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span>ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
@@ -538,6 +516,9 @@ token values:</p>
 </pre></div>
 </div>
 <p>More options and examples can be found in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">detailed usage information</span></a>.</p>
+</section>
+<section id="github-action-use">
+<h2 id="github-action-use">GitHub Action use<a class="headerlink" href="#github-action-use" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 
@@ -588,7 +569,7 @@ token values:</p>
               
           </div>
             Last updated on
-              May 05, 2023.
+              May 08, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.

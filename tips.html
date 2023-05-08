@@ -263,14 +263,14 @@
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#essential-configuration" class="md-nav__link">Essential configuration</a>
+      <a href="quick-start.html#command-line-use" class="md-nav__link">Command-line use</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#examples-of-use" class="md-nav__link">Examples of use</a>
+      <a href="quick-start.html#github-action-use" class="md-nav__link">GitHub Action use</a>
       
     
     </li></ul>
@@ -405,7 +405,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#how-do-you-create-them" class="md-nav__link">How do you create them?</a>
+      <a href="#how-can-you-create-them" class="md-nav__link">How can you create them?</a>
       
     
     </li>
@@ -505,8 +505,8 @@
 <li><p>The metadata provided by GitHub for the repository is used as a tertiary source of information if neither <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files are provided, or IGA is invoked with the flag <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code>. (See the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">Usage</span></a>.)</p></li>
 </ol>
 </section>
-<section id="how-do-you-create-them">
-<h2 id="how-do-you-create-them">How do you create them?<a class="headerlink" href="#how-do-you-create-them" title="Permalink to this heading">¶</a></h2>
+<section id="how-can-you-create-them">
+<h2 id="how-can-you-create-them">How can you create them?<a class="headerlink" href="#how-can-you-create-them" title="Permalink to this heading">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files are text files, and can be written by hand in a text editor. However, <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> is more difficult to write by hand becasue of the JSON-LD syntax it uses, and in both cases, it is easier if you can use a software tool to generate the files. Here are some options available at this time:</p>
 <ul class="simple">
 <li><p>The main <a class="reference external" href="https://codemeta.github.io/codemeta-generator/">CodeMeta generator</a></p></li>
@@ -691,11 +691,11 @@
 </section>
 <section id="what-if-you-have-neither">
 <h2 id="what-if-you-have-neither">What if you have neither?<a class="headerlink" href="#what-if-you-have-neither" title="Permalink to this heading">¶</a></h2>
-<p>If the repository you are archiving has neither a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, IGA will automatically act as if the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option is being used. This helps produce a more complete InvenioRDM record, and while the result will not be as comprehensive as if a repository has a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or at least a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, it will be better than nothing.</p>
+<p>If the repository you are archiving has neither a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> nor a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, IGA will do its best using only the metata provided by GitHub for the release and the repository. While the resulting InvenioRDM record will not be as comprehensive as if a repository has a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> or at least a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file, it will be better than nothing.</p>
 </section>
 <section id="what-if-iga-misses-things">
 <h2 id="what-if-iga-misses-things">What if IGA misses things?<a class="headerlink" href="#what-if-iga-misses-things" title="Permalink to this heading">¶</a></h2>
-<p>If you have a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option. This may or may not result in a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, it can also produce more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.</p>
+<p>If you have a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or a <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the <code class="docutils literal notranslate"><span class="pre">--all-metadata</span></code> option. This will make IGA add more metadata obtained using the GitHub API, such as the list of contributors on the repository. The result may or may not be a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, there is also a risk that it will lead to more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.</p>
 </section>
 </section>
 
@@ -746,7 +746,7 @@
               
           </div>
             Last updated on
-              May 05, 2023.
+              May 08, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
