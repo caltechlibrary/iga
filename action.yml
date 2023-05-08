@@ -1,0 +1,61 @@
+# =============================================================================
+# @file    action.yml
+# @brief   GitHub Action definition file for the InvenioRDM GitHub Archiver
+# @author  Michael Hucka <mhucka@caltech.edu>
+# @license Please see the file named LICENSE in the repository
+# @repo    https://github.com/caltechlibrary/iga
+# =============================================================================
+
+name: 'IGA'
+description: "Automatically archive GitHub releases in an InvenioRDM repository"
+author: 'Michael Hucka -- https://github.com/mhucka'
+branding:
+  icon: upload-cloud
+  color: orange
+
+inputs:
+  INVENIO_SERVER:
+    description: 'Address of destination InvenioRDM server.'
+    required: true
+  INVENIO_TOKEN:
+    description: 'Personal Access Token for InvenioRDM server.'
+    required: true
+  GITHUB_TOKEN:
+    description: 'GitHub token (automatically created by GitHub).'
+    default: ${{ github.token }}
+    required: false
+  all_assets:
+    description: 'Attach all GitHub assets, not just the source ZIP.'
+    default: false
+    required: false
+  all_metadata:
+    description: 'Include additional metadata from GitHub.'
+    default: false
+    required: false
+  community:
+    description: 'Submit record to the designated RDM community.'
+    default: false
+    required: false
+  draft:
+    description: 'Mark the RDM record as a draft.'
+    default: false
+    required: false
+  debug:
+    description: 'Print debugging info in the GitHub Action output.'
+    default: false
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Install Python
+      uses: actions/checkout@v3
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.11
+
+    - name: Install IGA and dependencies
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r $GITHUB_ACTION_PATH/requirements.txt
