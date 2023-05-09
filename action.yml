@@ -93,5 +93,5 @@ runs:
         INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
-      run: >
+      run: |
         iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --log-dest - --mode debug ${{github.ref_name}}
