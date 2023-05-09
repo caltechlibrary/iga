@@ -282,6 +282,9 @@ def additional_descriptions(repo, release, include_all):
     # Helper functions used in what follows next. All of the fields we use
     # below are supposed to be strings or URLs, per the CodeMeta & CFF specs.
     def add(item, role, summary):
+        if item is None:
+            log(f'not using {summary} because it\'s empty')
+            return
         if item and not isinstance(item, str):
             log(f'not using {summary} because it\'s not the expected data type')
             return
@@ -575,9 +578,9 @@ def description(repo, release, include_all, internal_call=False):
             log(f'adding {value_name} as "description"')
             return html_from_md(text.strip())
 
-    # Bummer.
+    # Bummer. Invenio won't accept an empty string, so we have to put something.
     log('could not find a usable value for the "description" field')
-    return ''
+    return '(No description provided.)'
 
 
 def formats(repo, release, include_all):
