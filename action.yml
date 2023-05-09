@@ -61,10 +61,20 @@ runs:
         python -m pip install --upgrade pip
         python -m pip install iga
 
-    - name: Gather data.
+    - name: Dump GitHub Actions context and variables if debugging is on.
+      if: inputs.debug == true || inputs.debug == 'true'
+      env:
+        # Setting this variable and then printing it below is not strictly
+        # necessary; you could put the expression directly into the echo
+        # command below. But when I do that, I get a doubling of the output.
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
       shell: bash
       run: |
-        echo tag=${GITHUB_REF#refs/tags/} >> $GITHUB_ENV
+        echo "repository_owner = ${{github.repository_owner}}"
+        echo "repository = ${{github.event.repository.name}}"
+        echo "release tag = ${{github.ref_name}}"
+        echo "====================="
+        echo "$GITHUB_CONTEXT"
 
     - name: Run IGA.
       shell: bash
@@ -73,4 +83,4 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        iga -a ${{github.repository_owner}} -r ${{ github.event.repository.name }} ${{env.tag}}
+        iga -a ${{github.repository_owner}} -r ${{github.event.repository.name}} ${{github.ref_name}}
