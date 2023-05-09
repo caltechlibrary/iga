@@ -143,8 +143,23 @@ def github_release_assets(account_name, repo_name, tag_name, get_all):
         assets.append(release.tarball_url)
         for asset in release.assets:
             assets.append(asset.browser_download_url)
+
     log(f'found {len(assets)} assets for release "{tag_name}"')
     return assets
+
+
+def github_asset_contents(asset_url):
+    '''Return the raw contents of a release asset file.'''
+    try:
+        response = _github_get(asset_url)
+        return response.content
+    except KeyboardInterrupt:
+        raise
+    except commonpy.exceptions.CommonPyException:
+        raise GitHubError(f'Failed to download GitHub asset at {asset_url}'
+                          ' – either it does not exist or it is inaccessible.')
+    except Exception:
+        raise
 
 
 def github_repo_filenames(repo, tag_name):
@@ -336,7 +351,7 @@ def _object_for_github(api_url, cls):
 
 
 def _github_get(endpoint):
-    headers = {'Accept': 'application/vnd.github.v3+json'}
+    headers = {'Accept': 'application/vnd.github+json'}
     using_token = 'GITHUB_TOKEN' in os.environ
     if using_token:
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
