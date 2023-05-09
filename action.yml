@@ -20,10 +20,12 @@ inputs:
   INVENIO_TOKEN:
     description: 'Personal Access Token for InvenioRDM server.'
     required: true
-  GITHUB_TOKEN:
-    description: 'GitHub token (automatically created by GitHub).'
-    default: ${{ github.token }}
-    required: false
+  # GITHUB_TOKEN:
+  #   description: 'GitHub token (automatically created by GitHub).'
+  #   default: ${{ github.token }}
+  #   required: false
+  release_tag:
+    required: true
   all_assets:
     description: 'Attach all GitHub assets, not just the source ZIP.'
     default: false
@@ -48,14 +50,48 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Install Python
-      uses: actions/checkout@v3
+    - name: Install Python.
       uses: actions/setup-python@v4
       with:
         python-version: 3.11
+        cache: pip
 
-    - name: Install IGA and dependencies
+    - name: Cache dependencies.
+      uses: actions/cache@v2
+      id: pip-cache
+      with:
+        path: ${{env.pythonLocation}}/lib/python3.11/site-packages/*
+        key: ${{runner.os}}-pip-${{hashFiles('**/requirements.txt')}}
+        restore-keys: |
+          ${{runner.os}}-pip-
+          ${{runner.os}}-
+
+    - name: Install IGA and dependencies.
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        pip install -r $GITHUB_ACTION_PATH/requirements.txt
+        python -m pip install iga
+
+    - name: Dump GitHub Actions context and variables if debugging is on.
+      if: inputs.debug == true || inputs.debug == 'true'
+      env:
+        # Setting this variable and then printing it below is not strictly
+        # necessary; you could put the expression directly into the echo
+        # command below. But when I do that, I get a doubling of the output.
+        GITHUB_CONTEXT: ${{ toJSON(github) }}
+      shell: bash
+      run: |
+        echo "repository_owner = ${{github.repository_owner}}"
+        echo "repository = ${{github.event.repository.name}}"
+        echo "release tag = ${{github.ref_name}}"
+        echo "====================="
+        echo "$GITHUB_CONTEXT"
+
+    - name: Run IGA.
+      shell: bash
+      env:
+        INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
+        INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --log-dest - --mode debug ${{github.ref_name}}
