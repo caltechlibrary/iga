@@ -288,7 +288,7 @@ clean-other:;
 	rm -rf .cache
 	rm -rf .pytest_cache
 
-.PHONY: help vars report release test-branch \
+.PHONY: help vars report release test-branch test tests \
 	update-init update-meta update-citation commit-updates \
 	release-on-github print-instructions update-doi \
 	packages test-pypi pypi clean really-clean completely-clean \

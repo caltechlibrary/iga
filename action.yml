@@ -20,12 +20,6 @@ inputs:
   INVENIO_TOKEN:
     description: 'Personal Access Token for InvenioRDM server.'
     required: true
-  # GITHUB_TOKEN:
-  #   description: 'GitHub token (automatically created by GitHub).'
-  #   default: ${{ github.token }}
-  #   required: false
-  release_tag:
-    required: true
   all_assets:
     description: 'Attach all GitHub assets, not just the source ZIP.'
     default: false
