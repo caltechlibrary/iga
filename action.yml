@@ -54,8 +54,10 @@ runs:
       uses: actions/setup-python@v4
       with:
         python-version: 3.11
+        cache: pip
+        cache-dependency-path: setup.py
 
-    - name: Install IGA.
+    - name: Install IGA and dependencies.
       shell: bash
       run: |
         python -m pip install --upgrade pip
@@ -82,5 +84,9 @@ runs:
         INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
-      run: |
-        iga -a ${{github.repository_owner}} -r ${{github.event.repository.name}} ${{github.ref_name}}
+      run: >
+        iga --github-account ${{github.repository_owner}}
+            --github-repo ${{github.event.repository.name}}
+            --mode debug
+            --log-dest -
+            ${{github.ref_name}}
