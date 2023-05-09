@@ -68,4 +68,4 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        iga -u ${{github.repository_owner}} -r ${{ github.event.repository.name }} ${{github.ref}}
+        iga -a ${{github.repository_owner}} -r ${{ github.event.repository.name }} ${{github.ref}}
