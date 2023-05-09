@@ -25,6 +25,7 @@ from   iga.exceptions import (
     InvenioRDMError,
     RecordNotFound,
 )
+from   iga.github import github_asset_contents
 from   iga.id_utils import normalize_invenio_rdm
 
 
@@ -171,18 +172,8 @@ def invenio_upload(record, asset, print_status):
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
-        try:
-            response = network('get', asset)
-        except KeyboardInterrupt:
-            raise
-        except commonpy.exceptions.CommonPyException:
-            raise InvenioRDMError(f'Failed to download GitHub asset {asset} and'
-                                  ' therefore cannot attach it to the record.')
-        except Exception:
-            raise
-
+        content = github_asset_contents(asset)
         print_status('done')
-        content = response.content
         size = humanize.naturalsize(len(content))
         log(f'downloaded {size} bytes of {asset}')
     else:
