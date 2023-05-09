@@ -7,7 +7,7 @@ If the [installation](installation.md) process is successful, you should end up 
 iga --help
 ```
 
-IGA's main purpose is to create a metadata record in an InvenioRDM server and attach a GitHub release archive to the record. IGA needs 4 pieces of information to do its work, though for simple repositories you can often get by with just 3:
+IGA needs 4 pieces of information to do its work, though for simple repositories you can often get by with just 3:
 1. (Required) The identity of the GitHub release to be archived
 2. (Required) The address of the destination InvenioRDM server
 3. (Required) A Personal Access Token (PAT) for the InvenioRDM server
