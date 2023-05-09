@@ -55,7 +55,6 @@ runs:
       with:
         python-version: 3.11
         cache: pip
-        cache-dependency-path: setup.py
 
     - name: Install IGA and dependencies.
       shell: bash
@@ -85,8 +84,7 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: >
-        iga --github-account ${{github.repository_owner}}
+        iga --log-dest - --mode debug
+            --github-account ${{github.repository_owner}}
             --github-repo ${{github.event.repository.name}}
-            --mode debug
-            --log-dest -
             ${{github.ref_name}}
