@@ -1068,13 +1068,13 @@ def rights(repo, release, include_all):
                 log('found a license file in the repo: "' + basename + ext + '"')
                 # There's no safe way to summarize arbitrary license text,
                 # so we can't provide a 'description' field value.
-                rights = {'title': {'en': 'License'},
-                          'link': github_file_url(repo, basename + ext)}
+                rights = [{'title': {'en': 'License'},
+                           'link': github_file_url(repo, basename + ext)}]
                 break
         else:
             continue
         break
-    return [rights]
+    return rights
 
 
 def sizes(repo, release, include_all):
