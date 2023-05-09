@@ -3,7 +3,6 @@
 ## Version 0.0.10 (2023-05-09)
 
 Changes in this release:
-* IGA now checks that releases have file assets on GitHub and stops if they don't, unless running with the `--draft` option, or `--file` is used to add other files explicitly, or the record is being saved locally (using `--save-record`).
 * IGA won't fail if the GitHub release description is empty and the repo doesn't have a `codemeta.json` nor a `CITATION.cff` file.
 * IGA won't fail if the GitHub repo doesn't have a license and there are no `codemeta.json` or `CITATION.cff` files.
 * IGA will properly get release assets from private repos (assuming the user has access to the private repo). Previously, it would erroneously think the repo had no assets.
