@@ -56,6 +56,16 @@ runs:
         python-version: 3.11
         cache: pip
 
+    - name: Cache dependencies.
+      uses: actions/cache@v2
+      id: pip-cache
+      with:
+        path: ${{env.pythonLocation}}/lib/python3.11/site-packages/*
+        key: ${{runner.os}}-pip-${{hashFiles('**/requirements.txt')}}
+        restore-keys: |
+          ${{runner.os}}-pip-
+          ${{runner.os}}-
+
     - name: Install IGA and dependencies.
       shell: bash
       run: |
@@ -84,7 +94,4 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: >
-        iga --log-dest - --mode debug
-            --github-account ${{github.repository_owner}}
-            --github-repo ${{github.event.repository.name}}
-            ${{github.ref_name}}
+        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --log-dest - --mode debug ${{github.ref_name}}
