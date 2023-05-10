@@ -44,17 +44,20 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Check out the repo.
+      uses: actions/checkout@v3
+
     - name: Install Python.
       uses: actions/setup-python@v4
       with:
-        python-version: 3.11
-        cache: pip
+        python-version: "3.11"
+        cache: "pip"
 
-    - name: Install IGA and dependencies.
+    - name: Install dependencies.
       shell: bash
       run: |
         python -m pip install --upgrade pip
-        python -m pip install iga
+        python -m pip install -r requirements.txt
 
     - name: Dump GitHub Actions context and variables if debugging is on.
       if: inputs.debug == true || inputs.debug == 'true'
@@ -78,4 +81,4 @@ runs:
         INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode debug ${{github.ref_name}}
+        python -m iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode debug ${{github.ref_name}}
