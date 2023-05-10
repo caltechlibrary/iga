@@ -79,6 +79,28 @@ runs:
         else
           echo "mode=debug" >> "$GITHUB_ENV"
         fi
+        if [ ! ${{inputs.draft}} == 'false' ]; then
+          echo "draft='--draft'" >> "$GITHUB_ENV"
+        else
+          echo "draft=''" >> "$GITHUB_ENV"
+        fi
+        if [ ! ${{inputs.all_assets}} == 'false' ]; then
+          echo "all_assets='--all-assets'" >> "$GITHUB_ENV"
+        else
+          echo "all_assets=''" >> "$GITHUB_ENV"
+        fi
+        if [ ! ${{inputs.all_metadata}} == 'false' ]; then
+          echo "all_metadata='--all-metadata'" >> "$GITHUB_ENV"
+        else
+          echo "all_metadata=''" >> "$GITHUB_ENV"
+        fi
+        if [ ! ${{inputs.community}} == 'false' ]; then
+          echo "use_community='--community'" >> "$GITHUB_ENV"
+          echo "community='${{inputs.community}}'" >> "$GITHUB_ENV"
+        else
+          echo "use_community=''" >> "$GITHUB_ENV"
+          echo "community=''" >> "$GITHUB_ENV"
+        fi
 
     - name: Run IGA.
       shell: bash
@@ -87,4 +109,4 @@ runs:
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
       run: |
-        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode ${{env.mode}} ${{github.ref_name}}
+        iga --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} $${{env.use_community}} $${{env.community}} ${{github.ref_name}}
