@@ -217,6 +217,9 @@ def _print_help_and_exit(ctx):
 
 
 def _print_text(text, color='turquoise4', end='\n', wrap=True):
+    '''Print the text to the console, unless quiet mode is in effect.'''
+    if os.environ.get('IGA_RUN_MODE') == 'quiet':
+        return
     import shutil
     width = (shutil.get_terminal_size().columns - 2) or 78
     if wrap:
@@ -276,8 +279,7 @@ def _inform(text, end='\n'):
             ustart, uend = match.start(), match.end()
             url = text[ustart:uend]
             text = text[:ustart] + '[link=' + url + ']' + url + '[/]' + text[uend:]
-    if os.environ.get('IGA_RUN_MODE') != 'quiet':
-        _print_text(text, 'turquoise4', end=end, wrap=(not contains_url))
+    _print_text(text, 'turquoise4', end=end, wrap=(not contains_url))
 
 
 def _list_communities(ctx, param, value):
