@@ -6,38 +6,35 @@
 # @repo    https://github.com/caltechlibrary/iga
 # =============================================================================
 
-name: 'IGA'
+name: "IGA"
 description: "Automatically archive GitHub releases in an InvenioRDM repository"
-author: 'Michael Hucka -- https://github.com/mhucka'
+author: "Michael Hucka -- https://github.com/mhucka"
 branding:
   icon: upload-cloud
   color: orange
 
 inputs:
   INVENIO_SERVER:
-    description: 'Address of destination InvenioRDM server.'
-    required: true
-  INVENIO_TOKEN:
-    description: 'Personal Access Token for InvenioRDM server.'
+    description: "Address of destination InvenioRDM server."
     required: true
   all_assets:
-    description: 'Attach all GitHub assets, not just the source ZIP.'
+    description: "Attach all GitHub assets, not just the source ZIP."
     default: false
     required: false
   all_metadata:
-    description: 'Include additional metadata from GitHub.'
+    description: "Include additional metadata from GitHub."
     default: false
     required: false
   community:
-    description: 'Submit record to the designated RDM community.'
+    description: "Submit record to the designated RDM community."
     default: false
     required: false
   draft:
-    description: 'Mark the RDM record as a draft.'
+    description: "Mark the RDM record as a draft."
     default: false
     required: false
   debug:
-    description: 'Print debugging info in the GitHub Action output.'
+    description: "Print debugging info in the GitHub Action output."
     default: false
     required: false
 
@@ -75,7 +72,7 @@ runs:
       shell: bash
       env:
         INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
-        INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
+        INVENIO_TOKEN: ${{ secrets.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --log-dest - --mode debug ${{github.ref_name}}
+        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode debug ${{github.ref_name}}
