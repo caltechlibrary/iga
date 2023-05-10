@@ -17,6 +17,9 @@ inputs:
   INVENIO_SERVER:
     description: "Address of destination InvenioRDM server."
     required: true
+  INVENIO_TOKEN:
+    description: "Personal Access Token for InvenioRDM server."
+    required: true
   all_assets:
     description: "Attach all GitHub assets, not just the source ZIP."
     default: false
@@ -72,7 +75,7 @@ runs:
       shell: bash
       env:
         INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
-        INVENIO_TOKEN: ${{ secrets.INVENIO_TOKEN }}
+        INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode debug ${{github.ref_name}}
