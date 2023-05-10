@@ -73,6 +73,7 @@ runs:
 
     - name: Set default IGA verbosity if debugging is off.
       if: inputs.debug == false
+      shell: bash
       env:
         mode: "verbose"
 
