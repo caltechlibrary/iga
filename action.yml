@@ -62,7 +62,6 @@ runs:
         # necessary; you could put the expression directly into the echo
         # command below. But when I do that, I get a doubling of the output.
         GITHUB_CONTEXT: ${{toJSON(github)}}
-        mode: "debug"
       shell: bash
       run: |
         echo "repository_owner = ${{github.repository_owner}}"
@@ -71,11 +70,15 @@ runs:
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
-    - name: Set default IGA verbosity if debugging is off.
-      if: inputs.debug == false
+    - name: Configure IGA variables.
+      id: vars
       shell: bash
-      env:
-        mode: "verbose"
+      run: |
+        if [ ${{inputs.debug}} == 'false' ]; then
+          echo "mode=verbose" >> "$GITHUB_ENV"
+        else
+          echo "mode=debug" >> "$GITHUB_ENV"
+        fi
 
     - name: Run IGA.
       shell: bash
