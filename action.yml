@@ -61,7 +61,8 @@ runs:
         # Setting this variable and then printing it below is not strictly
         # necessary; you could put the expression directly into the echo
         # command below. But when I do that, I get a doubling of the output.
-        GITHUB_CONTEXT: ${{ toJSON(github) }}
+        GITHUB_CONTEXT: ${{toJSON(github)}}
+        mode: "debug"
       shell: bash
       run: |
         echo "repository_owner = ${{github.repository_owner}}"
@@ -70,11 +71,16 @@ runs:
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
+    - name: Set default IGA verbosity if debugging is off.
+      if: inputs.debug == false
+      env:
+        mode: "verbose"
+
     - name: Run IGA.
       shell: bash
       env:
-        INVENIO_SERVER: ${{ inputs.INVENIO_SERVER }}
-        INVENIO_TOKEN: ${{ inputs.INVENIO_TOKEN }}
-        GITHUB_TOKEN: ${{ github.token }}
+        INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
+        INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
+        GITHUB_TOKEN: ${{github.token}}
       run: |
-        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode debug ${{github.ref_name}}
+        iga --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --mode ${{env.mode}} ${{github.ref_name}}
