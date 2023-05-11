@@ -1,6 +1,6 @@
 # IGA<img width="12%" align="right" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/cloud-upload.png">
 
-IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a GitHub Action that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
+IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Action](https://github.com/marketplace/actions/iga) that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
 
 [![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases)
 [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/LICENSE)
@@ -49,11 +49,13 @@ IGA offers many notable features:
 
 ## Installation
 
+You can install IGA as either a typical command-line program on your computer or as a [GitHub Action](https://docs.github.com/en/actions).
+
 ### As a standalone command-line program
 
 There are multiple ways of installing IGA.  Please choose the alternative that suits you.
 
-#### _Alternative 1: installing IGA using `pipx`_
+<details><summary><h4><i>Alternative 1: installing IGA using <code>pipx</code></i></h4></summary>
 
 [Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
 ```sh
@@ -61,9 +63,8 @@ pipx install iga
 ```
 
 Pipx can also let you run IGA directly using `pipx run iga`, although in that case, you must always prefix every IGA command with `pipx run`.  Consult the [documentation for `pipx run`](https://github.com/pypa/pipx#walkthrough-running-an-application-in-a-temporary-virtual-environment) for more information.
-
-
-#### _Alternative 2: installing IGA using `pip`_
+</details>
+<details><summary><h4><i>Alternative 2: installing IGA using <code>pip</code></i></h4></summary>
 
 You should be able to install `iga` with [`pip`](https://pip.pypa.io/en/stable/installing/) for Python&nbsp;3.  To install `iga` from the [Python package repository (PyPI)](https://pypi.org), run the following command:
 ```sh
@@ -76,32 +77,78 @@ python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 ```
 
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
+</details>
+<details><summary><h4><i>Alternative 3: installing IGA from sources</i></h4></summary>
 
-
-#### _Alternative 3: installing IGA from sources_
-
-If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:
+If  you prefer to install IGA directly from the source code, first obtain a copy of the source files by either (a) downloading the source archive from the [IGA releases page on GitHub](https://github.com/caltechlibrary/iga/releases), or (b) using `git` to clone the GitHub repository to a location on your computer:
 ```sh
 git clone https://github.com/caltechlibrary/iga
 ```
-
-Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip>
 
 Next, after getting a copy of the files,  run `setup.py` inside the code directory:
 ```sh
 cd iga
 python3 setup.py install
 ```
-
+</details>
 
 ### As a GitHub Action
 
-[...forthcoming...]
+There are three steps: (A) obtain a Personal Access Token (PAT) from your InvenioRDM server, (B) save the token as a "secret" along with the server address in your GitHub repository, and (C) create an action workflow file in your repository.
+
+#### A. Obtain an access token from InvenioRDM
+
+<img src="docs/_static/media/get-invenio-pat.png" width="50%" align="right">
+
+1. Log in to your InvenioRDM server account.
+2. Find the _Applications_ page of your account.
+3. Click the <kbd>New token</kbd> button next to "Personal access tokens" on the _Applications_ page.
+4. Name your token (the name does not matter) and click the <kbd>Create</kbd> button.
+5. After InvenioRDM creates and shows you the token, **copy the token string to a safe location** because InvenioRDM will not show it again.
+
+#### B. Save the token and server address as variables in your GitHub repository
+
+1. Go to the _Settings_ page of your GitHub repository. (Note: in the repository, not your user account!)
+2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_.<p align="center"><img src="docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
+3. In the next page, click the green <kbd>New repository secret</kbd> button.<p align="center"><img src="docs/_static/media/github-secrets.png" width="60%"></p>
+4. Name the new variable `INVENIO_TOKEN` and paste in the token string you obtained in step A.5 above.
+5. Finish the new variable by clicking the green <kbd>Add secret</kbd> button.
+
+
+#### C. Create a GitHub action workflow in your repository
+
+1. In the main branch of your GitHub repository, create a `.github/workflows` directory.
+2. In that directory, create a new file named (e.g.) `archive-releases.yml` and paste the following into it:
+    ```yaml
+    on:
+      release:
+        types: [published]
+      workflow_dispatch:
+
+    jobs:
+      Archive-in-InvenioRDM:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: caltechlibrary/iga@main
+            with:
+              # 👋🏻 Change the following value to be your actual InvenioRDM server 👋🏻
+              INVENIO_SERVER: https://your-invenio-server.edu
+
+              # The following variables are optional. See the IGA docs for more info.
+              debug: false
+              draft: false
+              community: false
+              all_assets: false
+              all_metadata: false
+
+              # The following must be set and should usually be left as-is.
+              INVENIO_TOKEN: ${{secrets.INVENIO_TOKEN}}
+    ```
+3. Edit the value of `INVENIO_SERVER` above ↑ to the correct address of your InvenioRDM server.
+4. Save the file, commit the changes to git, and (if you did the steps above outside of GitHub) push your changes to GitHub.
 
 
 ## Quick start
-
-After a successful [installation](#installation) of IGA, here is how you can get started quickly.
 
 ### Command-line use
 
@@ -123,19 +170,14 @@ export INVENIO_TOKEN=qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
 export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 ```
 
-Once these environment variables set in your shell, you can more easily invoke IGA. Usage can be as simple as providing a URL for a release in GitHub. For example:
+Once these environment variables set in your shell, you can more easily invoke IGA. Usage can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for release `v1.2.0` of one of the author's other projects:
 ```shell
-iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
+iga -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
 If you give the option `--open` (or `-o` for short) to IGA, it will open the newly-created InvenioRDM entry in your default web browser when it's done:
 ```shell
-iga -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
-```
-
-If you want the record to be only a draft and not a final version (perhaps so that you can inspect the result and edit it before finalizing it), use the option `--draft` (or `-d` for short):
-```shell
-iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
+iga -o -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
 More options and examples can be found in the section on [detailed usage information](#usage) below.
@@ -143,7 +185,9 @@ More options and examples can be found in the section on [detailed usage informa
 
 ### GitHub Action use
 
-[...forthcoming...]
+With the GitHub Action workflow installed in your repository [as described above](#as-a-github-action), the next time you do a release in your GitHub repository, the workflow will archive the release in the InvenioRDM server determined by the value of `INVENIO_SERVER`.
+
+You can check the results (and look for errors if something went wrong) by going to the _Actions_ tab in your GitHub repository.
 
 
 ## Usage
@@ -162,7 +206,9 @@ To obtain a PAT from an InvenioRDM server, first log in to the server, then visi
 
 ### Providing a GitHub access token
 
-It is possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for many repositories, IGA will not hit the limit. However, if you run IGA multiple times in a row or your repository has many contributors, then you may need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use the option `--github-token` to pass the token on the command line, but **you are strongly advised to avoid this practice because it is insecure**.  To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication and follow the instructions for creating a "classic" personal access token.
+It _may_ be possible for you to run the command-line version of IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for some repositories IGA will not hit the limit. However, if you run IGA multiple times in a row or your repository has many contributors, then you may need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use the option `--github-token` to pass the token on the command line, but **you are strongly advised to avoid this practice because it is insecure**.  To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication and follow the instructions for creating a "classic" personal access token.
+
+Note that when you run IGA as a GitHub Action, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Action workflow.
 
 ### Specifying a GitHub release
 
@@ -232,9 +278,12 @@ Running IGA with the option `--save-metadata` will make it create a metadata rec
 
 The `--mode` option can be used to change the run mode. Four run modes are available: `quiet`, `normal`, `verbose`, and `debug`. The default mode is `normal`, in which IGA prints a few messages while it's working. The mode `quiet` will make it avoid printing anything unless an error occurs, the mode `verbose` will make it print a detailed trace of what it is doing, and the mode `debug` will make IGA even more verbose. In addition, in `debug` mode, IGA will drop into the `pdb` debugger if it encounters an exception during execution. On Linux and macOS, debug mode also installs a signal handler on signal USR1 that causes IGA to drop into the `pdb` debugger if the signal USR1 is received. (Use `kill -USR1 NNN`, where NNN is the IGA process id.)
 
-Networks latencies are unpredicatable. Reading and writing large files may take a long time; on the other hand, IGA should not wait forever before reporting an error if a server or network becomes unresponsive. To balance these conflicting needs, IGA automatically scales its network timeout based on file sizes. To override its adaptive algorithm and set an explicit timeout value, use the option `--timeout` with a value in seconds.
+By default, the output of the `normal`, `verbose`, and `debug` run modes is sent to the standard output (normally the terminal console). The option `--log-dest` can be used to send the output to the given destination instead. The value can be `-` to indicate console output, or a file path to send the output to the file. A special exception is that even if a log destination is given, IGA will still print the final record URL to stdout.  This makes it possible to invoke IGA from scripts that capture the record URL while still saving diagnostic output in case debugging is needed. Here is an example command line in which the final record URL is assigned to a variable named `url` (and note the quote characters are backquotes/backticks, not forward quotes):
+```shell
+  url=`iga -m verbose -l iga.out https://github.com/mhucka/taupe/releases/tag/v1.2.0`
+```
 
-By default, the output of the `verbose` and `debug` run modes is sent to the standard output (normally the terminal console). The option `--log-dest` can be used to send the output to the given destination instead. The value can be `-` to indicate console output, or a file path to send the output to the file.
+Networks latencies are unpredicatable. Reading and writing large files may take a long time; on the other hand, IGA should not wait forever before reporting an error if a server or network becomes unresponsive. To balance these conflicting needs, IGA automatically scales its network timeout based on file sizes. To override its adaptive algorithm and set an explicit timeout value, use the option `--timeout` with a value in seconds.
 
 If given the `--version` option, this program will print its version and other information, and exit without doing anything else.
 
@@ -289,7 +338,10 @@ This program exits with a return status code of 0 if no problem is encountered. 
 
 ## Known issues and limitations
 
-_[… forthcoming …]_
+The following are known issues and limitations.
+* As of early 2023, InvenioRDM requires names of record creators and other contributors to be split into given (first) and family (surname). This is problematic for multiple reasons. The first is that mononyms are common in many countries: a person's name may legitimately be only a single word which is not conceptually a "given" or "family" name.  To compound the difficulty for IGA, names are stored as single fields in GitHub account metadata, so unless a repository has a `codemeta.json` or `CITATION.cff` file (which allow authors more control over how they want their names represented), IGA is forced to try to split the single GitHub name string into two parts. _A foolproof algorithm for doing this does not exist_, so IGA will sometimes get it wrong. (That said, IGA goes to extraordinary lengths to try to do a good job.)
+* Some accounts on GitHub are software automation or "bot" accounts but are not labeled as such. These accounts are generally indistinguishable from human accounts on GitHub. If such an account is the creator of a release in GitHub, and IGA has to use its name-splitting algorithm on the name of the account, it may produce a nonsensical result. For example, it might turn "Travis CI" into an entry with a first name of "Travis" and last name of "CI". 
+
 
 ## Getting help
 
