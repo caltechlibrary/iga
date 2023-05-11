@@ -37,6 +37,9 @@ inputs:
     default: false
     required: false
   debug:
+    # Note that IGA has more modes than only debug on/off, but for
+    # simplicity, this action workflow only offers a binary toggle.
+    # Turning on debug also prints additional info in the workflow.
     description: "Print debugging info in the GitHub Action output."
     default: false
     required: false
@@ -44,16 +47,47 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Check out a copy of IGA.
+      uses: actions/checkout@v3
+
     - name: Install Python.
       uses: actions/setup-python@v4
+      id: setup
       with:
         python-version: "3.11"
 
-    - name: Install IGA.
+    - name: Create a virtualenv to be used as a cache.
       shell: bash
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install iga
+        python -m venv ./.venv
+
+    - name: Set up caching.
+      uses: actions/cache@v3
+      id: cache
+      with:
+        path: ./.venv/
+        key: venv-${{runner.os}}-${{hashFiles('./.venv/pyvenv.cfg')}}
+        restore-keys: |
+          venv-${{ runner.os }}-
+
+    # - name: Install IGA if it has not been cached yet.
+    #   if: steps.cache.outputs.cache-hit != 'true'
+    #   shell: bash
+    #   run: |
+    #     source ./.venv/bin/activate
+    #     python -m pip install iga
+
+    - name: echo
+      shell: bash
+      run: ls -a; ls -a .venv
+
+    - name: Install IGA.
+      shell: bash
+      # This second pip install will hit the cache for existing things,
+      # and will update the cache if iga has been updated.
+      run: |
+        source ./.venv/bin/activate
+        python -m pip install -U iga
 
     - name: Dump GitHub Actions context and variables if debugging is on.
       if: inputs.debug == true || inputs.debug == 'true'
@@ -104,11 +138,11 @@ runs:
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
       run: |
+        source ./.venv/bin/activate
         echo "record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{github.ref_name}})" >> $GITHUB_ENV
 
     - name: Summarize the results.
       shell: bash
       run: |
-        echo \#\# Results of archiving the release            >> $GITHUB_STEP_SUMMARY
-        echo URL of the finished record: ${{env.record_url}}  >> $GITHUB_STEP_SUMMARY
-        echo Date and time of this run: $(date "+%F %T (%Z)") >> $GITHUB_STEP_SUMMARY
+        echo \#\# Successfully archived release ${{github.ref_name}} >> $GITHUB_STEP_SUMMARY
+        echo URL of the new InvenioRDM record: ${{env.record_url}}   >> $GITHUB_STEP_SUMMARY

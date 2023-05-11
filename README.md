@@ -98,7 +98,7 @@ There are three steps: (A) obtain a Personal Access Token (PAT) from your Inveni
 
 #### A. Obtain an access token from InvenioRDM
 
-<img src="docs/_static/media/get-invenio-pat.png" width="50%" align="right">
+<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="50%" align="right">
 
 1. Log in to your InvenioRDM server account.
 2. Find the _Applications_ page of your account.
@@ -109,8 +109,8 @@ There are three steps: (A) obtain a Personal Access Token (PAT) from your Inveni
 #### B. Save the token and server address as variables in your GitHub repository
 
 1. Go to the _Settings_ page of your GitHub repository. (Note: in the repository, not your user account!)
-2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_.<p align="center"><img src="docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
-3. In the next page, click the green <kbd>New repository secret</kbd> button.<p align="center"><img src="docs/_static/media/github-secrets.png" width="60%"></p>
+2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_.<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
+3. In the next page, click the green <kbd>New repository secret</kbd> button.<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-secrets.png" width="60%"></p>
 4. Name the new variable `INVENIO_TOKEN` and paste in the token string you obtained in step A.5 above.
 5. Finish the new variable by clicking the green <kbd>Add secret</kbd> button.
 
