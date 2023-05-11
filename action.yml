@@ -47,15 +47,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: actions/checkout@v3
+
     - name: Install Python.
       uses: actions/setup-python@v4
       with:
         python-version: "3.11"
+        cache: 'pip'
 
     - name: Install IGA.
       shell: bash
-      # This second pip install will hit the cache for existing things,
-      # and will update the cache if iga has been updated.
       run: |
         python -m pip install iga
 
