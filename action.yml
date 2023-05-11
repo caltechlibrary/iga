@@ -47,47 +47,17 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Check out a copy of IGA.
-      uses: actions/checkout@v3
-
     - name: Install Python.
       uses: actions/setup-python@v4
-      id: setup
       with:
         python-version: "3.11"
-
-    - name: Create a virtualenv to be used as a cache.
-      shell: bash
-      run: |
-        python -m venv ./.venv
-
-    - name: Set up caching.
-      uses: actions/cache@v3
-      id: cache
-      with:
-        path: ./.venv/
-        key: venv-${{runner.os}}-${{hashFiles('./.venv/pyvenv.cfg')}}
-        restore-keys: |
-          venv-${{ runner.os }}-
-
-    # - name: Install IGA if it has not been cached yet.
-    #   if: steps.cache.outputs.cache-hit != 'true'
-    #   shell: bash
-    #   run: |
-    #     source ./.venv/bin/activate
-    #     python -m pip install iga
-
-    - name: echo
-      shell: bash
-      run: ls -a; ls -a .venv
 
     - name: Install IGA.
       shell: bash
       # This second pip install will hit the cache for existing things,
       # and will update the cache if iga has been updated.
       run: |
-        source ./.venv/bin/activate
-        python -m pip install -U iga
+        python -m pip install iga
 
     - name: Dump GitHub Actions context and variables if debugging is on.
       if: inputs.debug == true || inputs.debug == 'true'
@@ -138,7 +108,6 @@ runs:
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
       run: |
-        source ./.venv/bin/activate
         echo "record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{github.ref_name}})" >> $GITHUB_ENV
 
     - name: Summarize the results.
