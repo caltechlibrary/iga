@@ -1,5 +1,13 @@
 # Change log for IGA
 
+## Version 0.0.11 (2023-05-10)
+
+Changes in this release:
+* Fixed behavior of `--mode quiet`: it was not completely quiet after all, but now it is.
+* Fixed behavior when `--log-dest` is used; not all output was going to the log destination, but now it is.
+* Fixed additional minor issues.
+
+
 ## Version 0.0.10 (2023-05-09)
 
 Changes in this release:
