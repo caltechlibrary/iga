@@ -70,36 +70,31 @@ runs:
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
-    - name: Configure IGA variables.
+    - name: Configure IGA options.
       id: vars
       shell: bash
       run: |
-        if [ ${{inputs.debug}} == 'false' ]; then
-          echo "mode=verbose" >> "$GITHUB_ENV"
-        else
+        echo "draft=" >> "$GITHUB_ENV"
+        echo "all_assets=" >> "$GITHUB_ENV"
+        echo "all_metadata=" >> "$GITHUB_ENV"
+        echo "use_community=" >> "$GITHUB_ENV"
+        echo "community=" >> "$GITHUB_ENV"
+        echo "mode=normal" >> "$GITHUB_ENV"
+        if [ ! ${{inputs.debug}} == 'false' ]; then
           echo "mode=debug" >> "$GITHUB_ENV"
         fi
         if [ ! ${{inputs.draft}} == 'false' ]; then
           echo "draft='--draft'" >> "$GITHUB_ENV"
-        else
-          echo "draft=" >> "$GITHUB_ENV"
         fi
         if [ ! ${{inputs.all_assets}} == 'false' ]; then
           echo "all_assets='--all-assets'" >> "$GITHUB_ENV"
-        else
-          echo "all_assets=" >> "$GITHUB_ENV"
         fi
         if [ ! ${{inputs.all_metadata}} == 'false' ]; then
           echo "all_metadata='--all-metadata'" >> "$GITHUB_ENV"
-        else
-          echo "all_metadata=" >> "$GITHUB_ENV"
         fi
         if [ ! ${{inputs.community}} == 'false' ]; then
           echo "use_community='--community'" >> "$GITHUB_ENV"
           echo "community='${{inputs.community}}'" >> "$GITHUB_ENV"
-        else
-          echo "use_community=" >> "$GITHUB_ENV"
-          echo "community=" >> "$GITHUB_ENV"
         fi
 
     - name: Run IGA.
@@ -109,4 +104,11 @@ runs:
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
       run: |
-        iga --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{github.ref_name}}
+        echo "record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{github.ref_name}})" >> $GITHUB_ENV
+
+    - name: Summarize the results.
+      shell: bash
+      run: |
+        echo \#\# Results of archiving the release            >> $GITHUB_STEP_SUMMARY
+        echo URL of the finished record: ${{env.record_url}}  >> $GITHUB_STEP_SUMMARY
+        echo Date and time of this run: $(date "+%F %T (%Z)") >> $GITHUB_STEP_SUMMARY
