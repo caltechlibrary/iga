@@ -17,25 +17,41 @@ inputs:
   INVENIO_SERVER:
     description: "Address of destination InvenioRDM server."
     required: true
+    type: string
   INVENIO_TOKEN:
     description: "Personal Access Token for InvenioRDM server."
     required: true
+    type: string
   all_assets:
     description: "Attach all GitHub assets, not just the source ZIP."
     default: false
     required: false
+    type: boolean
   all_metadata:
     description: "Include additional metadata from GitHub."
     default: false
     required: false
+    type: boolean
   community:
     description: "Submit record to the designated RDM community."
-    default: false
+    default: 'none'
     required: false
+    type: string
   draft:
-    description: "Mark the RDM record as a draft."
+    description: "Mark the InvenioRDM record as a draft."
     default: false
     required: false
+    type: boolean
+  parent_record:
+    description: "The record ID of a parent record (to make a new version)."
+    default: 'none'
+    required: false
+    type: string
+  release_tag:
+    description: "The tag of the release to archive."
+    default: 'latest'
+    required: false
+    type: string
   debug:
     # Note that IGA has more modes than only debug on/off, but for
     # simplicity, this action workflow only offers a binary toggle.
@@ -43,22 +59,73 @@ inputs:
     description: "Print debugging info in the GitHub Action output."
     default: false
     required: false
+    type: boolean
 
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v3
+    - name: Perform some sanity checks and report errors.
+      shell: bash
+      run: |
+        echo "error=" >> "$GITHUB_ENV"
+        if [ "${{inputs.INVENIO_SERVER}}" == 'https://data.caltechlibrary.dev' ]; then
+          echo "::error title=Configuration error::Variable INVENIO_SERVER is not set."
+          echo "error=no_server" >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
+          echo "::error title=Configuration error::Secret INVENIO_TOKEN is not set."
+          echo "error=no_token >> "$GITHUB_ENV"
+        fi
 
-    - name: Install Python.
-      uses: actions/setup-python@v4
+    - name: Abort rest of workflow if errors found.
+      uses: actions/github-script@v6
+      if: ${{env.error}} != ''
       with:
-        python-version: "3.11"
-        cache: 'pip'
+        script: |
+          core.setFailed('Workflow stopped due to an error.')
 
     - name: Install IGA.
       shell: bash
       run: |
         python -m pip install iga
+
+    - name: Configure IGA run-time options.
+      shell: bash
+      run: |
+        echo "draft=" >> "$GITHUB_ENV"
+        echo "all_assets=" >> "$GITHUB_ENV"
+        echo "all_metadata=" >> "$GITHUB_ENV"
+        echo "use_community=" >> "$GITHUB_ENV"
+        echo "community=" >> "$GITHUB_ENV"
+        echo "use_parent=" >> "$GITHUB_ENV"
+        echo "parent=" >> "$GITHUB_ENV"
+        echo "tag=" >> "$GITHUB_ENV"
+        echo "mode=normal" >> "$GITHUB_ENV"
+        if [ "${{inputs.release_tag || 'latest'}}" == 'latest' ]; then
+          echo "tag=${{github.ref_name}}" >> "$GITHUB_ENV"
+        else
+          echo "tag=${{inputs.release_tag}}" >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
+          echo 'draft=--draft' >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.all_assets || 'false'}}" != 'false' ]; then
+          echo 'all_assets=--all-assets' >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.all_metadata || 'false'}}" != 'false' ]; then
+          echo 'all_metadata=--all-metadata' >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.community || 'none'}}" != 'none' ]; then
+          echo 'use_community=--community' >> "$GITHUB_ENV"
+          echo "community=${{inputs.community}}" >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.parent_record || 'none'}}" != 'none' ]; then
+          echo 'use_parent=--parent-record' >> "$GITHUB_ENV"
+          echo "parent=${{inputs.parent_record}}" >> "$GITHUB_ENV"
+        fi
+        if [ "${{inputs.debug || 'false'}}" != 'false' ]; then
+          echo "mode=debug" >> "$GITHUB_ENV"
+        fi
 
     - name: Dump GitHub Actions context and variables if debugging is on.
       if: inputs.debug == true || inputs.debug == 'true'
@@ -75,41 +142,15 @@ runs:
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
-    - name: Configure IGA options.
-      id: vars
-      shell: bash
-      run: |
-        echo "draft=" >> "$GITHUB_ENV"
-        echo "all_assets=" >> "$GITHUB_ENV"
-        echo "all_metadata=" >> "$GITHUB_ENV"
-        echo "use_community=" >> "$GITHUB_ENV"
-        echo "community=" >> "$GITHUB_ENV"
-        echo "mode=normal" >> "$GITHUB_ENV"
-        if [ ! ${{inputs.debug}} == 'false' ]; then
-          echo "mode=debug" >> "$GITHUB_ENV"
-        fi
-        if [ ! ${{inputs.draft}} == 'false' ]; then
-          echo "draft='--draft'" >> "$GITHUB_ENV"
-        fi
-        if [ ! ${{inputs.all_assets}} == 'false' ]; then
-          echo "all_assets='--all-assets'" >> "$GITHUB_ENV"
-        fi
-        if [ ! ${{inputs.all_metadata}} == 'false' ]; then
-          echo "all_metadata='--all-metadata'" >> "$GITHUB_ENV"
-        fi
-        if [ ! ${{inputs.community}} == 'false' ]; then
-          echo "use_community='--community'" >> "$GITHUB_ENV"
-          echo "community='${{inputs.community}}'" >> "$GITHUB_ENV"
-        fi
-
     - name: Run IGA.
-      shell: bash
       env:
+        RELEASE_TAG: ${{inputs.release_tag}}
         INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
+      shell: bash
       run: |
-        echo "record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{github.ref_name}})" >> $GITHUB_ENV
+        echo "record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}})" >> $GITHUB_ENV
 
     - name: Summarize the results.
       shell: bash
