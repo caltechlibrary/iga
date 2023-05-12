@@ -69,12 +69,12 @@ runs:
       run: |
         echo "error=" >> "$GITHUB_ENV"
         if [ "${{inputs.INVENIO_SERVER}}" == 'https://data.caltechlibrary.dev' ]; then
-          echo "::error title=Configuration error::Variable INVENIO_SERVER is not set."
+          echo "::error title=Configuration error::Value of INVENIO_SERVER is not set."
           echo "error=no_server" >> "$GITHUB_ENV"
         fi
         if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
-          echo "::error title=Configuration error::Secret INVENIO_TOKEN is not set."
-          echo "error=no_token >> "$GITHUB_ENV"
+          echo "::error title=Configuration error::Value of INVENIO_TOKEN is not set."
+          echo "error=no_token" >> "$GITHUB_ENV"
         fi
 
     - name: Abort rest of workflow if errors found.
