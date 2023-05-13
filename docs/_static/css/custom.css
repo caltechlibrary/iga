@@ -29,6 +29,10 @@ body, input {
     margin: .35em 0 !important;
 }
 
+.md-sidebar {
+  width: 13rem;
+}
+
 .md-sidebar--secondary {
   display: none !important;
 }
