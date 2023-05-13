@@ -279,14 +279,14 @@
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#configuring-and-running-iga-locally" class="md-nav__link">Configuring and running IGA locally</a>
+      <a href="quick-start.html#configuring-a-local-iga" class="md-nav__link">Configuring a local IGA</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#configuring-and-running-iga-as-a-github-action" class="md-nav__link">Configuring and running IGA as a GitHub Action</a>
+      <a href="quick-start.html#configuring-a-github-action" class="md-nav__link">Configuring a GitHub Action</a>
       
     
     </li></ul>
@@ -491,9 +491,10 @@
             
   <section id="installation">
 <h1 id="installation--page-root">Installation<a class="headerlink" href="#installation--page-root" title="Permalink to this heading">¶</a></h1>
+<p>IGA can be installed as either (or both) a command-line program on your computer or a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> in a GitHub repository.</p>
 <section id="iga-as-a-normal-program">
 <h2 id="iga-as-a-normal-program">IGA as a normal program<a class="headerlink" href="#iga-as-a-normal-program" title="Permalink to this heading">¶</a></h2>
-<p>IGA can be used as an ordinary command-line program in macOS, Windows, and Linux.There are multiple ways of installing IGA on your computer.  Please choose the alternative that suits you.</p>
+<p>Please choose an approach that suits your situation and preferences.</p>
 <section id="alternative-1-installing-iga-using-pipx">
 <h3 id="alternative-1-installing-iga-using-pipx">Alternative 1: installing IGA using <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#alternative-1-installing-iga-using-pipx" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference external" href="https://pypa.github.io/pipx/">Pipx</a> lets you install Python programs in a way that isolates Python dependencies, and yet the resulting <code class="docutils literal notranslate"><span class="pre">iga</span></code> command can be run from any shell and directory – like any normal program on your computer. If you use <code class="docutils literal notranslate"><span class="pre">pipx</span></code> on your system, you can install IGA with the following command:</p>
@@ -504,11 +505,11 @@
 </section>
 <section id="alternative-2-installing-iga-using-pip">
 <h3 id="alternative-2-installing-iga-using-pip">Alternative 2: installing IGA using <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#alternative-2-installing-iga-using-pip" title="Permalink to this heading">¶</a></h3>
-<p>You should be able to install <code class="docutils literal notranslate"><span class="pre">iga</span></code> with <a class="reference external" href="https://pip.pypa.io/en/stable/installing/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a> for Python 3.  To install <code class="docutils literal notranslate"><span class="pre">iga</span></code> from the <a class="reference external" href="https://pypi.org">Python package repository (PyPI)</a>, run the following command:</p>
+<p>IGA is available from the <a class="reference external" href="https://pypi.org">Python package repository PyPI</a> and can be installed using <a class="reference external" href="https://pip.pypa.io/en/stable/installing/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a>:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>iga
 </pre></div>
 </div>
-<p>As an alternative to getting it from <a class="reference external" href="https://pypi.org">PyPI</a>, you can use <code class="docutils literal notranslate"><span class="pre">pip</span></code> to install <code class="docutils literal notranslate"><span class="pre">iga</span></code> directly from GitHub:</p>
+<p>As an alternative to getting it from <a class="reference external" href="https://pypi.org">PyPI</a>, you can install <code class="docutils literal notranslate"><span class="pre">iga</span></code> directly from GitHub:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/caltechlibrary/iga.git
 </pre></div>
 </div>
@@ -516,11 +517,10 @@
 </section>
 <section id="alternative-3-installing-iga-from-sources">
 <h3 id="alternative-3-installing-iga-from-sources">Alternative 3: installing IGA from sources<a class="headerlink" href="#alternative-3-installing-iga-from-sources" title="Permalink to this heading">¶</a></h3>
-<p>If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:</p>
+<p>If  you prefer to install IGA directly from the source code, first obtain a copy by either downloading the source archive from the <a class="reference external" href="https://github.com/caltechlibrary/iga/releases">IGA releases page on GitHub</a>, or by using <code class="docutils literal notranslate"><span class="pre">git</span></code> to clone the repository to a location on your computer. For example,</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/caltechlibrary/iga
 </pre></div>
 </div>
-<p>Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <a class="reference external" href="https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip">https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip</a></p>
 <p>Next, after getting a copy of the files,  run <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> inside the code directory:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>iga
 python3<span class="w"> </span>setup.py<span class="w"> </span>install
@@ -530,6 +530,65 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 </section>
 <section id="iga-as-a-github-action">
 <h2 id="iga-as-a-github-action">IGA as a GitHub Action<a class="headerlink" href="#iga-as-a-github-action" title="Permalink to this heading">¶</a></h2>
+<p>A <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> is a workflow that runs on GitHub’s servers under control of a file in your repository. Follow these steps to create the IGA workflow file:</p>
+<ol class="arabic">
+<li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the following contents into it:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">env</span><span class="p">:</span>
+<span class="w">  </span><span class="c1"># 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻</span>
+<span class="w">  </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-invenio-server.org</span>
+
+<span class="w">  </span><span class="c1"># These variables are IGA options. Please see the docs for info.</span>
+<span class="w">  </span><span class="nt">draft</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">all_assets</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">all_metadata</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">community</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">none</span>
+<span class="w">  </span><span class="nt">parent_record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">none</span>
+<span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+
+<span class="c1"># ~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~</span>
+<span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">release</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">types</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">published</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">workflow_dispatch</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">inputs</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">release_tag</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"The</span><span class="nv"> </span><span class="s">tag</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">release</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">archive:"</span>
+<span class="w">      </span><span class="nt">draft</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Mark</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">record</span><span class="nv"> </span><span class="s">as</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">draft:"</span>
+<span class="w">      </span><span class="nt">all_assets</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Attach</span><span class="nv"> </span><span class="s">all</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">assets:"</span>
+<span class="w">      </span><span class="nt">all_metadata</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Include</span><span class="nv"> </span><span class="s">additional</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">metadata:"</span>
+<span class="w">      </span><span class="nt">community</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Send</span><span class="nv"> </span><span class="s">record</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">InvenioRDM</span><span class="nv"> </span><span class="s">community:"</span>
+<span class="w">      </span><span class="nt">parent_record</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"ID</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">parent</span><span class="nv"> </span><span class="s">record</span><span class="nv"> </span><span class="s">(for</span><span class="nv"> </span><span class="s">versioning):"</span>
+<span class="nt">jobs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">Send_to_InvenioRDM</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">caltechlibrary/iga@develop</span>
+<span class="w">        </span><span class="nt">with</span><span class="p">:</span>
+<span class="w">          </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{env.INVENIO_SERVER}}</span>
+<span class="w">          </span><span class="nt">INVENIO_TOKEN</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{secrets.INVENIO_TOKEN}}</span>
+<span class="w">          </span><span class="nt">all_assets</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.all_assets || env.all_assets}}</span>
+<span class="w">          </span><span class="nt">all_metadata</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.all_metadata || env.all_metadata}}</span>
+<span class="w">          </span><span class="nt">draft</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.draft || env.draft}}</span>
+<span class="w">          </span><span class="nt">community</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.community || env.community}}</span>
+<span class="w">          </span><span class="nt">parent_record</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.parent_record || env.parent_record}}</span>
+<span class="w">          </span><span class="nt">debug</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.debug || 'false'}}</span>
+<span class="w">          </span><span class="nt">release_tag</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.release_tag || 'latest'}}</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>Edit the value of the <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> variable (line 3 above)</strong> ↑</p></li>
+<li><p>Optionally, change the values of other options (<code class="docutils literal notranslate"><span class="pre">all_assets</span></code>, <code class="docutils literal notranslate"><span class="pre">community</span></code>, etc.)</p></li>
+<li><p>Save the file, commit the changes to git, and push your changes to GitHub</p></li>
+</ol>
 </section>
 </section>
 
