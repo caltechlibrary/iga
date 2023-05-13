@@ -571,7 +571,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">  </span><span class="nt">Send_to_InvenioRDM</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
 <span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">caltechlibrary/iga@develop</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">caltechlibrary/iga@main</span>
 <span class="w">        </span><span class="nt">with</span><span class="p">:</span>
 <span class="w">          </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{env.INVENIO_SERVER}}</span>
 <span class="w">          </span><span class="nt">INVENIO_TOKEN</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{secrets.INVENIO_TOKEN}}</span>
