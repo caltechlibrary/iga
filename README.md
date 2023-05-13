@@ -144,7 +144,7 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
       Send_to_InvenioRDM:
         runs-on: ubuntu-latest
         steps:
-          - uses: caltechlibrary/iga@develop
+          - uses: caltechlibrary/iga@main
             with:
               INVENIO_SERVER: ${{env.INVENIO_SERVER}}
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
