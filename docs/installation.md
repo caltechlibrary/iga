@@ -1,8 +1,10 @@
 # Installation
 
+IGA can be installed as either (or both) a command-line program on your computer or a [GitHub Action](https://docs.github.com/en/actions) in a GitHub repository.
+
 ## IGA as a normal program
 
-IGA can be used as an ordinary command-line program in macOS, Windows, and Linux.There are multiple ways of installing IGA on your computer.  Please choose the alternative that suits you.
+Please choose an approach that suits your situation and preferences.
 
 ### Alternative 1: installing IGA using `pipx`
 
@@ -16,12 +18,12 @@ Pipx can also let you run IGA directly using `pipx run iga`, although in that ca
 
 ### Alternative 2: installing IGA using `pip`
 
-You should be able to install `iga` with [`pip`](https://pip.pypa.io/en/stable/installing/) for Python&nbsp;3.  To install `iga` from the [Python package repository (PyPI)](https://pypi.org), run the following command:
+IGA is available from the [Python package repository PyPI](https://pypi.org) and can be installed using [`pip`](https://pip.pypa.io/en/stable/installing/):
 ```sh
 python3 -m pip install iga
 ```
 
-As an alternative to getting it from [PyPI](https://pypi.org), you can use `pip` to install `iga` directly from GitHub:
+As an alternative to getting it from [PyPI](https://pypi.org), you can install `iga` directly from GitHub:
 ```sh
 python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 ```
@@ -31,12 +33,10 @@ _If you already installed IGA once before_, and want to update to the latest ver
 
 ### Alternative 3: installing IGA from sources
 
-If  you prefer to install IGA directly from the source code, you can do that too. To get a copy of the files, you can clone the GitHub repository:
+If  you prefer to install IGA directly from the source code, first obtain a copy by either downloading the source archive from the [IGA releases page on GitHub](https://github.com/caltechlibrary/iga/releases), or by using `git` to clone the repository to a location on your computer. For example,
 ```sh
 git clone https://github.com/caltechlibrary/iga
 ```
-
-Alternatively, you can download the software source files as a ZIP archive directly from your browser using this link: <https://github.com/caltechlibrary/iga/archive/refs/heads/main.zip>
 
 Next, after getting a copy of the files,  run `setup.py` inside the code directory:
 ```sh
@@ -46,3 +46,61 @@ python3 setup.py install
 
 
 ## IGA as a GitHub Action
+
+A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
+
+1. In the main branch of your GitHub repository, create a `.github/workflows` directory
+2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following contents into it:
+    ```yaml
+    env:
+      # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
+      INVENIO_SERVER: https://your-invenio-server.org
+
+      # These variables are IGA options. Please see the docs for info.
+      draft:         false
+      all_assets:    false
+      all_metadata:  false
+      community:     none
+      parent_record: none
+      debug:         false
+
+    # ~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~
+    on:
+      release:
+        types: [published]
+      workflow_dispatch:
+        inputs:
+          release_tag:
+            description: "The tag of the release to archive:"
+          draft:
+            default: false
+            description: "Mark the record as a draft:"
+          all_assets:
+            default: false
+            description: "Attach all GitHub assets:"
+          all_metadata:
+            default: false
+            description: "Include additional GitHub metadata:"
+          community:
+            description: "Send record to InvenioRDM community:"
+          parent_record:
+            description: "ID of parent record (for versioning):"
+    jobs:
+      Send_to_InvenioRDM:
+        runs-on: ubuntu-latest
+        steps:
+          - uses: caltechlibrary/iga@develop
+            with:
+              INVENIO_SERVER: ${{env.INVENIO_SERVER}}
+              INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
+              all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
+              all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
+              draft:          ${{github.event.inputs.draft || env.draft}}
+              community:      ${{github.event.inputs.community || env.community}}
+              parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
+              debug:          ${{github.event.inputs.debug || 'false'}}
+              release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
+    ```
+3. **Edit the value of the `INVENIO_SERVER` variable (line 3 above)** ↑
+4. Optionally, change the values of other options (`all_assets`, `community`, etc.)
+5. Save the file, commit the changes to git, and push your changes to GitHub

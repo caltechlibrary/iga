@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
+html {
+  scroll-padding-top: 3.65rem;
+}
+
 body, input {
     color: rgba(0,0,0,.87);
     -webkit-font-feature-settings: "kern","liga";
@@ -27,6 +31,10 @@ body, input {
 
 .md-typeset ol li blockquote,.md-typeset ol li p,.md-typeset ul li blockquote,.md-typeset ul li p{
     margin: .35em 0 !important;
+}
+
+.md-sidebar {
+  width: 13rem;
 }
 
 .md-sidebar--secondary {

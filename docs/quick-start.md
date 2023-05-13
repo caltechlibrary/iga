@@ -4,7 +4,7 @@ No matter whether IGA is run locally on your computer or as a GitHub Action, in 
 
 ### Getting an InvenioRDM token
 
-<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="60%" align="right">
+<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="50%" align="right">
 
 1. Log in to your InvenioRDM account.
 2. Find the _Applications_ page for your account.
@@ -12,7 +12,7 @@ No matter whether IGA is run locally on your computer or as a GitHub Action, in 
 4. Name your token (the name does not matter) and click the <kbd>Create</kbd> button.
 5. After InvenioRDM creates and displays the token, **copy it to a safe location** because InvenioRDM will not show it again.
 
-### Configuring and running IGA locally
+### Configuring a local IGA
 
 To send a GitHub release to your InvenioRDM server, IGA needs this information:
 1. (Required) The identity of the GitHub release to be archived
@@ -35,13 +35,13 @@ iga -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
 More options are described in the section on [detailed usage information](cli-usage.md).
 
 
-### Configuring and running IGA as a GitHub Action
+### Configuring a GitHub Action
 
 After doing the [GitHub Action installation](installation.md) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
 
-1. Go to the _Settings_ page of your GitHub repository<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-tabs.png" width="85%"></p>
-2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
-3. In the next page, click the green <kbd>New repository secret</kbd> button<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-secrets.png" width="60%"></p>
+1. Go to the _Settings_ page of your GitHub repository <figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-tabs.png" width="70%"></figure>
+2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" width="30%"></figure>
+3. In the next page, click the green <kbd>New repository secret</kbd> button<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-secrets.png" width="60%"></figure>
 4. Name the variable `INVENIO_TOKEN` and paste in your InvenioRDM token
 5. Finish by clicking the green <kbd>Add secret</kbd> button
 
@@ -49,11 +49,11 @@ After doing the [GitHub Action installation](installation.md) steps and [obtaini
 
 After setting up the workflow and storing the InvenioRDM token in your repository on GitHub, it's a good idea to run the workflow manually to test that it works as expected.
 
-1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="90%"></p>
+1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="70%"></figure>
 2. Click the <kbd>Run workflow</kbd> button in the right-hand side of the blue strip
-3. In the pull-down, change the value of "Mark the record as a draft" to `true`<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options.png" width="40%"></p>
-4. Click the green <kbd>Run workflow</kbd> button.
-5. Refresh the web page and a new line will be shown named after your workflow file<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></p>
+3. In the pull-down, change the value of "Mark the record as a draft" to `true`<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options.png" width="30%"></figure>
+4. Click the green <kbd>Run workflow</kbd> button near the bottom
+5. Refresh the web page and a new line will be shown named after your workflow file<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></figure>
 6. Click that line to see the IGA workflow progress and results
 
 

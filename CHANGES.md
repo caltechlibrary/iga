@@ -1,5 +1,12 @@
 # Change log for IGA
 
+## Version 0.0.12 (2023-05-12)
+
+Changes in this release:
+* A preliminary GitHub Action workflow is available.
+* Documentation is more complete.
+
+
 ## Version 0.0.11 (2023-05-10)
 
 Changes in this release:
