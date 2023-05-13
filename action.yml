@@ -158,7 +158,6 @@ runs:
 
     - name: Run IGA.
       env:
-        RELEASE_TAG: ${{inputs.release_tag}}
         INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
