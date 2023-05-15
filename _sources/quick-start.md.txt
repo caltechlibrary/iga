@@ -2,17 +2,39 @@
 
 No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the first step.
 
-### Getting an InvenioRDM token
+<div align="center">
 
-<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="50%" align="right">
+```{mermaid}
+flowchart TD;
+  node1(Install IGA)-->node2(Get token from InvenioRDM);
+  node2-->node3{Running locally or\nas GitHub Action\n?};
+  node3-->|Local| node4(Configure local IGA);
+  node3-->|GitHub| node5(Configure GitHub Action);
 
-1. Log in to your InvenioRDM account.
-2. Find the _Applications_ page for your account.
-3. Click the <kbd>New token</kbd> button next to "Personal access tokens" on the _Applications_ page.
-4. Name your token (the name does not matter) and click the <kbd>Create</kbd> button.
-5. After InvenioRDM creates and displays the token, **copy it to a safe location** because InvenioRDM will not show it again.
+  style node1 fill:white, stroke:blue;
+  style node2 fill:white, stroke:blue;
+  style node3 fill:white, stroke:orange;
+  style node4 fill:white, stroke:blue;
+  style node5 fill:white, stroke:blue;
 
-### Configuring a local IGA
+  click node1 "installation.html" _self;
+  click node2 "#getting-an-inveniordm-token" _self;
+  click node4 "#configuring-a-local-iga" _self;
+  click node5 "#configuring-a-github-action" _self;
+```
+
+</div>
+
+
+## Getting an InvenioRDM token
+
+1. Log in to your InvenioRDM account
+2. Go to the _Applications_ page in your account profile
+3. Click the <kbd>New token</kbd> button next to "Personal access tokens"<p align="center"><img src="_static/media/get-invenio-pat.png" width="50%"></p>
+4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<p align="center"><img src="_static/media/new-pat.png" width="50%"></p>
+5. After InvenioRDM creates and shows you the token, **copy it to a safe location** because InvenioRDM will not show it again
+
+## Configuring a local IGA
 
 To send a GitHub release to your InvenioRDM server, IGA needs this information:
 1. (Required) The identity of the GitHub release to be archived
@@ -35,7 +57,7 @@ iga -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
 More options are described in the section on [detailed usage information](cli-usage.md).
 
 
-### Configuring a GitHub Action
+## Configuring a GitHub Action
 
 After doing the [GitHub Action installation](installation.md) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
 
@@ -45,7 +67,7 @@ After doing the [GitHub Action installation](installation.md) steps and [obtaini
 4. Name the variable `INVENIO_TOKEN` and paste in your InvenioRDM token
 5. Finish by clicking the green <kbd>Add secret</kbd> button
 
-#### Testing the workflow
+### Testing the workflow
 
 After setting up the workflow and storing the InvenioRDM token in your repository on GitHub, it's a good idea to run the workflow manually to test that it works as expected.
 
@@ -57,6 +79,6 @@ After setting up the workflow and storing the InvenioRDM token in your repositor
 6. Click that line to see the IGA workflow progress and results
 
 
-#### Running the workflow when releasing software
+### Running the workflow when releasing software
 
 Once the personal access token from InvenioRDM is stored as a GitHub secret, the workflow should run automatically every time a new release is made on GitHub &ndash; no further action should be needed. You can check the results (and look for errors if something went wrong) by going to the _Actions_ tab in your GitHub repository.
