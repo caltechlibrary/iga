@@ -118,3 +118,10 @@ myst_enable_extensions = [
     "smartquotes",
     "substitution"
 ]
+
+# -- Options for Mermaid ------------------------------------------------------
+
+# Note: this needs the Mermaid CLI program to be installed on the local
+# computer. The correct way is: npm install -g @mermaid-js/mermaid-cli
+#
+# mermaid_output_format = "svg"
