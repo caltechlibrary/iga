@@ -73,7 +73,7 @@ After setting up the workflow and storing the InvenioRDM token in your repositor
 
 1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="70%"></figure>
 2. Click the <kbd>Run workflow</kbd> button in the right-hand side of the blue strip
-3. In the pull-down, change the value of "Mark the record as a draft" to `true`<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options.png" width="30%"></figure>
+3. In the pull-down, change the value of "Mark the record as a draft" to `true`<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options-circled.png" width="30%"></figure>
 4. Click the green <kbd>Run workflow</kbd> button near the bottom
 5. Refresh the web page and a new line will be shown named after your workflow file<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></figure>
 6. Click that line to see the IGA workflow progress and results
