@@ -555,7 +555,8 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <ol class="arabic">
 <li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
 <li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the following contents into it:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">env</span><span class="p">:</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InvenioRDM GitHub Archiver</span>
+<span class="nt">env</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻</span>
 <span class="w">  </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-invenio-server.org</span>
 
@@ -598,18 +599,19 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">          </span><span class="nt">INVENIO_TOKEN</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{secrets.INVENIO_TOKEN}}</span>
 <span class="w">          </span><span class="nt">all_assets</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.all_assets || env.all_assets}}</span>
 <span class="w">          </span><span class="nt">all_metadata</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.all_metadata || env.all_metadata}}</span>
+<span class="w">          </span><span class="nt">debug</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.debug || 'false'}}</span>
 <span class="w">          </span><span class="nt">draft</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.draft || env.draft}}</span>
 <span class="w">          </span><span class="nt">community</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.community || env.community}}</span>
 <span class="w">          </span><span class="nt">parent_record</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.parent_record || env.parent_record}}</span>
-<span class="w">          </span><span class="nt">debug</span><span class="p">:</span><span class="w">          </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.debug || 'false'}}</span>
 <span class="w">          </span><span class="nt">release_tag</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.release_tag || 'latest'}}</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>Edit the value of the <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> variable (line 3 above)</strong> ↑</p></li>
+<li><p><strong>Edit the value of the <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> variable (line 4 above)</strong> ↑</p></li>
 <li><p>Optionally, change the values of other options (<code class="docutils literal notranslate"><span class="pre">all_assets</span></code>, <code class="docutils literal notranslate"><span class="pre">community</span></code>, etc.)</p></li>
 <li><p>Save the file, commit the changes to git, and push your changes to GitHub</p></li>
 </ol>
+<p>The sample <code class="docutils literal notranslate"><span class="pre">.yml</span></code> workflow file above is also available from the GitHub repository for IGA as file <a class="reference external" href="https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml"><code class="docutils literal notranslate"><span class="pre">sample-workflow.yml</span></code></a>.</p>
 </section>
 </section>
 
