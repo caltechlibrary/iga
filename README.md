@@ -94,7 +94,7 @@ python3 setup.py install
 ```
 </details>
 
-After installation, you should end up with a program named `iga` in a location where software is installed on your computer.  Running `iga` is as simple as running any other command-line program. Test it by running the following command:
+After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
 ```shell
 iga --help
 ```
@@ -163,17 +163,18 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
 
 ## Quick start
 
-No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the first step.
+No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one 
+is the first step.
 
 ### Getting an InvenioRDM token
 
 <img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="60%" align="right">
 
-1. Log in to your InvenioRDM account.
-2. Find the _Applications_ page for your account.
-3. Click the <kbd>New token</kbd> button next to "Personal access tokens" on the _Applications_ page.
-4. Name your token (the name does not matter) and click the <kbd>Create</kbd> button.
-5. After InvenioRDM creates and displays the token, **copy it to a safe location** because InvenioRDM will not show it again.
+1. Log in to your InvenioRDM account
+2. Go to the _Applications_ page in your account profile
+3. Click the <kbd>New token</kbd> button next to "Personal access tokens"
+4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button
+5. After InvenioRDM creates and shows you the token, **copy it to a safe location** because InvenioRDM will not show it again
 
 ### Configuring and running IGA locally
 
