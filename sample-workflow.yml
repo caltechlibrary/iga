@@ -4,6 +4,8 @@
 # At the time this file was copied, IGA was at version 0.0.12.
 # =============================================================================
 
+name: InvenioRDM GitHub Archiver
+
 env:
   # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
   INVENIO_SERVER: https://your-invenio-server.org
@@ -17,6 +19,7 @@ env:
   debug:         false
 
 # ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~
+
 on:
   release:
     types: [published]
@@ -37,6 +40,7 @@ on:
         description: "Send record to InvenioRDM community:"
       parent_record:
         description: "ID of parent record (for versioning):"
+
 jobs:
   Send_to_InvenioRDM:
     runs-on: ubuntu-latest
