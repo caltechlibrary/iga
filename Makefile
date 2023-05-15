@@ -167,6 +167,8 @@ ifneq ($(branch),main)
 	$(error Current git branch != main. Merge changes into main first!)
 endif
 
+update-all: update-init update-meta update-citation update-example
+
 update-init:
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
 	@sed -i .bak -e "s|^\(__description__ *=\).*|\1 '$(desc)'|" $(initfile)
@@ -186,6 +188,9 @@ update-citation:
 	@sed -i .bak -e "/^date-released/ s/[0-9][0-9-]*/$(date)/" CITATION.cff
 	@sed -i .bak -e "/^version/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" CITATION.cff
 
+update-example:
+	@sed -i .bak -e "/.* version [0-9].[0-9]*.[0-9]*/ s/[0-9].[0-9][0-9]*.[0-9][0-9]*/$(version)/" sample-workflow.yml
+
 edited := codemeta.json $(initfile) CITATION.cff
 
 commit-updates:
@@ -193,7 +198,7 @@ commit-updates:
 	git diff-index --quiet HEAD $(edited) || \
 	    git commit -m"Update stored version number" $(edited)
 
-release-on-github: | update-init update-meta update-citation commit-updates
+release-on-github: | update-all commit-updates
 	$(eval tmp_file := $(shell mktemp /tmp/release-notes-$(name).XXXX))
 	git push -v --all
 	git push -v --tags
@@ -288,8 +293,8 @@ clean-other:;
 	rm -rf .cache
 	rm -rf .pytest_cache
 
-.PHONY: help vars report release test-branch test tests \
-	update-init update-meta update-citation commit-updates \
+.PHONY: help vars report release test-branch test tests update-all \
+	update-init update-meta update-citation update-example commit-updates \
 	release-on-github print-instructions update-doi \
 	packages test-pypi pypi clean really-clean completely-clean \
 	clean-dist really-clean-dist clean-build really-clean-build \

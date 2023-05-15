@@ -52,6 +52,7 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
 2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following contents into it:
     ```yaml
+    name: InvenioRDM GitHub Archiver
     env:
       # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
       INVENIO_SERVER: https://your-invenio-server.org
@@ -95,12 +96,14 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
               all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
               all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
+              debug:          ${{github.event.inputs.debug || 'false'}}
               draft:          ${{github.event.inputs.draft || env.draft}}
               community:      ${{github.event.inputs.community || env.community}}
               parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
-              debug:          ${{github.event.inputs.debug || 'false'}}
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
     ```
-3. **Edit the value of the `INVENIO_SERVER` variable (line 3 above)** ↑
+3. **Edit the value of the `INVENIO_SERVER` variable (line 4 above)** ↑
 4. Optionally, change the values of other options (`all_assets`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
+
+The sample `.yml` workflow file above is also available from the GitHub repository for IGA as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml).

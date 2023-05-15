@@ -5,9 +5,9 @@
 IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to archive GitHub releases automatically for a repository each time they are made.
 
 <figure>
-<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%">
+<img align="middle" src="_static/media/example-github-release.jpg" width="40%">
 <span style="font-size: 150%">➜</span>
-<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" width="40%">
+<img align="middle" src="_static/media/example-record-landing-page.jpg" width="40%">
     <figcaption>IGA sends metadata and assets from GitHub to an InvenioRDM server..</figcaption>
 </figure>
 
