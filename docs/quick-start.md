@@ -30,8 +30,8 @@ flowchart TD;
 
 1. Log in to your InvenioRDM account
 2. Go to the _Applications_ page in your account profile
-3. Click the <kbd>New token</kbd> button next to "Personal access tokens"<p align="center"><img src="_static/media/get-invenio-pat.png" width="50%"></p>
-4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<p align="center"><img src="_static/media/new-pat.png" width="50%"></p>
+3. Click the <kbd>New token</kbd> button next to "Personal access tokens"<figure><img src="_static/media/get-invenio-pat.png" width="50%"></figure>
+4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<figure><img src="_static/media/new-pat.png" width="50%"></figure>
 5. After InvenioRDM creates and shows you the token, **copy it to a safe location** because InvenioRDM will not show it again
 
 ## Configuring a local IGA
