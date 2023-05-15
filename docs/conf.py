@@ -123,5 +123,6 @@ myst_enable_extensions = [
 
 # Note: this needs the Mermaid CLI program to be installed on the local
 # computer. The correct way is: npm install -g @mermaid-js/mermaid-cli
+# C.f. https://github.com/mermaid-js/mermaid-cli
 #
 # mermaid_output_format = "svg"
