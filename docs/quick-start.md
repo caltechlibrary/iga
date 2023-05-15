@@ -1,15 +1,15 @@
 # Quick start
 
-No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the first step.
+No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the next step.
 
 <div align="center">
 
 ```{mermaid}
 flowchart TD;
-  node1(Install IGA)-->node2(Get token from InvenioRDM);
-  node2-->node3{Running locally or\nas GitHub Action\n?};
-  node3-->|Local| node4(Configure local IGA);
-  node3-->|GitHub| node5(Configure GitHub Action);
+  node1(Step 1: Install IGA)-->node2(Step 2: Get token from InvenioRDM);
+  node2-->node3{Local or \nGitHub Action?};
+  node3-->|Local| node4(Step 3: Configure local IGA);
+  node3-->|GitHub| node5(Step 3: Configure GitHub Action);
 
   style node1 fill:white, stroke:blue;
   style node2 fill:white, stroke:blue;
@@ -30,8 +30,8 @@ flowchart TD;
 
 1. Log in to your InvenioRDM account
 2. Go to the _Applications_ page in your account profile
-3. Click the <kbd>New token</kbd> button next to "Personal access tokens"<p align="center"><img src="_static/media/get-invenio-pat.png" width="50%"></p>
-4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<p align="center"><img src="_static/media/new-pat.png" width="50%"></p>
+3. Click the <kbd>New token</kbd> button next to "Personal access tokens"<figure><img src="_static/media/get-invenio-pat.png" width="50%"></figure>
+4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<figure><img src="_static/media/new-pat.png" width="50%"></figure>
 5. After InvenioRDM creates and shows you the token, **copy it to a safe location** because InvenioRDM will not show it again
 
 ## Configuring a local IGA
@@ -73,7 +73,7 @@ After setting up the workflow and storing the InvenioRDM token in your repositor
 
 1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="70%"></figure>
 2. Click the <kbd>Run workflow</kbd> button in the right-hand side of the blue strip
-3. In the pull-down, change the value of "Mark the record as a draft" to `true`<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options.png" width="30%"></figure>
+3. In the pull-down, change the value of "Mark the record as a draft" to `true`<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options-circled.png" width="30%"></figure>
 4. Click the green <kbd>Run workflow</kbd> button near the bottom
 5. Refresh the web page and a new line will be shown named after your workflow file<figure><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></figure>
 6. Click that line to see the IGA workflow progress and results
