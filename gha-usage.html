@@ -387,7 +387,28 @@
   <ul class="md-nav__list" data-md-scrollfix="">
   </ul>
 </nav>
+      <ul class="md-nav__list"> 
+    <li class="md-nav__item">
+    
+    
+      <a href="#manual-invocation" class="md-nav__link">Manual invocation</a>
       
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#trigger-condition-s" class="md-nav__link">Trigger condition(s)</a>
+      
+    
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="#input-parameters" class="md-nav__link">Input parameters</a>
+      
+    
+    </li></ul>
     
     </li>
     <li class="md-nav__item">
@@ -491,6 +512,90 @@
             
   <section id="usage-github-action">
 <h1 id="gha-usage--page-root">Usage (GitHub Action)<a class="headerlink" href="#gha-usage--page-root" title="Permalink to this heading">¶</a></h1>
+<p>After creating a GitHub Action workflow as described in <a class="reference internal" href="installation.html#iga-as-a-github-action"><span class="std std-ref">the installation instructions</span></a> (making sure to set the value of <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> in the <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file) and storing your InvenioRDM token as <a class="reference internal" href="quick-start.html#configuring-a-github-action"><span class="std std-ref">a GitHub “secret” in the repository</span></a>, the workflow should run automatically the next time you make a release. The IGA workflow can also be run manually; in addition, the trigger condition(s) and some IGA options can be set by editing the workflow definition <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file.</p>
+<section id="manual-invocation">
+<h2 id="manual-invocation">Manual invocation<a class="headerlink" href="#manual-invocation" title="Permalink to this heading">¶</a></h2>
+<p>You can run the IGA GitHub Action workflow manually in two ways: from the web page of your GitHub repository, and using GitHub’s <code class="docutils literal notranslate"><span class="pre">gh</span></code> command line tool.</p>
+<section id="manual-workflow-invocation-on-github">
+<h3 id="manual-workflow-invocation-on-github">Manual workflow invocation on GitHub<a class="headerlink" href="#manual-workflow-invocation-on-github" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p>Go to the <em>Actions</em> tab in your repository and click on the name of the workflow in the sidebar on the left<figure><a class="reference internal" href="_images/github-run-workflow.png"><img alt="_images/github-run-workflow.png" src="_images/github-run-workflow.png" style="width: 70%;"/></a></figure></p></li>
+<li><p>Click the <kbd>Run workflow</kbd> button shown above in the right-hand side of the blue strip.</p></li>
+<li><p>A form will appear; in this form, you can set the IGA input parameters, including the tag of the release to send to InvenioRDM, whether to make the release a draft, and more. All these opotions except the first (the release tag) correspond to the <a class="reference internal" href="#input-parameters"><span class="xref myst">input parameters</span></a> described below. The release tag is normally obtained automatically by virtue of the fact that IGA runs when a new release is made, but when running the workflow manually, you can provide a tag explicitly. If you leave it blank, IGA will use the latest release in the repository.<figure><a class="reference internal" href="_images/github-workflow-options.png"><img alt="_images/github-workflow-options.png" src="_images/github-workflow-options.png" style="width: 30%;"/></a></figure></p></li>
+<li><p>Click the green <kbd>Run workflow</kbd> button near the bottom</p></li>
+<li><p>Refresh the web page and a new line will be shown named after your workflow file<figure><a class="reference internal" href="_images/github-running-workflow.png"><img alt="_images/github-running-workflow.png" src="_images/github-running-workflow.png" style="width: 90%;"/></a></figure></p></li>
+<li><p>Click that line to see the IGA workflow progress and results</p></li>
+</ol>
+</section>
+<section id="manual-workflow-invocation-using-gh">
+<h3 id="manual-workflow-invocation-using-gh">Manual workflow invocation using <code class="docutils literal notranslate"><span class="pre">gh</span></code><a class="headerlink" href="#manual-workflow-invocation-using-gh" title="Permalink to this heading">¶</a></h3>
+<p>The very handy GitHub command-line utility <a class="reference external" href="https://cli.github.com"><code class="docutils literal notranslate"><span class="pre">gh</span></code></a> lets you start workflows on GitHub from the comfort of your computer. To use it, in a shell go to your local clone of your repository, then run the folowing command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>workflow<span class="w"> </span>run
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">gh</span></code> command will next ask you to select a workflow to run if you have more than one defined for your repository. If IGA is the only one you have, you merely need to press the return key to select it:</p>
+<figure><img src="_static/media/gh-workflow-run.png" width="90%"/></figure>
+<p>You will be prompted for values of the options/input parameters (the same as in the form shown when running the action manually on GitHub).</p>
+<figure><img src="_static/media/gh-workflow-run-options.png" width="90%"/></figure>
+<p>One you hit return, you can monitor the status of the run using the command</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--workflow<span class="o">=</span>iga.yml
+</pre></div>
+</div>
+<figure><img src="_static/media/gh-workflow-list.png" width="90%"/></figure>
+</section>
+</section>
+<section id="trigger-condition-s">
+<h2 id="trigger-condition-s">Trigger condition(s)<a class="headerlink" href="#trigger-condition-s" title="Permalink to this heading">¶</a></h2>
+<p>The trigger condition for automatically running IGA on GitHub is determined by the <code class="docutils literal notranslate"><span class="pre">.yml</span></code> workflow file, specifically in the section with the <code class="docutils literal notranslate"><span class="pre">on:</span></code> heading. The workflow file shown in <a class="reference internal" href="installation.html#iga-as-a-github-action"><span class="std std-ref">the installation instructions</span></a> has an <code class="docutils literal notranslate"><span class="pre">on:</span></code> section that defines two triggers, one for release events on the repository and the other (the one titled <code class="docutils literal notranslate"><span class="pre">workflow_dispatch</span></code>) for manual invocation of the workflow. The relevant section of the file looks like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">on</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">release</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">types</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">published</span><span class="p p-Indicator">]</span>
+<span class="w">  </span><span class="nt">workflow_dispatch</span><span class="p">:</span>
+<span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
+</pre></div>
+</div>
+<p>You can change the trigger condition if necessary, for example to set which branch of your repository is used to trigger the release archiving workflow. Please consult the <a class="reference external" href="https://docs.github.com/en/actions/using-workflows/triggering-a-workflow#using-events-to-trigger-workflows">GitHub documentation on event triggers</a> for more information about what’s possible.</p>
+</section>
+<section id="input-parameters">
+<h2 id="input-parameters">Input parameters<a class="headerlink" href="#input-parameters" title="Permalink to this heading">¶</a></h2>
+<p>The Github Action for IGA has a number of configuration options that can be set using input parameters. These input parameters can be set in the workflow configuration <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file.</p>
+<section id="invenio-server-default-no-value">
+<h3 id="invenio-server-default-no-value"><code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> (default: no value)<a class="headerlink" href="#invenio-server-default-no-value" title="Permalink to this heading">¶</a></h3>
+<p>This variable holds the address of the InvenioRDM server where records are created by IGA. In the example workflow shown <a class="reference internal" href="installation.html#iga-as-a-github-action"><span class="std std-ref">in the Installation instructions</span></a>, the value of <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> is set by writing it in the <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file.</p>
+</section>
+<section id="invenio-token-default-no-value">
+<h3 id="invenio-token-default-no-value"><code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code> (default: no value)<a class="headerlink" href="#invenio-token-default-no-value" title="Permalink to this heading">¶</a></h3>
+<p>This must be stored as a “secret” in the GitHub repository. It holds your <a class="reference internal" href="quick-start.html#getting-an-inveniordm-token"><span class="std std-ref">InvenioRDM personal access token (PAT)</span></a>.</p>
+</section>
+<section id="all-assets-default-false">
+<h3 id="all-assets-default-false"><code class="docutils literal notranslate"><span class="pre">all_assets</span></code> (default: false)<a class="headerlink" href="#all-assets-default-false" title="Permalink to this heading">¶</a></h3>
+<p>By default, IGA attaches to the InvenioRDM record <em>only</em> the ZIP file asset created by GitHub for the release. To make IGA attach all assets associated with the GitHub release, set the <code class="docutils literal notranslate"><span class="pre">all_assets</span></code> option to true.</p>
+</section>
+<section id="all-metadata-default-false">
+<h3 id="all-metadata-default-false"><code class="docutils literal notranslate"><span class="pre">all_metadata</span></code> (default: false)<a class="headerlink" href="#all-metadata-default-false" title="Permalink to this heading">¶</a></h3>
+<p>IGA tries to use <a class="reference external" href="https://codemeta.github.io"><code class="docutils literal notranslate"><span class="pre">CodeMeta.json</span></code></a> first and <a class="reference external" href="https://citation-file-format.github.io"><code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code></a> second to fill out the fields of the InvenioRDM record. If neither of those files are present, IGA uses values from the GitHub repository instead. You can make it always use all sources of info by setting the option <code class="docutils literal notranslate"><span class="pre">all_metadata</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code>. Depending on how complete and up-to-date your <code class="docutils literal notranslate"><span class="pre">CodeMeta.json</span></code> and <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> are, this may or may not make the record more comprehensive and may or may not introduce redundancies or unwanted values.</p>
+</section>
+<section id="community-default-none">
+<h3 id="community-default-none"><code class="docutils literal notranslate"><span class="pre">community</span></code> (default: none)<a class="headerlink" href="#community-default-none" title="Permalink to this heading">¶</a></h3>
+<p>To submit your record to a community, use the <code class="docutils literal notranslate"><span class="pre">community</span></code> option and set its value to the name of a community on your InvenioRDM server. Note that submitting a record to a community means that the record will not be finalized and will not be publicly visible when IGA finishes; instead, the record URL that you receive will be for a draft version, pending review by the community moderators.</p>
+</section>
+<section id="draft-default-false">
+<h3 id="draft-default-false"><code class="docutils literal notranslate"><span class="pre">draft</span></code> (default: false)<a class="headerlink" href="#draft-default-false" title="Permalink to this heading">¶</a></h3>
+<p>If the <code class="docutils literal notranslate"><span class="pre">community</span></code> option is not used, then by default, IGA will finalize and publish the record. To make it stop short and leave the record as a draft instead, set the option <code class="docutils literal notranslate"><span class="pre">draft</span></code> to <code class="docutils literal notranslate"><span class="pre">true</span></code>. The draft option also takes precedence over the community option: if you use both <code class="docutils literal notranslate"><span class="pre">draft</span></code> and <code class="docutils literal notranslate"><span class="pre">community</span></code>, IGA will stop after creating the draft record and will <em>not</em> submit it to the community.  (You can nevertheless submit the record to a community manually once the draft is created, by visiting the record’s web page and using the InvenioRDM interface there.)</p>
+</section>
+<section id="parent-record-default-none">
+<h3 id="parent-record-default-none"><code class="docutils literal notranslate"><span class="pre">parent_record</span></code> (default: none)<a class="headerlink" href="#parent-record-default-none" title="Permalink to this heading">¶</a></h3>
+<p>The option <code class="docutils literal notranslate"><span class="pre">parent_record</span></code> can be used to indicate that the record being constructed is a new version of an existing record. This will make IGA use the InvenioRDM API for <a class="reference external" href="https://inveniordm.docs.cern.ch/releases/versions/version-v2.0.0/#versioning-support">record versioning</a>. The newly-created record will be linked to a parent record identified by the value passed to <code class="docutils literal notranslate"><span class="pre">parent-record</span></code>. The value must be either an InvenioRDM record identifier (which is a sequence of alphanumeric characters of the form <em>XXXXX-XXXXX</em>, such as <code class="docutils literal notranslate"><span class="pre">bknz4-bch35</span></code>, generated by the InvenioRDM server), or a URL to the landing page of the record in the InvenioRDM server. (Note that such URLs end in the record identifier.)</p>
+</section>
+<section id="release-tag-default-latest-release">
+<h3 id="release-tag-default-latest-release"><code class="docutils literal notranslate"><span class="pre">release_tag</span></code> (default: latest release)<a class="headerlink" href="#release-tag-default-latest-release" title="Permalink to this heading">¶</a></h3>
+<p>Normally, the GitHub Action is intended to be triggered by the latest release. When running the workflow manually, it can be useful to be able to specify a particular release tag (for example, when sending older release to the InvenioRDM server). The value of this option should be the tag name; e.g., <code class="docutils literal notranslate"><span class="pre">v1.2.3</span></code>.</p>
+</section>
+<section id="debug-default-false">
+<h3 id="debug-default-false"><code class="docutils literal notranslate"><span class="pre">debug</span></code> (default: false)<a class="headerlink" href="#debug-default-false" title="Permalink to this heading">¶</a></h3>
+<p>Turning on debugging will add more data into the GitHub Action workflow record. This is useful when debugging problems in IGA. For the GitHub Action workflow, the behavior is slightly different from the command-line version: the normal mode for the GitHub Action is the equivalent of <code class="docutils literal notranslate"><span class="pre">verbose</span></code> mode in the command-line version of IGA, and while <code class="docutils literal notranslate"><span class="pre">debug</span></code> mode adds more info to the output, it will (understandably) not cause IGA to drop into the <code class="docutils literal notranslate"><span class="pre">pdb</span></code> debugger upon errors.</p>
+</section>
+</section>
 </section>
 
 
