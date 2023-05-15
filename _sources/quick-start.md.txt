@@ -1,15 +1,15 @@
 # Quick start
 
-No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the first step.
+No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the next step.
 
 <div align="center">
 
 ```{mermaid}
 flowchart TD;
-  node1(Install IGA)-->node2(Get token from InvenioRDM);
-  node2-->node3{Running locally or\nas GitHub Action\n?};
-  node3-->|Local| node4(Configure local IGA);
-  node3-->|GitHub| node5(Configure GitHub Action);
+  node1(Step 1: Install IGA)-->node2(Step 2: Get token from InvenioRDM);
+  node2-->node3{Local or \nGitHub Action?};
+  node3-->|Local| node4(Step 3: Configure local IGA);
+  node3-->|GitHub| node5(Step 3: Configure GitHub Action);
 
   style node1 fill:white, stroke:blue;
   style node2 fill:white, stroke:blue;
