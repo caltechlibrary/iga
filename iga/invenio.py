@@ -63,7 +63,16 @@ class InvenioCommunity():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def invenio_api_available(server_url):
-    '''Return the name of the INVENIO_SERVER if it responds to API calls.'''
+    '''Return True if the server at server_url responds to the InvenioRDM API.'''
+    # There is no 'status' or similarly simple API test endpoint for InvenioRDM,
+    # so to test that the destination is actually an InvenioRDM server, the
+    # approach here is to do some kind of minimum call that requires the API.
+    return bool(invenio_server_name(server_url))
+
+
+@cache
+def invenio_server_name(server_url):
+    '''Return the name of server at server_url if it responds to API calls.'''
     server_host = netloc(server_url)
     endpoint = '/api/records?size=1'
     try:
@@ -81,14 +90,18 @@ def invenio_api_available(server_url):
         raise
     except socket.error:
         log(f'{server_url} did not respond')
-        return False
+        return None
+    except json.decoder.JSONDecodeError:
+        log(f'{server_url} exists but does not recognize the InvenioRDM API')
+        return None
     except commonpy.exceptions.CommonPyException as ex:
         log(f'trying to get {server_url}{endpoint} produced an error: ' + str(ex))
-        return False
-    except Exception:
+        return None
+    except Exception as ex:
+        log(f'unexpected exception accessing {server_url}{endpoint}: ' + str(ex))
         raise
     log(f'failed to reach server {server_url}')
-    return False
+    return None
 
 
 def invenio_get(record_id):

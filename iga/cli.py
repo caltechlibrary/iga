@@ -32,6 +32,7 @@ from iga.invenio import (
     invenio_community_send,
     invenio_create,
     invenio_publish,
+    invenio_server_name,
     invenio_upload,
 )
 
@@ -170,14 +171,20 @@ def _read_server(ctx, param, value):
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
-    # Test that the server responds to the API & simultaneously get its name.
-    if name := invenio_api_available(server):
-        os.environ['INVENIO_SERVER_NAME'] = name
-        log(f'using {name} as the InvenioRDM publisher name')
-    else:
+    # Test that the server responds to the API.
+    if not invenio_api_available(server):
         _alert(ctx, f'The server address ({server}) does not appear to be'
                ' reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
+    # Try to get the name that the server uses in the records it creates.
+    if name := invenio_server_name(server):
+        os.environ['INVENIO_SERVER_NAME'] = name
+        log(f'using {name} as the InvenioRDM publisher name')
+    else:
+        from commonpy.network_utils import hostname
+        host_part = hostname(server)
+        os.environ['INVENIO_SERVER_NAME'] = host_part
+        log(f'unable to get a publisher name from the server; using {host_part}')
     log(f'using {server} as the InvenioRDM server address')
     os.environ['INVENIO_SERVER'] = server
     return result

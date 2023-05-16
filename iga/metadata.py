@@ -785,8 +785,10 @@ def publisher(repo, release, include_all):
     if not (name := os.environ.get('INVENIO_SERVER_NAME', '')):
         # It should be set by cli.py during normal operation. During testing or
         # unanticipated situations, let's be careful to have a fallback here.
-        from iga.invenio import invenio_api_available
-        name = invenio_api_available(os.environ.get('INVENIO_SERVER', ''))
+        from iga.invenio import invenio_server_name
+        name = invenio_server_name(os.environ.get('INVENIO_SERVER', ''))
+        if name is None:
+            name = ''
     return name
 
 
