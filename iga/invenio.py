@@ -8,7 +8,7 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import network, netloc
+from   commonpy.network_utils import net, network, netloc
 from   commonpy.data_utils import pluralized
 import commonpy.exceptions
 from   dataclasses import dataclass
@@ -340,18 +340,20 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         tmout = _network_timeout(data)
         timeout = httpx.Timeout(tmout, connect=10, read=tmout, write=tmout)
         client = httpx.Client(timeout=timeout, http2=True, verify=False)
-    api_call = partial(network, action, url, client=client, headers=headers)
+    api_call = partial(net, action, url, client=client, headers=headers)
 
     # Now perform the actual network api call.
     try:
         if data:
             log(f'data payload size = {len(data)}')
             if data_type == 'json':
-                response = api_call(json=data)
+                response, error = api_call(json=data)
             else:
-                response = api_call(content=data)
+                response, error = api_call(content=data)
         else:
-            response = api_call()
+            response, error = api_call()
+        if error:
+            raise error
         response_json = response.json()
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'got response:\n{json.dumps(response_json, indent=2)}')
@@ -362,7 +364,14 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         log(f'got no content for {endpoint}')
         return None
     except commonpy.exceptions.CommonPyException as ex:
-        raise InvenioRDMError(f'Failed to {msg}: {str(ex)}')
+        # Invenio responds w/ code 400 if the token is invalid but the msg in
+        # the response ("Referer checking failed") is confusing. Let's do better.
+        if response.status_code == 400:
+            raise InvenioRDMError(f'Failed to {msg}. The server rejected the'
+                                  ' request, possibly because of an invalid'
+                                  ' InvenioRDM token.')
+        else:
+            raise InvenioRDMError(f'Failed to {msg}. {str(ex).capitalize()}')
     except Exception:
         raise
 
