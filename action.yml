@@ -69,16 +69,13 @@ runs:
       run: |
         echo "error=" >> "$GITHUB_ENV"
         if [ "${{inputs.INVENIO_SERVER}}" == '' ]; then
-          echo "::error title=Configuration error::Value of INVENIO_SERVER is not set."
-          echo "error=no_server" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_SERVER is not set.'" >> "$GITHUB_ENV"
         fi
         if [ "${{inputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
-          echo "::error title=Configuration error::Value of INVENIO_SERVER is not set."
-          echo "error=no_server" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_SERVER is not set.'" >> "$GITHUB_ENV"
         fi
         if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
-          echo "::error title=Configuration error::Value of INVENIO_TOKEN is not set."
-          echo "error=no_token" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_TOKEN is not set.'" >> "$GITHUB_ENV"
         fi
 
     - name: Abort rest of workflow if errors found.
@@ -86,7 +83,7 @@ runs:
       if: env.error != ''
       with:
         script: |
-          core.setFailed('Workflow stopped due to an error.')
+          core.setFailed("IGA workflow configuration error: ${{env.error}}")
 
     - name: Install IGA.
       shell: bash
@@ -98,7 +95,7 @@ runs:
       run: |
         echo "latest_tag=$(curl -qsSL \
           -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ github.token }}" \
+          -H "Authorization: Bearer ${{github.token}}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "${{github.api_url}}/repos/${{github.repository}}/releases/latest" \
           | jq -r .tag_name)" >> $GITHUB_ENV
