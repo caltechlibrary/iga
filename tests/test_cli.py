@@ -12,13 +12,13 @@ import json5
 import os
 from   os import path
 from   sidetrack import log
-from   unittest import mock
+from   unittest.mock import patch
 
 from   iga.exit_codes import ExitCode
 from iga.github import (
-    GitHubRepo,
     GitHubAccount,
     GitHubRelease,
+    GitHubRepo,
 )
 
 
@@ -28,6 +28,14 @@ from iga.github import (
 here      = path.dirname(path.abspath(__file__))
 repo_dir  = path.join(here, 'data/fake-example/')
 orcid_dir = path.join(here, 'data/orcid-examples/')
+
+
+def mocked_invenio_api_available(server_url):
+    return True
+
+
+def mocked_invenio_server_name(server_url):
+    return 'TestServer'
 
 
 def mocked_github_account(account_name):
@@ -82,15 +90,17 @@ def mocked_orcid_data(orcid):
 # Tests
 # .............................................................................
 
-@mock.patch.dict(os.environ, {}, clear=True)
-@mock.patch('iga.github.github_repo_file', new=mocked_github_repo_file)
-@mock.patch('iga.github.github_repo_filenames', new=mocked_github_repo_filenames)
-@mock.patch('iga.github.github_repo_languages', new=mocked_github_repo_languages)
-@mock.patch('iga.github.github_repo_contributors', new=mocked_github_repo_contributors)
-@mock.patch('iga.github.github_account', new=mocked_github_account)
-@mock.patch('iga.github.github_repo', new=mocked_github_repo)
-@mock.patch('iga.github.github_release', new=mocked_github_release)
-@mock.patch('iga.orcid.orcid_data', new=mocked_orcid_data)
+@patch.dict(os.environ, {}, clear=True)
+@patch('iga.invenio.invenio_api_available', new=mocked_invenio_api_available)
+@patch('iga.invenio.invenio_server_name', new=mocked_invenio_server_name)
+@patch('iga.github.github_repo_file', new=mocked_github_repo_file)
+@patch('iga.github.github_repo_filenames', new=mocked_github_repo_filenames)
+@patch('iga.github.github_repo_languages', new=mocked_github_repo_languages)
+@patch('iga.github.github_repo_contributors', new=mocked_github_repo_contributors)
+@patch('iga.github.github_account', new=mocked_github_account)
+@patch('iga.github.github_repo', new=mocked_github_repo)
+@patch('iga.github.github_release', new=mocked_github_release)
+@patch('iga.orcid.orcid_data', new=mocked_orcid_data)
 def test_environment_vars_from_options(capsys):
     from iga.cli import cli
     runner = click.testing.CliRunner()
