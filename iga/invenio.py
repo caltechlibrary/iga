@@ -8,7 +8,7 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from   commonpy.network_utils import network, netloc
+from   commonpy.network_utils import net, network, netloc
 from   commonpy.data_utils import pluralized
 import commonpy.exceptions
 from   dataclasses import dataclass
@@ -63,7 +63,16 @@ class InvenioCommunity():
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 def invenio_api_available(server_url):
-    '''Return the name of the INVENIO_SERVER if it responds to API calls.'''
+    '''Return True if the server at server_url responds to the InvenioRDM API.'''
+    # There is no 'status' or similarly simple API test endpoint for InvenioRDM,
+    # so to test that the destination is actually an InvenioRDM server, the
+    # approach here is to do some kind of minimum call that requires the API.
+    return bool(invenio_server_name(server_url))
+
+
+@cache
+def invenio_server_name(server_url):
+    '''Return the name of server at server_url if it responds to API calls.'''
     server_host = netloc(server_url)
     endpoint = '/api/records?size=1'
     try:
@@ -81,14 +90,18 @@ def invenio_api_available(server_url):
         raise
     except socket.error:
         log(f'{server_url} did not respond')
-        return False
+        return None
+    except json.decoder.JSONDecodeError:
+        log(f'{server_url} exists but does not recognize the InvenioRDM API')
+        return None
     except commonpy.exceptions.CommonPyException as ex:
         log(f'trying to get {server_url}{endpoint} produced an error: ' + str(ex))
-        return False
-    except Exception:
+        return None
+    except Exception as ex:
+        log(f'unexpected exception accessing {server_url}{endpoint}: ' + str(ex))
         raise
     log(f'failed to reach server {server_url}')
-    return False
+    return None
 
 
 def invenio_get(record_id):
@@ -327,18 +340,20 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         tmout = _network_timeout(data)
         timeout = httpx.Timeout(tmout, connect=10, read=tmout, write=tmout)
         client = httpx.Client(timeout=timeout, http2=True, verify=False)
-    api_call = partial(network, action, url, client=client, headers=headers)
+    api_call = partial(net, action, url, client=client, headers=headers)
 
     # Now perform the actual network api call.
     try:
         if data:
             log(f'data payload size = {len(data)}')
             if data_type == 'json':
-                response = api_call(json=data)
+                response, error = api_call(json=data)
             else:
-                response = api_call(content=data)
+                response, error = api_call(content=data)
         else:
-            response = api_call()
+            response, error = api_call()
+        if error:
+            raise error
         response_json = response.json()
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log(f'got response:\n{json.dumps(response_json, indent=2)}')
@@ -349,7 +364,14 @@ def _invenio(action, endpoint='', url='', data='', msg=''):
         log(f'got no content for {endpoint}')
         return None
     except commonpy.exceptions.CommonPyException as ex:
-        raise InvenioRDMError(f'Failed to {msg}: {str(ex)}')
+        # Invenio responds w/ code 400 if the token is invalid but the msg in
+        # the response ("Referer checking failed") is confusing. Let's do better.
+        if response.status_code == 400:
+            raise InvenioRDMError(f'Failed to {msg}. The server rejected the'
+                                  ' request, possibly because of an invalid'
+                                  ' InvenioRDM token.')
+        else:
+            raise InvenioRDMError(f'Failed to {msg}. {str(ex).capitalize()}')
     except Exception:
         raise
 
