@@ -77,7 +77,7 @@ def invenio_token_valid(server_url):
     # into the work before discovering we won't be able to upload the result.
     try:
         return bool(_invenio('get', endpoint='/api/users?size=1',
-                             msg='testing whether the InvenioRDM token is valid'))
+                             msg='confirm InvenioRDM token is valid'))
     except KeyboardInterrupt:
         raise
     except commonpy.exceptions.AuthenticationFailure:
