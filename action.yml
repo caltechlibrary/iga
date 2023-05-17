@@ -148,6 +148,15 @@ runs:
         # necessary; you could put the expression directly into the echo
         # command below. But when I do that, I get a doubling of the output.
         GITHUB_CONTEXT: ${{toJSON(github)}}
+        draft: ${{env.draft}}
+        all_assets: ${{env.all_assets}}
+        all_metadata: ${{env.all_metadata}}
+        use_community: ${{env.use_community}}
+        community: ${{env.community}}
+        use_parent: ${{env.use_parent}}
+        parent: ${{env.parent}}
+        tag: ${{env.tag}}
+        mode:${{env.mode}}
       shell: bash
       run: |
         echo "Printing context for debugging …"
@@ -163,10 +172,19 @@ runs:
         INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
         INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
         GITHUB_TOKEN: ${{github.token}}
+        draft: ${{env.draft}}
+        all_assets: ${{env.all_assets}}
+        all_metadata: ${{env.all_metadata}}
+        use_community: ${{env.use_community}}
+        community: ${{env.community}}
+        use_parent: ${{env.use_parent}}
+        parent: ${{env.parent}}
+        tag: ${{env.tag}}
+        mode:${{env.mode}}
       shell: bash
       run: |
         echo "Running IGA …"
-        if record_url=$(iga --log-dest - --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
+        if record_url=$(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
         else
           export exit_code=$?
@@ -188,8 +206,11 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
+        echo ━━━━━━━━━━━━━━━━━━━━━━━━━
         iga --version
+        echo ━━━━━━━━━━━━━━━━━━━━━━━━━
         echo $(cat ${{github.workspace}}/iga.out)
+        echo ━━━━━━━━━━━━━━━━━━━━━━━━━
         echo "::endgroup::"
         exit ${{env.exit_code}}
 
