@@ -166,7 +166,6 @@ runs:
       shell: bash
       run: |
         echo "Running IGA …"
-        export PYTHONUNBUFFERED=1
         if record_url=$(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
         else
