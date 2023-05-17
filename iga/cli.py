@@ -250,10 +250,17 @@ def _alert(ctx, msg, print_usage=True):
     '''Print an error message in the style of rich_click.
 
     This is meant to be used when reporting errors involving UI options, in
-    situations where rich_click's own error reporting can't be used directly.'''
+    situations where rich_click's own error reporting can't be used directly.
+    '''
+    if (os.environ.get('IGA_RUN_MODE') not in ['debug', 'verbose']
+            and os.environ.get('IGA_LOG_DEST', '-') != '-'):
+        with open(os.environ.get('IGA_LOG_DEST'), 'a') as dest:
+            console = Console(file=dest)
+            console.print('Error: ' + msg)
+    else:
+        log('error: ' + msg)
     # The following code tries to emulate what rich_click does. It doesn't use
     # private methods or properties, but it might break if rich_click changes.
-    log('error: ' + msg)
     from rich.markdown import Markdown
     from rich.padding import Padding
     from rich.panel import Panel
