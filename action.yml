@@ -67,7 +67,7 @@ runs:
     - name: Perform some sanity checks and report errors.
       shell: bash
       run: |
-        echo "::notice:: Perform initial sanity checks …"
+        echo "Performing initial sanity checks …"
         echo "error=" >> "$GITHUB_ENV"
         if [ "${{inputs.INVENIO_SERVER}}" == '' ]; then
           echo "error='the value of INVENIO_SERVER is not set.'" >> "$GITHUB_ENV"
@@ -78,7 +78,6 @@ runs:
         if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
           echo "error='the value of INVENIO_TOKEN is not set.'" >> "$GITHUB_ENV"
         fi
-        echo "::endgroup::"
 
     - name: Abort rest of workflow if errors found.
       uses: actions/github-script@v6
@@ -95,19 +94,18 @@ runs:
     - name: Find out the latest release tag for this repo.
       shell: bash
       run: |
-        echo "::notice::Getting the latest release tag for this repo …"
+        echo "Getting the latest release tag for this repo …"
         echo "latest_tag=$(curl -qsSL \
           -H "Accept: application/vnd.github+json" \
           -H "Authorization: Bearer ${{github.token}}" \
           -H "X-GitHub-Api-Version: 2022-11-28" \
           "${{github.api_url}}/repos/${{github.repository}}/releases/latest" \
           | jq -r .tag_name)" >> $GITHUB_ENV
-        echo "::endgroup::"
 
     - name: Configure IGA run-time options.
       shell: bash
       run: |
-        echo "::notice::Configuring IGA options …"
+        echo "Configuring IGA options …"
         echo "draft=" >> "$GITHUB_ENV"
         echo "all_assets=" >> "$GITHUB_ENV"
         echo "all_metadata=" >> "$GITHUB_ENV"
@@ -142,7 +140,6 @@ runs:
         if [ "${{inputs.debug || 'false'}}" != 'false' ]; then
           echo "mode=debug" >> "$GITHUB_ENV"
         fi
-        echo "::endgroup::"
 
     - name: Dump GitHub Actions context and variables if debugging is on.
       if: inputs.debug == true || inputs.debug == 'true'
@@ -153,13 +150,12 @@ runs:
         GITHUB_CONTEXT: ${{toJSON(github)}}
       shell: bash
       run: |
-        echo "::notice::Debug context dump …"
+        echo "Printing context for debugging …"
         echo "repository_owner = ${{github.repository_owner}}"
         echo "repository = ${{github.event.repository.name}}"
         echo "release tag = ${{env.tag}}"
         echo "====================="
         echo "$GITHUB_CONTEXT"
-        echo "::endgroup::"
 
     - name: Run IGA.
       id: run_iga
@@ -169,7 +165,7 @@ runs:
         GITHUB_TOKEN: ${{github.token}}
       shell: bash
       run: |
-        echo "::notice::Running IGA …"
+        echo "Running IGA …"
         export PYTHONUNBUFFERED=1
         if record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
@@ -183,6 +179,10 @@ runs:
             6) echo "error='The personal access token was rejected'" >> "$GITHUB_ENV" ;;
             *) echo "error='IGA failed due to an exception'" >> "$GITHUB_ENV" ;;
           esac
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "log<<$EOF" >> "$GITHUB_ENV"
+          cat iga.out >> "$GITHUB_ENV"
+          echo "$EOF" >> "$GITHUB_ENV"
           echo "exit_code=$exit_code" >> $GITHUB_ENV
         fi
         echo "::endgroup::"
@@ -194,7 +194,7 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
-        echo $(cat iga.out)
+        echo $${env.log}}
         echo "::endgroup::"
         exit ${{env.exit_code}}
 
