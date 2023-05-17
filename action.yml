@@ -167,7 +167,7 @@ runs:
       run: |
         echo "Running IGA …"
         export PYTHONUNBUFFERED=1
-        if record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
+        if record_url=$(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
         else
           export exit_code=$?
@@ -180,7 +180,6 @@ runs:
             *) echo error='IGA failed due to an exception' >> $GITHUB_ENV ;;
           esac
           echo exit_code=$exit_code >> $GITHUB_ENV
-          echo log="$(cat iga.out)" >> $GITHUB_OUTPUT
         fi
 
     - name: Error report.
@@ -190,7 +189,7 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
-        echo ${{steps.run_iga.outputs.log}}
+        echo $(cat ${{github.workspace}}/iga.out)
         echo "::endgroup::"
         exit ${{env.exit_code}}
 
