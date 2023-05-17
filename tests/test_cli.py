@@ -34,6 +34,10 @@ def mocked_invenio_api_available(server_url):
     return True
 
 
+def mocked_invenio_token_valid(server_url):
+    return True
+
+
 def mocked_invenio_server_name(server_url):
     return 'TestServer'
 
@@ -92,6 +96,7 @@ def mocked_orcid_data(orcid):
 
 @patch.dict(os.environ, {}, clear=True)
 @patch('iga.invenio.invenio_api_available', new=mocked_invenio_api_available)
+@patch('iga.invenio.invenio_token_valid', new=mocked_invenio_token_valid)
 @patch('iga.invenio.invenio_server_name', new=mocked_invenio_server_name)
 @patch('iga.github.github_repo_file', new=mocked_github_repo_file)
 @patch('iga.github.github_repo_filenames', new=mocked_github_repo_filenames)
