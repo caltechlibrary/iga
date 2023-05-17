@@ -1,5 +1,11 @@
 # Change log for IGA
 
+## Version 0.0.15 (2023-05-17)
+
+Changes in this version:
+* IGA now tests the InvenioRDM token explicitly and returns a new exit code if the token is rejected. This makes it possible for the GitHub Action to report this situation more clearly.
+
+
 ## Version 0.0.14 (2023-05-16)
 
 Changes in this release:
