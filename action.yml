@@ -68,15 +68,15 @@ runs:
       shell: bash
       run: |
         echo "Performing initial sanity checks …"
-        echo "error=" >> "$GITHUB_ENV"
+        echo "error=" >> $GITHUB_ENV
         if [ "${{inputs.INVENIO_SERVER}}" == '' ]; then
-          echo "error='the value of INVENIO_SERVER is not set.'" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
         fi
         if [ "${{inputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
-          echo "error='the value of INVENIO_SERVER is not set.'" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
         fi
         if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
-          echo "error='the value of INVENIO_TOKEN is not set.'" >> "$GITHUB_ENV"
+          echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
         fi
 
     - name: Abort rest of workflow if errors found.
@@ -106,39 +106,40 @@ runs:
       shell: bash
       run: |
         echo "Configuring IGA options …"
-        echo "draft=" >> "$GITHUB_ENV"
-        echo "all_assets=" >> "$GITHUB_ENV"
-        echo "all_metadata=" >> "$GITHUB_ENV"
-        echo "use_community=" >> "$GITHUB_ENV"
-        echo "community=" >> "$GITHUB_ENV"
-        echo "use_parent=" >> "$GITHUB_ENV"
-        echo "parent=" >> "$GITHUB_ENV"
-        echo "tag=" >> "$GITHUB_ENV"
-        echo "mode=verbose" >> "$GITHUB_ENV"
+        echo "iga_version=$(iga --version)" >> $GITHUB_ENV
+        echo "draft=" >> $GITHUB_ENV
+        echo "all_assets=" >> $GITHUB_ENV
+        echo "all_metadata=" >> $GITHUB_ENV
+        echo "use_community=" >> $GITHUB_ENV
+        echo "community=" >> $GITHUB_ENV
+        echo "use_parent=" >> $GITHUB_ENV
+        echo "parent=" >> $GITHUB_ENV
+        echo "tag=" >> $GITHUB_ENV
+        echo "mode=verbose" >> $GITHUB_ENV
         if [ "${{inputs.release_tag || 'latest'}}" == 'latest' ]; then
-          echo "tag=${{env.latest_tag}}" >> "$GITHUB_ENV"
+          echo "tag=${{env.latest_tag}}" >> $GITHUB_ENV
         else
-          echo "tag=${{inputs.release_tag}}" >> "$GITHUB_ENV"
+          echo "tag=${{inputs.release_tag}}" >> $GITHUB_ENV
         fi
         if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
-          echo 'draft=--draft' >> "$GITHUB_ENV"
+          echo 'draft=--draft' >> $GITHUB_ENV
         fi
         if [ "${{inputs.all_assets || 'false'}}" != 'false' ]; then
-          echo 'all_assets=--all-assets' >> "$GITHUB_ENV"
+          echo 'all_assets=--all-assets' >> $GITHUB_ENV
         fi
         if [ "${{inputs.all_metadata || 'false'}}" != 'false' ]; then
-          echo 'all_metadata=--all-metadata' >> "$GITHUB_ENV"
+          echo 'all_metadata=--all-metadata' >> $GITHUB_ENV
         fi
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
-          echo 'use_community=--community' >> "$GITHUB_ENV"
-          echo "community=${{inputs.community}}" >> "$GITHUB_ENV"
+          echo 'use_community=--community' >> $GITHUB_ENV
+          echo "community=${{inputs.community}}" >> $GITHUB_ENV
         fi
         if [ "${{inputs.parent_record || 'none'}}" != 'none' ]; then
-          echo 'use_parent=--parent-record' >> "$GITHUB_ENV"
-          echo "parent=${{inputs.parent_record}}" >> "$GITHUB_ENV"
+          echo 'use_parent=--parent-record' >> $GITHUB_ENV
+          echo "parent=${{inputs.parent_record}}" >> $GITHUB_ENV
         fi
         if [ "${{inputs.debug || 'false'}}" != 'false' ]; then
-          echo "mode=debug" >> "$GITHUB_ENV"
+          echo "mode=debug" >> $GITHUB_ENV
         fi
 
     - name: Dump GitHub Actions context and variables if debugging is on.
@@ -154,6 +155,7 @@ runs:
         echo "repository_owner = ${{github.repository_owner}}"
         echo "repository = ${{github.event.repository.name}}"
         echo "release tag = ${{env.tag}}"
+        echo "IGA version = ${{env.iga_version}}"
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
@@ -172,20 +174,16 @@ runs:
         else
           export exit_code=$?
           case $exit_code in
-            2) echo "error='IGA was passed a bad option or option value'" >> "$GITHUB_ENV" ;;
-            3) echo "error='IGA experienced a problem with a file or directory'" >> "$GITHUB_ENV" ;;
-            4) echo "error='IGA experienced a problem interacting with GitHub'" >> "$GITHUB_ENV" ;;
-            5) echo "error='IGA experienced a problem interacting with InvenioRDM'" >> "$GITHUB_ENV" ;;
-            6) echo "error='The personal access token was rejected'" >> "$GITHUB_ENV" ;;
-            *) echo "error='IGA failed due to an exception'" >> "$GITHUB_ENV" ;;
+            2) echo error='IGA was passed a bad option or option value' >> $GITHUB_ENV ;;
+            3) echo error='IGA experienced a problem with a file or directory' >> $GITHUB_ENV ;;
+            4) echo error='IGA experienced a problem interacting with GitHub' >> $GITHUB_ENV ;;
+            5) echo error='IGA experienced a problem interacting with InvenioRDM' >> $GITHUB_ENV ;;
+            6) echo error='The personal access token was rejected' >> $GITHUB_ENV ;;
+            *) echo error='IGA failed due to an exception' >> $GITHUB_ENV ;;
           esac
-          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
-          echo "log<<$EOF" >> "$GITHUB_ENV"
-          cat iga.out >> "$GITHUB_ENV"
-          echo "$EOF" >> "$GITHUB_ENV"
-          echo "exit_code=$exit_code" >> $GITHUB_ENV
+          echo exit_code=$exit_code >> $GITHUB_ENV
+          echo log="$(cat iga.out)" >> $GITHUB_OUTPUT
         fi
-        echo "::endgroup::"
 
     - name: Error report.
       if: env.error != ''
@@ -194,7 +192,7 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
-        echo ${{env.log}}
+        echo ${{steps.run_iga.outputs.log}}
         echo "::endgroup::"
         exit ${{env.exit_code}}
 
@@ -209,3 +207,4 @@ runs:
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
           echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY
         fi
+        echo "This workflow used version ${{env.iga_version}} of IGA." >> $GITHUB_STEP_SUMMARY
