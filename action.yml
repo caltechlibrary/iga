@@ -166,20 +166,20 @@ runs:
       shell: bash
       run: |
         echo "Running IGA …"
+        echo ${{env.mode}}
         if record_url=$(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
         else
           export exit_code=$?
           case $exit_code in
-            2) echo error='IGA was passed a bad option or option value' >> $GITHUB_ENV ;;
-            3) echo error='IGA experienced a problem with a file or directory' >> $GITHUB_ENV ;;
-            4) echo error='IGA experienced a problem interacting with GitHub' >> $GITHUB_ENV ;;
-            5) echo error='IGA experienced a problem interacting with InvenioRDM' >> $GITHUB_ENV ;;
-            6) echo error='The personal access token was rejected' >> $GITHUB_ENV ;;
-            *) echo error='IGA failed due to an exception' >> $GITHUB_ENV ;;
+            2) echo error='IGA was passed a bad option or option value.' >> $GITHUB_ENV ;;
+            3) echo error='IGA experienced a problem with a file or directory.' >> $GITHUB_ENV ;;
+            4) echo error='IGA experienced a problem interacting with GitHub.' >> $GITHUB_ENV ;;
+            5) echo error='IGA experienced a problem interacting with InvenioRDM.' >> $GITHUB_ENV ;;
+            6) echo error='The personal access token was rejected.' >> $GITHUB_ENV ;;
+            *) echo error='IGA failed due to an exception.' >> $GITHUB_ENV ;;
           esac
           echo exit_code=$exit_code >> $GITHUB_ENV
-          ls -l ${{github.workspace}}/iga.out
         fi
 
     - name: Error report.
@@ -189,6 +189,7 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
+        iga --version
         echo $(cat ${{github.workspace}}/iga.out)
         echo "::endgroup::"
         exit ${{env.exit_code}}
@@ -204,3 +205,4 @@ runs:
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
           echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY
         fi
+        echo "This workflow ran $(iga --version | head -1 | sed s/iga/IGA/)." >> $GITHUB_STEP_SUMMARY
