@@ -156,7 +156,7 @@ runs:
         use_parent: ${{inputs.use_parent}}
         parent: ${{inputs.parent}}
         tag: ${{inputs.tag}}
-        mode: ${{inputs.mode}}
+        debug: ${{inputs.debug}}
       shell: bash
       run: |
         echo "Printing context for debugging …"
@@ -180,7 +180,7 @@ runs:
         use_parent: ${{inputs.use_parent}}
         parent: ${{inputs.parent}}
         tag: ${{inputs.tag}}
-        mode: ${{inputs.mode}}
+        debug: ${{inputs.debug}}
       shell: bash
       run: |
         echo "Running IGA …"
