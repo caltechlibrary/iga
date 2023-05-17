@@ -32,6 +32,10 @@ def mocked_invenio_api_available(server_url):
     return True
 
 
+def mocked_invenio_token_valid(server_url):
+    return True
+
+
 def mocked_invenio_server_name(server_url):
     return 'TestServer'
 
@@ -129,6 +133,7 @@ def mocked_orcid_data(orcid):
 # .............................................................................
 
 @patch('iga.invenio.invenio_api_available', new=mocked_invenio_api_available)
+@patch('iga.invenio.invenio_token_valid', new=mocked_invenio_token_valid)
 @patch('iga.invenio.invenio_server_name', new=mocked_invenio_server_name)
 @patch('iga.invenio.invenio_vocabulary', new=mocked_invenio_vocabulary)
 @patch('iga.invenio.invenio_communities', new=mocked_invenio_communities)

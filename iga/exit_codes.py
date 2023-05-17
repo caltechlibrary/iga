@@ -32,7 +32,8 @@ class ExitCode(Enum):
     file_error       = 3, "encountered a problem with a file or directory"
     github_error     = 4, "encountered a problem interacting with GitHub"
     inveniordm_error = 5, "encountered a problem interacting with InvenioRDM"
-    exception        = 6, "a miscellaneous exception or fatal error occurred"
+    bad_token        = 6, "the personal access token was rejected"
+    exception        = 7, "a miscellaneous exception or fatal error occurred"
 
     def __int__(self):
         return self.value

@@ -33,6 +33,7 @@ from iga.invenio import (
     invenio_create,
     invenio_publish,
     invenio_server_name,
+    invenio_token_valid,
     invenio_upload,
 )
 
@@ -171,12 +172,13 @@ def _read_server(ctx, param, value):
                 _alert(ctx, f'The given InvenioRDM server address ({server})'
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
-    # Test that the server responds to the API.
     if not invenio_api_available(server):
         _alert(ctx, f'The server address ({server}) does not appear to be'
                ' reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
-    # Try to get the name that the server uses in the records it creates.
+    if not invenio_token_valid(server):
+        _alert(ctx, f'The personal access token was rejected by {server}.')
+        sys.exit(int(ExitCode.bad_token))
     if name := invenio_server_name(server):
         os.environ['INVENIO_SERVER_NAME'] = name
         log(f'using {name} as the InvenioRDM publisher name')
@@ -376,7 +378,7 @@ def _list_communities(ctx, param, value):
               type=File('w', lazy=False), expose_value=False, is_eager=True,
               help='Send log output to _FILE_ (use "`-`" for stdout)')
 #
-@click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
+@click.option('--mode', '-m', metavar='STR', callback=_config_mode,
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
@@ -604,7 +606,8 @@ possible values:
   3 = encountered a problem with a file or directory  
   4 = encountered a problem interacting with GitHub  
   5 = encountered a problem interacting with InvenioRDM  
-  6 = an exception or fatal error occurred  
+  6 = the personal access token was rejected  
+  7 = an exception or fatal error occurred  
 '''
     # Process arguments & handle early exits ..................................
 

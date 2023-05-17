@@ -6,7 +6,7 @@ authors:
     given-names: Michael
     affiliation: "Caltech Library"
     orcid: "https://orid.org/0000-0001-9105-5960"
-version: "0.0.14"
+version: "0.0.15"
 abstract: "The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub software releases in an InvenioRDM repository."
 repository-code: "https://github.com/caltechlibrary/iga"
 type: software
@@ -28,4 +28,4 @@ keywords:
   - "GitHub"
   - "GitHub Actions"
   - "GitHub Automation"
-date-released: "2023-05-16"
+date-released: "2023-05-17"
