@@ -70,6 +70,23 @@ def invenio_api_available(server_url):
     return bool(invenio_server_name(server_url))
 
 
+def invenio_token_valid(server_url):
+    '''Return True if the token in env variable INVENIO_TOKEN is valid.'''
+    # Testing things ahead of time is a Python anti-pattern, but in interactive
+    # programs (and especially ones that run as GHAs) we don't want to get far
+    # into the work before discovering we won't be able to upload the result.
+    try:
+        return bool(_invenio('get', endpoint='/api/users?size=1',
+                             msg='testing whether the InvenioRDM token is valid'))
+    except KeyboardInterrupt:
+        raise
+    except commonpy.exceptions.AuthenticationFailure:
+        return False
+    except Exception as ex:             # noqa PIE786
+        log('exception while testing the InvenioRDM token: ' + str(ex))
+        return False
+
+
 @cache
 def invenio_server_name(server_url):
     '''Return the name of server at server_url if it responds to API calls.'''

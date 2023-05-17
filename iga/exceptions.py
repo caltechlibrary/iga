@@ -29,6 +29,10 @@ class InvenioRDMError(IGAException):
     '''InvenioRDM returned an error.'''
 
 
+class BadToken(IGAException):
+    '''Invalid personal access token.'''
+
+
 class MissingData(IGAException):
     '''Could not obtain all the required data to create an InvenioRDM record.'''
 
