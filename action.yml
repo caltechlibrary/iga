@@ -106,7 +106,6 @@ runs:
       shell: bash
       run: |
         echo "Configuring IGA options …"
-        echo "iga_version=$(iga --version)" >> $GITHUB_ENV
         echo "draft=" >> $GITHUB_ENV
         echo "all_assets=" >> $GITHUB_ENV
         echo "all_metadata=" >> $GITHUB_ENV
@@ -155,7 +154,6 @@ runs:
         echo "repository_owner = ${{github.repository_owner}}"
         echo "repository = ${{github.event.repository.name}}"
         echo "release tag = ${{env.tag}}"
-        echo "IGA version = ${{env.iga_version}}"
         echo "====================="
         echo "$GITHUB_CONTEXT"
 
@@ -182,6 +180,7 @@ runs:
             *) echo error='IGA failed due to an exception' >> $GITHUB_ENV ;;
           esac
           echo exit_code=$exit_code >> $GITHUB_ENV
+          echo log="$(cat iga.out)" >> $GITHUB_OUTPUT
         fi
 
     - name: Error report.
@@ -206,4 +205,3 @@ runs:
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
           echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY
         fi
-        echo "This workflow used version ${{env.iga_version}} of IGA." >> $GITHUB_STEP_SUMMARY
