@@ -141,5 +141,5 @@ This program exits with a return status code of 0 if no problem is encountered. 
 | 3    | encountered a problem with a file or directory           |
 | 4    | encountered a problem interacting with GitHub            |
 | 5    | encountered a problem interacting with InvenioRDM        |
-| 6    | an exception or fatal error occurred                     |
-
+| 6    | the personal access token was rejected                   |
+| 7    | an exception or fatal error occurred                     |
