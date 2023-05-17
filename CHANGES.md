@@ -1,5 +1,13 @@
 # Change log for IGA
 
+## Version 0.0.13 (2023-05-16)
+
+Changes in this release:
+* IGA detects the case where InvenioRDM refuses the token, and reports the error more explicitly.
+* More documentation updates.
+* Fixes to test cases.
+
+
 ## Version 0.0.12 (2023-05-12)
 
 Changes in this release:
