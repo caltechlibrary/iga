@@ -194,7 +194,7 @@ runs:
         echo "::error::${{env.error}}"
         echo "::group::IGA run log"
         echo "The following output from IGA may help identify the problem."
-        cat iga.out
+        echo $(cat iga.out)
         echo "::endgroup::"
         exit ${{env.exit_code}}
 
