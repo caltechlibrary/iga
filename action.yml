@@ -111,7 +111,7 @@ runs:
         echo "use_parent=" >> "$GITHUB_ENV"
         echo "parent=" >> "$GITHUB_ENV"
         echo "tag=" >> "$GITHUB_ENV"
-        echo "mode=normal" >> "$GITHUB_ENV"
+        echo "mode=verbose" >> "$GITHUB_ENV"
         if [ "${{inputs.release_tag || 'latest'}}" == 'latest' ]; then
           echo "tag=${{env.latest_tag}}" >> "$GITHUB_ENV"
         else
@@ -165,13 +165,15 @@ runs:
         if record_url=$(iga --log-dest iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
           echo record_url="$record_url" >> $GITHUB_ENV
         else
-          case $? in
+          export exit_code=$?
+          case $exit_code in
             2) echo "error='IGA was passed a bad option or option value'" >> "$GITHUB_ENV" ;;
             3) echo "error='IGA experienced a problem with a file or directory'" >> "$GITHUB_ENV" ;;
             4) echo "error='IGA experienced a problem interacting with GitHub'" >> "$GITHUB_ENV" ;;
             5) echo "error='IGA experienced a problem interacting with InvenioRDM'" >> "$GITHUB_ENV" ;;
             *) echo "error='IGA failed due to an exception'" >> "$GITHUB_ENV"
           esac
+          echo "exit_code=$exit_code" >> $GITHUB_ENV
         fi
 
     - name: Error report.
@@ -183,7 +185,7 @@ runs:
         echo "The following output from IGA may help identify the problem."
         cat iga.out
         echo "::endgroup::"
-        exit 1
+        exit ${{env.exit_code}}
 
     - name: Summarize the results.
       shell: bash

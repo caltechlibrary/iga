@@ -63,7 +63,8 @@ def _config_mode(ctx, param, mode):
     '''Handle the --mode option and configure the run mode as needed.'''
     os.environ['IGA_RUN_MODE'] = mode or 'normal'
     if mode in ['verbose', 'debug']:
-        set_debug(True, show_package=True)
+        dest = os.environ.get('IGA_LOG_DEST') or '-'
+        set_debug(True, dest, show_package=True)
     if mode == 'debug':
         import faulthandler
         faulthandler.enable()
@@ -87,7 +88,6 @@ def _config_log(ctx, param, log_dest):
         dest = '-'
     else:
         dest = log_dest.name
-    set_debug(True, dest, show_package=True)
     os.environ['IGA_LOG_DEST'] = dest
     return dest
 
