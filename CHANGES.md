@@ -1,5 +1,11 @@
 # Change log for IGA
 
+## Version 0.0.14 (2023-05-16)
+
+Changes in this release:
+* Fixed bug where setting `verbose` mode or higher caused output to go to the terminal and was not properly sent to the log destination.
+
+
 ## Version 0.0.13 (2023-05-16)
 
 Changes in this release:
