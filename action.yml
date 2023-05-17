@@ -180,6 +180,7 @@ runs:
             *) echo error='IGA failed due to an exception' >> $GITHUB_ENV ;;
           esac
           echo exit_code=$exit_code >> $GITHUB_ENV
+          ls -l ${{github.workspace}}/iga.out
         fi
 
     - name: Error report.
