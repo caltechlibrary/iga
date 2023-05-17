@@ -378,7 +378,7 @@ def _list_communities(ctx, param, value):
               type=File('w', lazy=False), expose_value=False, is_eager=True,
               help='Send log output to _FILE_ (use "`-`" for stdout)')
 #
-@click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
+@click.option('--mode', '-m', metavar='STR', callback=_config_mode,
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
