@@ -159,6 +159,10 @@ runs:
 
     - name: Run IGA.
       id: run_iga
+      env:
+        INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
+        INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
+        GITHUB_TOKEN: ${{github.token}}
       shell: bash
       run: |
         echo "Running IGA …"
