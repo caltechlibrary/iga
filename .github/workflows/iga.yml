@@ -9,7 +9,7 @@ name: InvenioRDM GitHub Archiver
 env:
   INVENIO_SERVER: https://data.caltech.edu
 
-  draft:         false
+  draft:         true
   all_assets:    false
   all_metadata:  false
   community:     none
