@@ -232,7 +232,7 @@ def _print_text(text, color='turquoise4', end='\n', wrap=True):
     log(text)
     if os.environ.get('IGA_RUN_MODE') == 'quiet':
         return
-    if os.environ.get('IGA_LOG_DEST') == '-':
+    if os.environ.get('IGA_LOG_DEST', '-') == '-':
         import shutil
         width = (shutil.get_terminal_size().columns - 2) or 78
         if wrap:
@@ -253,7 +253,7 @@ def _alert(ctx, msg, print_usage=True):
     situations where rich_click's own error reporting can't be used directly.
     '''
     if (os.environ.get('IGA_RUN_MODE') not in ['debug', 'verbose']
-            and os.environ.get('IGA_LOG_DEST', '-') != '-'):
+            and os.environ.get('IGA_LOG_DEST') not in ['-', None]):
         with open(os.environ.get('IGA_LOG_DEST'), 'a') as dest:
             console = Console(file=dest)
             console.print('Error: ' + msg)
@@ -310,7 +310,7 @@ def _inform(text, end='\n'):
 def _quiet_or_redirected():
     '''Return true if the run mode is 'quiet' or the log dest is not '-'.'''
     return (os.environ.get('IGA_RUN_MODE') == 'quiet'
-            or os.environ.get('IGA_LOG_DEST', '-') != '-')
+            or os.environ.get('IGA_LOG_DEST', '-') not in ['-', None])
 
 
 def _list_communities(ctx, param, value):
