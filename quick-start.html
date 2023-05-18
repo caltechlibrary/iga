@@ -556,7 +556,7 @@
 <li><p>(Required) The identity of the GitHub release to be archived</p></li>
 <li><p>(Required) The address of the destination InvenioRDM server</p></li>
 <li><p>(Required) A personal access token for InvenioRDM (from <a class="reference internal" href="#getting-an-inveniordm-token"><span class="xref myst">above</span></a>)</p></li>
-<li><p>(Optional) A <a class="reference external" href="https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">personal access token for GitHub</a></p></li>
+<li><p>(Optional) A <a class="reference external" href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token">personal access token for GitHub</a></p></li>
 </ol>
 <p>The identity of the GitHub release is always given as an argument to IGA on the command line; the remaining values can be provided either via command-line options or environment variables. One approach is to set environment variables in shell scripts or your interactive shell. Here is an example using Bash shell syntax, with fake token values:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">INVENIO_SERVER</span><span class="o">=</span>https://data.caltech.edu
@@ -565,7 +565,7 @@
 </pre></div>
 </div>
 <p>Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--draft</span></code>) for another project in GitHub and tells IGA to open (the <code class="docutils literal notranslate"><span class="pre">-o</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--open</span></code>) the newly-created InvenioRDM entry in a web browser:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-d<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-d<span class="w"> </span>-o<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
 </pre></div>
 </div>
 <p>More options are described in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">detailed usage information</span></a>.</p>

@@ -110,7 +110,7 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
     ```
 3. **Edit the value of the `INVENIO_SERVER` variable (line 5 above)** ↑
-4. Optionally, change the [values of other options (`all_assets`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
+4. Optionally, change the [values of other options (`parent_record`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
 The sample `.yml` workflow file above is also available from the GitHub repository for IGA as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml).

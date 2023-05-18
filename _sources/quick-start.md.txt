@@ -40,7 +40,7 @@ To send a GitHub release to your InvenioRDM server, IGA needs this information:
 1. (Required) The identity of the GitHub release to be archived
 2. (Required) The address of the destination InvenioRDM server
 3. (Required) A personal access token for InvenioRDM (from [above](#getting-an-inveniordm-token))
-4. (Optional) A [personal access token for GitHub](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+4. (Optional) A [personal access token for GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 
 The identity of the GitHub release is always given as an argument to IGA on the command line; the remaining values can be provided either via command-line options or environment variables. One approach is to set environment variables in shell scripts or your interactive shell. Here is an example using Bash shell syntax, with fake token values:
 ```shell
@@ -51,7 +51,7 @@ export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 
 Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for another project in GitHub and tells IGA to open (the `-o` option is short for `--open`) the newly-created InvenioRDM entry in a web browser:
 ```shell
-iga -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
+iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
 More options are described in the section on [detailed usage information](cli-usage.md).
