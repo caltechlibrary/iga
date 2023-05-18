@@ -20,7 +20,7 @@ CodeMeta
     metadata properties stored in different resources and formats, and also
     defines a file format (`codemeta.json`) to store metadata property values
     for a given software project.
-    
+
 `codemeta.json`
     A file in [JSON-LD](https://json-ld.org) format that stores metadata
     property values for a given software project. The metadata fields in
