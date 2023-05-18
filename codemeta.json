@@ -27,13 +27,13 @@
         }
     ],
     "funder": { 
-        "@id": "https://ror.org/05dxps055"
+        "@id": "https://ror.org/05dxps055",
         "@type": "Organization",
         "name": "California Institute of Technology Library",
-    }
+    },
     "copyrightHolder": [
         {
-            "@id": "https://ror.org/05dxps055"
+            "@id": "https://ror.org/05dxps055",
             "@type": "Organization",
             "name": "California Institute of Technology",
         }
