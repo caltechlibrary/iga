@@ -165,7 +165,7 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
     ```
 3. **Edit the value of the `INVENIO_SERVER` variable (line 5 above)** ↑
-4. Optionally, change the values of other options (`all_assets`, `community`, etc.)
+4. Optionally, change the values of other options (`parent_record`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
 
@@ -190,7 +190,7 @@ To send a GitHub release to your InvenioRDM server, IGA needs this information:
 1. (Required) The identity of the GitHub release to be archived
 2. (Required) The address of the destination InvenioRDM server
 3. (Required) A personal access token for InvenioRDM (from [above](#getting-an-inveniordm-token))
-4. (Optional) A [personal access token for GitHub](https://docs.github.com/en/enterprise-server@3.4/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+4. (Optional) A [personal access token for GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 
 The identity of the GitHub release is always given as an argument to IGA on the command line; the remaining values can be provided either via command-line options or environment variables. One approach is to set environment variables in shell scripts or your interactive shell. Here is an example using Bash shell syntax, with fake token values:
 ```shell
@@ -201,7 +201,7 @@ export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 
 Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for another project in GitHub and tells IGA to open (the `-o` option is short for `--open`) the newly-created InvenioRDM entry in a web browser:
 ```shell
-iga -d https://github.com/mhucka/taupe/releases/tag/v1.2.0
+iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
 More options are described in the section on [detailed usage information](#usage) below.
@@ -223,7 +223,7 @@ After setting up the workflow and storing the InvenioRDM token in your repositor
 
 1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="90%"></p>
 2. Click the <kbd>Run workflow</kbd> button in the right-hand side of the blue strip
-3. In the pull-down, change the value of "Mark the record as a draft" to `true`<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options.png" width="40%"></p>
+3. In the pull-down, change the value of "Mark the record as a draft" to `true`<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options-circled.png" width="40%"></p>
 4. Click the green <kbd>Run workflow</kbd> button near the bottom
 5. Refresh the web page and a new line will be shown named after your workflow file<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></p>
 6. Click the title of the workflow to see the IGA workflow progress and results
@@ -420,22 +420,25 @@ IGA uses multiple other open-source packages, without which it would have taken 
 * [isbnlib](https://github.com/xlcnd/isbnlib) &ndash; utilities for dealing with ISBNs
 * [json5](https://github.com/dpranke/pyjson5) &ndash; extended JSON format parser
 * [latexcodec](https://github.com/mcmtroffaes/latexcodec) &ndash; lexer and codec to work with LaTeX code in Python
+* [linkify-it-py](https://github.com/tsutsu3/linkify-it-py) &ndash; a link recognition library with full unicode support
 * [lxml](https://lxml.de) &ndash; an XML parsing library
 * [Markdown](https://python-markdown.github.io) &ndash; Python package for working with Markdown
 * [markdown-checklist](https://github.com/FND/markdown-checklist) &ndash; GitHub-style checklist extension for Python Markdown package
 * [mdx-breakless-lists](https://github.com/adamb70/mdx-breakless-lists) &ndash; GitHub-style Markdown lists that don't require a line break above them
 * [mdx_linkify](https://github.com/daGrevis/mdx_linkify) &ndash; extension for Python Markdown will convert text that look like links to HTML anchors
+* [MyST-parser](https://github.com/executablebooks/MyST-Parser) &ndash; A Sphinx and Docutils extension to parse an extended version of Markdown
 * [nameparser](https://github.com/derek73/python-nameparser) &ndash; package for parsing human names into their individual components
 * [probablepeople](https://github.com/datamade/probablepeople) &ndash; package for parsing names into components using ML-based techniques
-* [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) &ndash; extensions for Python Markdown
-* [PyYAML](https://pyyaml.org) &ndash; YAML parser
 * [pybtex](https://pybtex.org) &ndash; BibTeX parser and formatter
 * [pybtex-apa7-style]() &ndash; plugin for [pybtex](https://pybtex.org) that provides APA7 style formatting
+* [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) &ndash; extensions for Python Markdown
 * [pytest](https://docs.pytest.org/en/stable/) &ndash; testing framework
 * [pytest-cov](https://github.com/pytest-dev/pytest-cov) &ndash; coverage reports for use with `pytest`
 * [pytest-mock](https://pypi.org/project/pytest-mock/) &ndash; wrapper around the `mock` package for use with `pytest`
+* [PyYAML](https://pyyaml.org) &ndash; YAML parser
 * [Rich](https://github.com/Textualize/rich) &ndash; library for writing styled text to the terminal
 * [rich-click](https://github.com/ewels/rich-click) &ndash; CLI interface built on top of [Rich](https://github.com/Textualize/rich)
+* [setuptools](https://github.com/pypa/setuptools) &ndash; library for `setup.py`
 * [Sidetrack](https://github.com/caltechlibrary/sidetrack) &ndash; simple debug logging/tracing package
 * [spaCy](https://spacy.io) &ndash; Natural Language Processing package
 * [spacy-alignments](https://github.com/explosion/spacy-alignments) &ndash; alternate alignments for [spaCy](https://spacy.io)
@@ -443,7 +446,10 @@ IGA uses multiple other open-source packages, without which it would have taken 
 * [spacy-loggers](https://github.com/explosion/spacy-loggers) &ndash; loggers for [spaCy](https://spacy.io)
 * [spacy-pkuseg](https://github.com/explosion/spacy-pkuseg) &ndash; Chinese word segmentation toolkit for [spaCy](https://spacy.io)
 * [spacy-transformers](https://spacy.io) &ndash; pretrained Transformers for [spaCy](https://spacy.io)
-* [setuptools](https://github.com/pypa/setuptools) &ndash; library for `setup.py`
+* [Sphinx](https://www.sphinx-doc.org/en/master/) &ndash; documentation generator for Python
+* [sphinx-autobuild](https://pypi.org/project/sphinx-autobuild/) &ndash; rebuild Sphinx docs automatically
+* [sphinx-material](https://bashtage.github.io/sphinx-material/) &ndash; a responsive Material Design theme for Sphinx
+* [sphinxcontrib-mermaid](https://github.com/mgaitan/sphinxcontrib-mermaid) &ndash; support Mermaid diagrams in Sphinx docs
 * [StringDist](https://github.com/obulkin/string-dist) &ndash; library for calculating string distances
 * [Twine](https://github.com/pypa/twine) &ndash; utilities for publishing Python packages on [PyPI](https://pypi.org)
 * [url-normalize](https://github.com/niksite/url-normalize) &ndash; URI/URL normalization utilities
