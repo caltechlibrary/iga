@@ -21,7 +21,7 @@ It _may_ be possible to run IGA without providing a GitHub access token. GitHub 
 
 Note that when you run IGA as a GitHub Action, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Action workflow.
 
-## GitHub releases
+## GitHub release
 
 A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
  1. The full URL of the web page on GitHub of a tagged release. In this case,

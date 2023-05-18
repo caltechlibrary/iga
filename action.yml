@@ -32,16 +32,23 @@ inputs:
     default: false
     required: false
     type: boolean
-  community:
-    description: "Submit record to the designated RDM community."
-    default: 'none'
+  debug:
+    # Note that IGA has more modes than only debug on/off, but for
+    # simplicity, this action workflow only offers a binary toggle.
+    description: "Print debugging info in the GitHub Action output."
+    default: false
     required: false
-    type: string
+    type: boolean
   draft:
     description: "Mark the InvenioRDM record as a draft."
     default: false
     required: false
     type: boolean
+  community:
+    description: "Submit record to the designated RDM community."
+    default: 'none'
+    required: false
+    type: string
   parent_record:
     description: "The record ID of a parent record (to make a new version)."
     default: 'none'
@@ -52,14 +59,6 @@ inputs:
     default: 'latest'
     required: false
     type: string
-  debug:
-    # Note that IGA has more modes than only debug on/off, but for
-    # simplicity, this action workflow only offers a binary toggle.
-    # Turning on debug also prints additional info in the workflow.
-    description: "Print debugging info in the GitHub Action output."
-    default: false
-    required: false
-    type: boolean
 
 runs:
   using: composite
