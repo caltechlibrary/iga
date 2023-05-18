@@ -50,13 +50,6 @@
         "@type": "Organization",
         "name": "California Institute of Technology Library"
     },
-    "copyrightHolder": [
-        {
-            "@id": "https://ror.org/05dxps055",
-            "@type": "Organization",
-            "name": "California Institute of Technology"
-        }
-    ],
     "copyrightYear": 2023,
     "license": "https://github.com/caltechlibrary/iga/blob/main/LICENSE",
     "isAccessibleForFree": true,
