@@ -1,7 +1,7 @@
 # =============================================================================
 # GitHub Action workflow for using the InvenioRDM GitHub Archiver (IGA).
 # A copy of this file is available from https://github.com/caltechlibrary/iga/.
-# At the time that this file was first copied, IGA was at version 0.0.16.
+# At the time that this file was first copied, IGA was at version 1.0.0.
 # =============================================================================
 
 name: InvenioRDM GitHub Archiver

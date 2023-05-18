@@ -1,5 +1,10 @@
 # Change log for IGA
 
+## Version 1.0.0 (2023-05-18)
+
+This is the first full release of IGA, the _InvenioRDM GitHub Archiver_. This release supports the use of IGA as both a command-line program and as a GitHub Action. Complete documentation is available at <https://caltechlibrary.github.io/iga/> and a shortened version of the documentation is present in the [repository README file](https://github.com/caltechlibrary/iga).
+
+
 ## Version 0.0.16 (2023-05-17)
 
 Changes in this release:
