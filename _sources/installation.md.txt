@@ -50,42 +50,49 @@ python3 setup.py install
 A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
-2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following contents into it:
+2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/develop/sample-workflow.yml):
     ```yaml
     name: InvenioRDM GitHub Archiver
+
     env:
       # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
       INVENIO_SERVER: https://your-invenio-server.org
 
-      # These variables are IGA options. Please see the docs for info.
+      # Set to an InvenioRDM record ID to mark releases as new versions.
+      parent_record: none
+
+      # The remaining variables are other IGA options. Please see the docs.
+      community:     none
       draft:         false
       all_assets:    false
       all_metadata:  false
-      community:     none
-      parent_record: none
       debug:         false
 
-    # ~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~
+
     on:
       release:
         types: [published]
       workflow_dispatch:
         inputs:
           release_tag:
-            description: "The tag of the release to archive:"
+            description: "The release tag (empty = latest):"
           draft:
             default: false
-            description: "Mark the record as a draft:"
+            description: "Mark the InvenioRDM record as a draft:"
+          parent_record:
+            description: "ID of parent record (for versioning):"
+          community:
+            description: "Name of InvenioRDM community (if any):"
           all_assets:
             default: false
             description: "Attach all GitHub assets:"
           all_metadata:
             default: false
             description: "Include additional GitHub metadata:"
-          community:
-            description: "Send record to InvenioRDM community:"
-          parent_record:
-            description: "ID of parent record (for versioning):"
+          debug:
+            default: false
+            description: "Print debug info in the GitHub log:"
     jobs:
       Send_to_InvenioRDM:
         runs-on: ubuntu-latest
@@ -96,13 +103,13 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
               all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
               all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
-              debug:          ${{github.event.inputs.debug || 'false'}}
+              debug:          ${{github.event.inputs.debug || env.debug}}
               draft:          ${{github.event.inputs.draft || env.draft}}
               community:      ${{github.event.inputs.community || env.community}}
               parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
     ```
-3. **Edit the value of the `INVENIO_SERVER` variable (line 4 above)** ↑
+3. **Edit the value of the `INVENIO_SERVER` variable (line 5 above)** ↑
 4. Optionally, change the [values of other options (`all_assets`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
