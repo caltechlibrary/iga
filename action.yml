@@ -6,7 +6,7 @@
 # @repo    https://github.com/caltechlibrary/iga
 # =============================================================================
 
-name: "IGA"
+name: "InvenioRDM GitHub Archiver"
 description: "Automatically archive GitHub releases in an InvenioRDM repository"
 author: "Michael Hucka -- https://github.com/mhucka"
 branding:
