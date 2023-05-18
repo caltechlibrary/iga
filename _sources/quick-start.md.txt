@@ -63,7 +63,7 @@ After doing the [GitHub Action installation](installation.md) steps and [obtaini
 
 1. Go to the _Settings_ page of your GitHub repository <figure><img src="_static/media/github-tabs.png" width="70%"></figure>
 2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<figure><img src="_static/media/github-sidebar-secrets.png" width="30%"></figure>
-3. In the next page, click the green <kbd>New repository secret</kbd> button<figure><img src="_static/media/github-secrets.png" width="60%"></figure>
+3. In the next page, click the green <kbd>New repository secret</kbd> button<figure><img src="_static/media/github-secrets.png" width="60%"></figure>. Alternatively, if you are part of a GitHub organization you can add a secret for all organizational repositories by clicking the grey "Manage organization secrets" button.
 4. Name the variable `INVENIO_TOKEN` and paste in your InvenioRDM token
 5. Finish by clicking the green <kbd>Add secret</kbd> button
 
@@ -82,3 +82,7 @@ After setting up the workflow and storing the InvenioRDM token in your repositor
 ### Running the workflow when releasing software
 
 Once the personal access token from InvenioRDM is stored as a GitHub secret, the workflow should run automatically every time a new release is made on GitHub &ndash; no further action should be needed. You can check the results (and look for errors if something went wrong) by going to the _Actions_ tab in your GitHub repository.
+
+### After the first release
+
+Once you've made the first release of your software on InvenioRDM, you might want to add the record you created as a 'parent'. This will enable automatic versioning, so all your software versions will be listed in one place and users will be notified about newer versions of the software. Grab the record id at the end of your InvenioRDM record (e.g. 6qhkm-7n074) and add it to your `iga.yml` file in the `parent_record` field.
