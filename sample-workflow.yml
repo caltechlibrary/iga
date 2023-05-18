@@ -1,7 +1,7 @@
 # =============================================================================
 # GitHub Action workflow for using the InvenioRDM GitHub Archiver (IGA).
 # A copy of this file is available from https://github.com/caltechlibrary/iga/.
-# At the time this file was copied, IGA was at version 0.0.16.
+# At the time that this file was first copied, IGA was at version 0.0.16.
 # =============================================================================
 
 name: InvenioRDM GitHub Archiver
@@ -10,12 +10,14 @@ env:
   # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
   INVENIO_SERVER: https://your-invenio-server.org
 
-  # These variables are IGA options. Please see the docs for info.
+  # Set to an InvenioRDM record ID to mark releases as new versions.
+  parent_record: none
+
+  # The remaining variables are other IGA options. Please see the docs.
+  community:     none
   draft:         false
   all_assets:    false
   all_metadata:  false
-  community:     none
-  parent_record: none
   debug:         false
 
 # ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~
@@ -26,21 +28,23 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "The tag of the release to archive:"
+        description: "The release tag (empty = latest):"
       draft:
         default: false
-        description: "Mark the record as a draft:"
+        description: "Mark the InvenioRDM record as a draft:"
+      parent_record:
+        description: "ID of parent record (for versioning):"
+      community:
+        description: "Name of InvenioRDM community (if any):"
       all_assets:
         default: false
         description: "Attach all GitHub assets:"
       all_metadata:
         default: false
         description: "Include additional GitHub metadata:"
-      community:
-        description: "Send record to InvenioRDM community:"
-      parent_record:
-        description: "ID of parent record (for versioning):"
-
+      debug:
+        default: false
+        description: "Print debug info in the GitHub log:"
 jobs:
   Send_to_InvenioRDM:
     runs-on: ubuntu-latest
@@ -51,7 +55,7 @@ jobs:
           INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
           all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
           all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
-          debug:          ${{github.event.inputs.debug || 'false'}}
+          debug:          ${{github.event.inputs.debug || env.debug}}
           draft:          ${{github.event.inputs.draft || env.draft}}
           community:      ${{github.event.inputs.community || env.community}}
           parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
