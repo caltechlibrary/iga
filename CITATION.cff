@@ -1,7 +1,7 @@
 cff-version: 1.2
 message: "If you use this software, please cite it using these metadata."
-title: "InvenioRDM GitHub Archiver"
-authors: 
+title: "InvenioRDM GitHub Archiver (IGA)"
+authors:
   - family-names: Hucka
     given-names: Michael
     affiliation: "Caltech Library"
@@ -12,7 +12,7 @@ repository-code: "https://github.com/caltechlibrary/iga"
 type: software
 url: "https://caltechlibrary.github.io/iga"
 license-url: "https://github.com/caltechlibrary/iga/blob/main/LICENSE"
-keywords: 
+keywords:
   - "archiving"
   - "archives"
   - "preservation"
