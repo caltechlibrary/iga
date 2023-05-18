@@ -1,5 +1,13 @@
 # Change log for IGA
 
+## Version 0.0.16 (2023-05-17)
+
+Changes in this release:
+* Fixed another problem with logging, in part by reverting a previous change but also by modifying the code that writes error messages.
+* Expanded the error catches in the GitHub Action workflow to detect and report problems with invalid tokens.
+* Merge PR #7: doc improvements.
+
+
 ## Version 0.0.15 (2023-05-17)
 
 Changes in this version:

@@ -10,14 +10,14 @@ You can run the IGA GitHub Action workflow manually in two ways: from the web pa
 
 1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<figure><img src="_static/media/github-run-workflow.png" width="70%"></figure>
 2. Click the <kbd>Run workflow</kbd> button shown above in the right-hand side of the blue strip.
-3. A form will appear; in this form, you can set the IGA input parameters, including the tag of the release to send to InvenioRDM, whether to make the release a draft, and more. All these opotions except the first (the release tag) correspond to the [input parameters](#input-parameters) described below. The release tag is normally obtained automatically by virtue of the fact that IGA runs when a new release is made, but when running the workflow manually, you can provide a tag explicitly. If you leave it blank, IGA will use the latest release in the repository.<figure><img src="_static/media/github-workflow-options.png" width="30%"></figure>
+3. A form will appear; in this form, you can set the IGA input parameters, including the tag of the release to send to InvenioRDM, whether to make the release a draft, and more. All these options except the first (the release tag) correspond to the [input parameters](#input-parameters) described below. The release tag is normally obtained automatically by virtue of the fact that IGA runs when a new release is made, but when running the workflow manually, you can provide a tag explicitly. If you leave it blank, IGA will use the latest release in the repository.<figure><img src="_static/media/github-workflow-options.png" width="30%"></figure>
 4. Click the green <kbd>Run workflow</kbd> button near the bottom
 5. Refresh the web page and a new line will be shown named after your workflow file<figure><img src="_static/media/github-running-workflow.png" width="90%"></figure>
 6. Click that line to see the IGA workflow progress and results
 
 ### Manual workflow invocation using `gh`
 
-The very handy GitHub command-line utility [`gh`](https://cli.github.com) lets you start workflows on GitHub from the comfort of your computer. To use it, in a shell go to your local clone of your repository, then run the folowing command:
+The very handy GitHub command-line utility [`gh`](https://cli.github.com) lets you start workflows on GitHub from the comfort of your computer. To use it, in a shell go to your local clone of your repository, then run the following command:
 ```shell
 gh workflow run
 ```

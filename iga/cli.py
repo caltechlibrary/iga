@@ -230,25 +230,37 @@ def _print_text(text, color='turquoise4', end='\n', wrap=True):
     not print output to the console.
     '''
     log(text)
-    if _quiet_or_redirected():
+    if os.environ.get('IGA_RUN_MODE') == 'quiet':
         return
-    import shutil
-    width = (shutil.get_terminal_size().columns - 2) or 78
-    if wrap:
-        from textwrap import wrap
-        text = '\n'.join(wrap(text, width=width))
-    console = Console(width=width)
-    console.print(text, style=color, end=end, highlight=False)
+    if os.environ.get('IGA_LOG_DEST', '-') == '-':
+        import shutil
+        width = (shutil.get_terminal_size().columns - 2) or 78
+        if wrap:
+            from textwrap import wrap
+            text = '\n'.join(wrap(text, width=width))
+        console = Console(width=width)
+        console.print(text, style=color, end=end, highlight=False)
+    else:
+        with open(os.environ.get('IGA_LOG_DEST'), 'a') as dest:
+            console = Console(file=dest)
+            console.print(text)
 
 
 def _alert(ctx, msg, print_usage=True):
     '''Print an error message in the style of rich_click.
 
     This is meant to be used when reporting errors involving UI options, in
-    situations where rich_click's own error reporting can't be used directly.'''
+    situations where rich_click's own error reporting can't be used directly.
+    '''
+    if (os.environ.get('IGA_RUN_MODE') not in ['debug', 'verbose']
+            and os.environ.get('IGA_LOG_DEST') not in ['-', None]):
+        with open(os.environ.get('IGA_LOG_DEST'), 'a') as dest:
+            console = Console(file=dest)
+            console.print('Error: ' + msg)
+    else:
+        log('error: ' + msg)
     # The following code tries to emulate what rich_click does. It doesn't use
     # private methods or properties, but it might break if rich_click changes.
-    log('error: ' + msg)
     from rich.markdown import Markdown
     from rich.padding import Padding
     from rich.panel import Panel
@@ -298,7 +310,7 @@ def _inform(text, end='\n'):
 def _quiet_or_redirected():
     '''Return true if the run mode is 'quiet' or the log dest is not '-'.'''
     return (os.environ.get('IGA_RUN_MODE') == 'quiet'
-            or os.environ.get('IGA_LOG_DEST', '-') != '-')
+            or os.environ.get('IGA_LOG_DEST', '-') not in ['-', None])
 
 
 def _list_communities(ctx, param, value):
@@ -378,7 +390,7 @@ def _list_communities(ctx, param, value):
               type=File('w', lazy=False), expose_value=False, is_eager=True,
               help='Send log output to _FILE_ (use "`-`" for stdout)')
 #
-@click.option('--mode', '-m', metavar='STR', callback=_config_mode,
+@click.option('--mode', '-m', metavar='STR', callback=_config_mode, is_eager=True,
               type=Choice(['normal', 'quiet', 'verbose', 'debug'], case_sensitive=False),
               help='Run mode: `quiet`, **`normal`**, `verbose`, `debug`')
 #
@@ -686,7 +698,6 @@ possible values:
             _inform('Attaching assets:')
             for item in files_to_upload or github_assets:
                 invenio_upload(record, item, _print_text)
-            _inform('Done.')
 
             if draft:
                 _inform(f'The draft record is available at {record.draft_url}')
