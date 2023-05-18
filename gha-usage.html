@@ -457,6 +457,13 @@
       <a href="tips.html#what-if-iga-misses-things" class="md-nav__link">What if IGA misses things?</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="tips.html#what-are-versions-for" class="md-nav__link">What are versions for?</a>
+      
+    
     </li></ul>
     
     </li>
@@ -521,7 +528,7 @@
 <ol class="arabic simple">
 <li><p>Go to the <em>Actions</em> tab in your repository and click on the name of the workflow in the sidebar on the left<figure><a class="reference internal" href="_images/github-run-workflow.png"><img alt="_images/github-run-workflow.png" src="_images/github-run-workflow.png" style="width: 70%;"/></a></figure></p></li>
 <li><p>Click the <kbd>Run workflow</kbd> button shown above in the right-hand side of the blue strip.</p></li>
-<li><p>A form will appear; in this form, you can set the IGA input parameters, including the tag of the release to send to InvenioRDM, whether to make the release a draft, and more. All these opotions except the first (the release tag) correspond to the <a class="reference internal" href="#input-parameters"><span class="xref myst">input parameters</span></a> described below. The release tag is normally obtained automatically by virtue of the fact that IGA runs when a new release is made, but when running the workflow manually, you can provide a tag explicitly. If you leave it blank, IGA will use the latest release in the repository.<figure><a class="reference internal" href="_images/github-workflow-options.png"><img alt="_images/github-workflow-options.png" src="_images/github-workflow-options.png" style="width: 30%;"/></a></figure></p></li>
+<li><p>A form will appear; in this form, you can set the IGA input parameters, including the tag of the release to send to InvenioRDM, whether to make the release a draft, and more. All these options except the first (the release tag) correspond to the <a class="reference internal" href="#input-parameters"><span class="xref myst">input parameters</span></a> described below. The release tag is normally obtained automatically by virtue of the fact that IGA runs when a new release is made, but when running the workflow manually, you can provide a tag explicitly. If you leave it blank, IGA will use the latest release in the repository.<figure><a class="reference internal" href="_images/github-workflow-options.png"><img alt="_images/github-workflow-options.png" src="_images/github-workflow-options.png" style="width: 30%;"/></a></figure></p></li>
 <li><p>Click the green <kbd>Run workflow</kbd> button near the bottom</p></li>
 <li><p>Refresh the web page and a new line will be shown named after your workflow file<figure><a class="reference internal" href="_images/github-running-workflow.png"><img alt="_images/github-running-workflow.png" src="_images/github-running-workflow.png" style="width: 90%;"/></a></figure></p></li>
 <li><p>Click that line to see the IGA workflow progress and results</p></li>
@@ -529,7 +536,7 @@
 </section>
 <section id="manual-workflow-invocation-using-gh">
 <h3 id="manual-workflow-invocation-using-gh">Manual workflow invocation using <code class="docutils literal notranslate"><span class="pre">gh</span></code><a class="headerlink" href="#manual-workflow-invocation-using-gh" title="Permalink to this heading">¶</a></h3>
-<p>The very handy GitHub command-line utility <a class="reference external" href="https://cli.github.com"><code class="docutils literal notranslate"><span class="pre">gh</span></code></a> lets you start workflows on GitHub from the comfort of your computer. To use it, in a shell go to your local clone of your repository, then run the folowing command:</p>
+<p>The very handy GitHub command-line utility <a class="reference external" href="https://cli.github.com"><code class="docutils literal notranslate"><span class="pre">gh</span></code></a> lets you start workflows on GitHub from the comfort of your computer. To use it, in a shell go to your local clone of your repository, then run the following command:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>workflow<span class="w"> </span>run
 </pre></div>
 </div>

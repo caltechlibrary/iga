@@ -7,7 +7,7 @@ Data and software archived in a repository need to be described thoroughly and r
 
 Should you use one or the other, or both? The answer turns out to be: _use both_. They don't overlap completely in their content, they serve different purposes, and they are used differently by different software tools.
 
-The purpose of a [`CITATION.cff`](https://citation-file-format.github.io) is to let others know how to correctly cite your software or dataset. GitHub makes use of `CITATION.cff` files: when you put a `CITATION.cff` file in the default branch of your repository, [GitHub automatically creates a link](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files) labeled _Cite this repository_ in the right sidebar of the repository landing page. Here is an example:
+The purpose of a [`CITATION.cff`](https://citation-file-format.github.io) is to let others know how to correctly cite your software or data set. GitHub makes use of `CITATION.cff` files: when you put a `CITATION.cff` file in the default branch of your repository, [GitHub automatically creates a link](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-citation-files) labeled _Cite this repository_ in the right sidebar of the repository landing page. Here is an example:
 
 <figure>
     <img src="_static/media/example-github-citation.jpg" width="50%">
@@ -21,14 +21,14 @@ Conversely, a [`codemeta.json`](https://codemeta.github.io) file is a way to des
 
 IGA relies most on the `codemeta.json` file. It considers information sources in the following order:
 1. The metadata provided by GitHub for a release is used as the primary source of metadata for certain information that is tightly coupled to the release, namely the description of the release and the version tag name.
-2. Provided that a `codemeta.json` file exists in the repository and the relevant data fields are present in the file, it is used as the primary source for all other metadata, except for metadata that is _only_ defined in `CITATION.cff` or the GitHub repository. (In particular, the resource type -- software versus dataset -- is _only_ defined in a `CITATION.cff` field, and the role of "contact" is only explicitly defined in the `CITATION.cff` format.)
+2. Provided that a `codemeta.json` file exists in the repository and the relevant data fields are present in the file, it is used as the primary source for all other metadata, except for metadata that is _only_ defined in `CITATION.cff` or the GitHub repository. (In particular, the resource type -- software versus data set -- is _only_ defined in a `CITATION.cff` field, and the role of "contact" is only explicitly defined in the `CITATION.cff` format.)
 3. Provided that a `CITATION.cff` file exists in the repository and the relevant data fields are present in the file, it is used as a secondary source of metadata if there is no `codemeta.json` in the repository or it lacks certain fields. (It is also the primary source for a couple of fields that have no equivalent anywhere else, as noted above.)
 4. The metadata provided by GitHub for the repository is used as a tertiary source of information if neither `codemeta.json` nor `CITATION.cff` files are provided, or IGA is invoked with the flag `--all-metadata`. (See the section on [Usage](cli-usage.md).)
 
 
 ## How can you create them?
 
-`codemeta.json` and `CITATION.cff` files are text files, and can be written by hand in a text editor. However, `codemeta.json` is more difficult to write by hand becasue of the JSON-LD syntax it uses, and in both cases, it is easier if you can use a software tool to generate the files. Here are some options available at this time:
+`codemeta.json` and `CITATION.cff` files are text files, and can be written by hand in a text editor. However, `codemeta.json` is more difficult to write by hand because of the JSON-LD syntax it uses, and in both cases, it is easier if you can use a software tool to generate the files. Here are some options available at this time:
 * The main [CodeMeta generator](https://codemeta.github.io/codemeta-generator/)
 * The [codemetar](https://cran.r-project.org/web/packages/codemetar/) package for R
 * The [CodeMetaPy](https://pypi.org/project/CodeMetaPy/) package for Python
@@ -200,7 +200,7 @@ It can be helpful to have a sense for how IGA computes the values of the fields 
 * `identifiers`: this field is confusingly named in InvenioRDM – a better name would have been `additional_identifiers`, because InvenioRDM assigns a primary identifier automatically in a separate field of the record. In any case, the metadata `identifiers` field is used to store additional persistent identifiers such as arXiv identifiers for publications.
 * `languages`: the language(s) used in the software resource. Currently, this is hardwired by IGA to English.
 * `locations`: InvenioRDM defines this field as "spatial region or named place where the data was gathered or about which the data is focused". Unfortunately, there are no relevant data fields in `codemeta.json`, `CITATION.cff`, or the GitHub release and repository from where location information can be extracted, so IGA has to leave this field blank.
-* `publication_date`: this is defined as the date "when the resource was made available", which is not necessarily the date when it was submitted to InvenioRDM. IGA looks for the publicateion date in the `codemeta.json` or `CITATION.cff` file, if given; otherwise, it uses the date of the release in GitHub.
+* `publication_date`: this is defined as the date "when the resource was made available", which is not necessarily the date when it was submitted to InvenioRDM. IGA looks for the publication date in the `codemeta.json` or `CITATION.cff` file, if given; otherwise, it uses the date of the release in GitHub.
 * `publisher`: this is defined as "the name of the entity that holds, archives, publishes, prints, distributes, releases, issues, or produces the resource." IGA sets this to the name of the InvenioRDM server.
 * `references`: this field holds a list of formatted references to publications about the software or data resource. Both `codemeta.json` and `CITATION.cff` provide fields for storing reference information; IGA looks there and constructs text strings containing references formatted according to [APA 7](https://apastyle.apa.org/style-grammar-guidelines/references) guidelines.
 * `related_identifiers`: this is a list of identifiers to resources related (somehow) to the software or data release. IGA takes this broadly and uses a large number of fields in `codemeta.json` and `CITATION.cff` files to generate the value of this field in the InvenioRDM record. This includes a home page URL for the software or data, issue trackers, and more.
@@ -214,9 +214,21 @@ It can be helpful to have a sense for how IGA computes the values of the fields 
 
 ## What if you have neither?
 
-If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will do its best using only the metata provided by GitHub for the release and the repository. While the resulting InvenioRDM record will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
+If the repository you are archiving has neither a `codemeta.json` nor a `CITATION.cff` file, IGA will do its best using only the metadata provided by GitHub for the release and the repository. While the resulting InvenioRDM record will not be as comprehensive as if a repository has a `codemeta.json` or at least a `CITATION.cff` file, it will be better than nothing.
 
 
 ## What if IGA misses things?
 
 If you have a `codemeta.json` and/or a `CITATION.cff` file in your repository, but they are not as complete as they could be or you feel that IGA should get more metadata from the GitHub repository, you can try to invoke IGA with the `--all-metadata` option. This will make IGA add more metadata obtained using the GitHub API, such as the list of contributors on the repository. The result may or may not be a richer metadata record, depending on how complete the CodeMeta and/or CFF files are; however, there is also a risk that it will lead to more duplicate or unwanted values, which is why the default in IGA is to focus on the CodeMeta and CFF files.
+
+
+## What are versions for?
+
+A record _version_ in InvenioRDM is a way for one record to be related to other records. This makes it possible for all releases of something (e.g., a particular software package) to be connected together. All your software versions will be listed in one place and users will be notified about newer versions of the software. Here is an example of a record with two versions:
+
+<figure>
+    <img class="border shadow" src="_static/media/inveniordm-version-example.png">
+    <figcaption>Example use of InvenioRDM versions. Note the two versions listed on the right.</figcaption>
+</figure>
+
+To use versions in IGA, first find the parent record and grab its identifier &ndash; it's a string of alphanumeric characters of the form _XXXXX-XXXXX_, such as `bknz4-bch35`, visible as the tail part of the record's URL in InvenioRDM and its DOI. Then, provide that identifier as the value of `--parent-record` (if using IGA on the command line) or the `parent_record` input field (if running IGA as a GitHub Action).

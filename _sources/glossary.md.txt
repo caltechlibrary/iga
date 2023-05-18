@@ -11,7 +11,7 @@ API
 CFF
     CFF stands for _Citation File Format_, the format of `CITATION.cff` files.
     The Citation File Format lets you provide citation metadata for software
-    or datasets in plaintext files that are easy to read by both humans and
+    or data sets in plain text files that are easy to read by both humans and
     machines.
 
 CodeMeta
