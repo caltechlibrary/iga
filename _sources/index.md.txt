@@ -8,7 +8,7 @@ IGA creates metadata records and sends releases from GitHub to an InvenioRDM-bas
 <img align="middle" src="_static/media/example-github-release.jpg" width="40%">
 <span style="font-size: 150%">➜</span>
 <img align="middle" src="_static/media/example-record-landing-page.jpg" width="40%">
-    <figcaption>IGA sends metadata and assets from GitHub to an InvenioRDM server..</figcaption>
+    <figcaption>IGA sends metadata and assets from GitHub to an InvenioRDM server.</figcaption>
 </figure>
 
 

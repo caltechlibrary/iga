@@ -321,7 +321,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#github-releases" class="md-nav__link">GitHub releases</a>
+      <a href="#github-release" class="md-nav__link">GitHub release</a>
       
     
     </li>
@@ -537,8 +537,8 @@
 <p>It <em>may</em> be possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for some repositories IGA will not hit the limit. However, if you run IGA multiple times in a row or your repository has many contributors, then you may need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>. Alternatively, you can use the option <code class="docutils literal notranslate"><span class="pre">--github-token</span></code> to pass the token on the command line, but <strong>you are strongly advised to avoid this practice because it is insecure</strong>.  To obtain a PAT from GitHub, visit <a class="reference external" href="https://docs.github.com/en/authentication">https://docs.github.com/en/authentication</a> and follow the instructions for creating a “classic” personal access token.</p>
 <p>Note that when you run IGA as a GitHub Action, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Action workflow.</p>
 </section>
-<section id="github-releases">
-<h2 id="github-releases">GitHub releases<a class="headerlink" href="#github-releases" title="Permalink to this heading">¶</a></h2>
+<section id="github-release">
+<h2 id="github-release">GitHub release<a class="headerlink" href="#github-release" title="Permalink to this heading">¶</a></h2>
 <p>A GitHub release can be specified to IGA in one of two mutually-exclusive ways:</p>
 <ol class="arabic simple">
 <li><p>The full URL of the web page on GitHub of a tagged release. In this case,
