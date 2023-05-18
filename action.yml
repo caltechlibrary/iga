@@ -148,15 +148,6 @@ runs:
         # necessary; you could put the expression directly into the echo
         # command below. But when I do that, I get a doubling of the output.
         GITHUB_CONTEXT: ${{toJSON(github)}}
-        draft: ${{inputs.draft}}
-        all_assets: ${{inputs.all_assets}}
-        all_metadata: ${{inputs.all_metadata}}
-        use_community: ${{inputs.use_community}}
-        community: ${{inputs.community}}
-        use_parent: ${{inputs.use_parent}}
-        parent: ${{inputs.parent}}
-        tag: ${{inputs.tag}}
-        debug: ${{inputs.debug}}
       shell: bash
       run: |
         echo "Printing context for debugging …"
@@ -168,19 +159,6 @@ runs:
 
     - name: Run IGA.
       id: run_iga
-      env:
-        INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
-        INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
-        GITHUB_TOKEN: ${{github.token}}
-        draft: ${{inputs.draft}}
-        all_assets: ${{inputs.all_assets}}
-        all_metadata: ${{inputs.all_metadata}}
-        use_community: ${{inputs.use_community}}
-        community: ${{inputs.community}}
-        use_parent: ${{inputs.use_parent}}
-        parent: ${{inputs.parent}}
-        tag: ${{inputs.tag}}
-        debug: ${{inputs.debug}}
       shell: bash
       run: |
         echo "Running IGA …"
@@ -209,7 +187,7 @@ runs:
         echo ━━━━━━━━━━━━━━━━━━━━━━━━━
         iga --version
         echo ━━━━━━━━━━━━━━━━━━━━━━━━━
-        echo $(cat ${{github.workspace}}/iga.out)
+        cat ${{github.workspace}}/iga.out
         echo ━━━━━━━━━━━━━━━━━━━━━━━━━
         echo "::endgroup::"
         exit ${{env.exit_code}}
