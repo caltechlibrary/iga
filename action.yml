@@ -198,8 +198,8 @@ runs:
     - name: Summarize the results.
       shell: bash
       run: |
-        echo \#\# Successfully archived release \"${{github.ref_name}}\" >> $GITHUB_STEP_SUMMARY
-        echo URL of the new InvenioRDM record: ${{env.record_url}}     >> $GITHUB_STEP_SUMMARY
+        echo \#\# Successfully archived release \"${{env.tag}}\"   >> $GITHUB_STEP_SUMMARY
+        echo URL of the new InvenioRDM record: ${{env.record_url}} >> $GITHUB_STEP_SUMMARY
         if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
           echo "This is a **draft** record – it has not been finalized." >> $GITHUB_STEP_SUMMARY
         fi
