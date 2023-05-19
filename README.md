@@ -36,7 +36,7 @@ IGA creates metadata records and sends releases from GitHub to an InvenioRDM-bas
 IGA offers many notable features:
 * Automatic metadata extraction from GitHub plus [`codemeta.json`](https://codemeta.github.io) and [`CITATION.cff`](https://citation-file-format.github.io) files
 * Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
-* Recognition of identifiers in CodeMeta & CFF files: [ORCID](https://orcid.org),, [DOI](https://www.doi.org),  [PMCID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and more
+* Recognition of identifiers in CodeMeta & CFF files: [ORCID](https://orcid.org), [DOI](https://www.doi.org),  [PMCID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and more
 * Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed]((https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)), Google, and other sources
 * Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
 * Automatic lookup of human names in [ORCID.org](https://orcid.org) (assuming ORCID id's are provided)
