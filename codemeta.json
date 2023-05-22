@@ -3,8 +3,8 @@
     "@type": "SoftwareSourceCode",
     "name": "InvenioRDM GitHub Archiver (IGA)",
     "description": "The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub releases in an InvenioRDM repository.",
-    "version": "1.0.0",
-    "datePublished": "2023-05-18",
+    "version": "1.0.1",
+    "datePublished": "2023-05-22",
     "dateCreated": "2022-12-07",
     "author": [
         {
@@ -50,6 +50,13 @@
         "@type": "Organization",
         "name": "California Institute of Technology Library"
     },
+    "copyrightHolder": [
+        {
+            "@id": "https://ror.org/05dxps055",
+            "@type": "Organization",
+            "name": "California Institute of Technology"
+        }
+    ],
     "copyrightYear": 2023,
     "license": "https://github.com/caltechlibrary/iga/blob/main/LICENSE",
     "isAccessibleForFree": true,

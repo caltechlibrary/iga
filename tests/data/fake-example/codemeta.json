@@ -16,6 +16,13 @@
       "email": "mhucka@caltech.edu",
       "@id": "https://orcid.org/0000-0001-9105-5960"
     }],
+  "copyrightHolder": [
+      {
+          "@id": "https://ror.org/05dxps055",
+          "@type": "Organization",
+          "name": "California Institute of Technology"
+      }
+  ],
   "developmentStatus": "active",
   "downloadUrl": "https://github.com/fakeaccount/fakerepo/archive/faketag.zip",
   "keywords": [
