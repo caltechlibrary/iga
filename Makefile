@@ -292,6 +292,7 @@ clean-other:;
 	rm -fr __pycache__ $(name)/__pycache__ .eggs
 	rm -rf .cache
 	rm -rf .pytest_cache
+	rm -f *.bak
 
 .PHONY: help vars report release test-branch test tests update-all \
 	update-init update-meta update-citation update-example commit-updates \
