@@ -1330,7 +1330,7 @@ def _entity_from_dict(data, role):
             person.update({'identifiers': [{'identifier': id,
                                             'scheme': id_type}]})
     else:
-        org = _org_from_dict(data)
+        org = _org_from_dict(data, id_field_name='identifier')
         org['type'] = 'organizational'
 
     result = {}
@@ -1350,16 +1350,25 @@ def _entity_from_dict(data, role):
     return result
 
 
-def _org_from_dict(data):
+def _org_from_dict(data, id_field_name='id'):
     # Hopefully it has a name field or id. If it doesn't, we can't do anything
     # more anyway, and will end up with an empty structure.
     org = {}
-    id = detected_id(data.get('@id', ''))  # noqa A001
-    if recognized_scheme(id) == 'ror':
-        org = {'id': detected_id(data)}
-    elif name := (data.get('legalName', '') or data.get('name', '')):
+    # If it has a name, we take it and we're done.
+    if name := (data.get('legalName', '') or data.get('name', '')):
         # In CFF the field name is 'legalName'. In CodeMeta it's 'name'.
         org = {'name': flattened_name(name)}
+    else:
+        # No name field. See if it has an id field of a type that we recognize.
+        id = detected_id(data.get('@id', ''))  # noqa A001
+        if recognized_scheme(id) == 'ror':
+            from iga.ror import name_from_ror
+            if name := name_from_ror(id):
+                org = {'name': name}
+            else:
+                # Got a ROR id but a lookup in ROR.org failed to get a name. We
+                # return just the identifier instead. Not ideal but acceptable.
+                org = {id_field_name: id}
     return org
 
 
