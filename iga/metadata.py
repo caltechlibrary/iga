@@ -915,11 +915,11 @@ def related_identifiers(repo, release, include_all):
             identifiers.append(id_dict(url, 'isdocumentedby',
                                        'publication-softwaredocumentation'))
 
-    # GitHub pages for a repo usually document the software. It may not be the
-    # docs for this release of the software, but we can't tell, so we add it.
+    # The GitHub Pages URL for a repo usually points to documentation or info
+    # about the softare, though we can't tell if it's for THIS release.
     if include_all and repo.has_pages:
         url = f'https://{repo.owner.login}.github.io/{repo.name}'
-        if url and not any(url == item['identifier'] for item in identifiers):
+        if not any(url == item['identifier'] for item in identifiers):
             log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
             identifiers.append(id_dict(url, 'isdocumentedby',
                                        'publication-softwaredocumentation'))
