@@ -8,7 +8,7 @@
                                               'given_name': 'Michael',
                                               'identifiers': [{'identifier': '0000-0001-9105-5960', 'scheme': 'orcid'}],
                                               'type': 'personal'}}],
-              'dates': [],
+              'dates': [{'date': '2023-01-01', 'type': {'id': 'copyrighted'}}],
               'description': '<p>Fake release body.</p>',
               'funding': [],
               'identifiers': [],

@@ -519,7 +519,7 @@ def dates(repo, release, include_all):
                       'type': {'id': 'updated'}})
 
     # CodeMeta has a "copyrightYear", but there's no equivalent elsewhere.
-    if copyrighted := repo.codemeta.get('copyrightYear', ''):
+    if copyrighted := str(repo.codemeta.get('copyrightYear', '')):
         log('adding the CodeMeta "copyrightYear" date as the "copyrighted" date')
         dates.append({'date': arrow.get(copyrighted).format('YYYY-MM-DD'),
                       'type': {'id': 'copyrighted'}})
