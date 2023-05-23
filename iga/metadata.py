@@ -279,7 +279,7 @@ def additional_descriptions(repo, release, include_all):
     # with the text we put in the InvenioRDM "description" field.
     added = [description(repo, release, include_all, internal_call=True).lower()]
 
-    # Helper functions used in what follows next. All of the fields we use
+    # This is a helper function used in what follows next. All the fields used
     # below are supposed to be strings or URLs, per the CodeMeta & CFF specs.
     def add(item, role, summary):
         if item is None:
@@ -457,25 +457,25 @@ def creators(repo, release, include_all, internal_call=False):
     https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     '''
     # Helper function.
-    def log_choice(text):
+    def log_decision(text):
         if not internal_call:
             log('adding ' + text + ' as creator(s)')
 
     # CodeMeta & CFF files contain more complete author info than the GitHub
     # release data, so try them 1st.
     if authors := listified(repo.codemeta.get('author', [])):
-        log_choice('CodeMeta "author" name(s)')
+        log_decision('CodeMeta "author" name(s)')
     elif authors := repo.cff.get('author', []):
-        log_choice('CFF "author" name(s)')
+        log_decision('CFF "author" name(s)')
     if authors:
         return deduplicated(_entity(x) for x in authors)
 
     # Couldn't get authors from codemeta.json or CITATION.cff. Try the release
     # author first, followed by the repo owner.
     if identity := _release_author(release):
-        log_choice('GitHub release author')
+        log_decision('GitHub release author')
     elif identity := _repo_owner(repo):
-        log_choice('GitHub repo owner name')
+        log_decision('GitHub repo owner name')
     if identity:
         return [identity]
 
