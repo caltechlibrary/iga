@@ -293,6 +293,7 @@ clean-other:;
 	rm -rf .cache
 	rm -rf .pytest_cache
 	rm -f *.bak
+	rm -f tests/*.log
 
 .PHONY: help vars report release test-branch test tests update-all \
 	update-init update-meta update-citation update-example commit-updates \

@@ -1,5 +1,11 @@
 # Change log for IGA
 
+## Version 1.0.2 (TBD)
+
+Changes in this release:
+* Fix issue #21: the copyright year put in the metadata `dates` field can could up being a completely bogus value in some cases.
+
+
 ## Version 1.0.1 (2023-05-22)
 
 Changes in this release:
