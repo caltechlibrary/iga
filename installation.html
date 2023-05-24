@@ -258,7 +258,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#iga-as-a-github-action" class="md-nav__link">IGA as a GitHub Action</a>
+      <a href="#iga-as-a-github-workflow" class="md-nav__link">IGA as a GitHub workflow</a>
       
     
     </li></ul>
@@ -556,29 +556,34 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 </div>
 </section>
 </section>
-<section id="iga-as-a-github-action">
-<h2 id="iga-as-a-github-action">IGA as a GitHub Action<a class="headerlink" href="#iga-as-a-github-action" title="Permalink to this heading">¶</a></h2>
-<p>A <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> is a workflow that runs on GitHub’s servers under control of a file in your repository. Follow these steps to create the IGA workflow file:</p>
+<section id="iga-as-a-github-workflow">
+<span id="iga-as-a-github-action"></span><h2 id="iga-as-a-github-workflow">IGA as a GitHub workflow<a class="headerlink" href="#iga-as-a-github-workflow" title="Permalink to this heading">¶</a></h2>
+<p>A <a class="reference external" href="https://docs.github.com/en/actions">GitHub Actions</a> workflow is an automated process that runs on GitHub’s servers under control of a file in your repository. Follow these steps to create the IGA workflow file:</p>
 <ol class="arabic">
 <li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
-<li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the <a class="reference external" href="https://raw.githubusercontent.com/caltechlibrary/iga/develop/sample-workflow.yml">following contents</a>:</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InvenioRDM GitHub Archiver</span>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the <a class="reference external" href="https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml">following contents</a>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ====================================================================</span>
+<span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.0.3</span>
+<span class="c1"># This is available as the file "sample-workflow.yml" from the open-</span>
+<span class="c1"># source repository for IGA at https://github.com/caltechlibrary/iga/.</span>
+<span class="c1"># ====================================================================</span>
 
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InvenioRDM GitHub Archiver</span>
 <span class="nt">env</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻</span>
 <span class="w">  </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-invenio-server.org</span>
 
-<span class="w">  </span><span class="c1"># Set to an InvenioRDM record ID to mark releases as new versions.</span>
+<span class="w">  </span><span class="c1"># Set to an InvenioRDM record ID to mark release as a new version.</span>
 <span class="w">  </span><span class="nt">parent_record</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">none</span>
 
-<span class="w">  </span><span class="c1"># The remaining variables are other IGA options. Please see the docs.</span>
+<span class="w">  </span><span class="c1"># The variables below are other IGA options. Please see the docs.</span>
 <span class="w">  </span><span class="nt">community</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">none</span>
 <span class="w">  </span><span class="nt">draft</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">all_assets</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">all_metadata</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 
-<span class="c1"># ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~</span>
+<span class="c1"># ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~</span>
 
 <span class="nt">on</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">release</span><span class="p">:</span>
@@ -603,9 +608,12 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">      </span><span class="nt">debug</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Print</span><span class="nv"> </span><span class="s">debug</span><span class="nv"> </span><span class="s">info</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">log:"</span>
+
 <span class="nt">jobs</span><span class="p">:</span>
-<span class="w">  </span><span class="nt">Send_to_InvenioRDM</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">run_iga</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Send</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">${{needs.get_repository.outputs.server}}"</span>
 <span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">get_repository</span>
 <span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">caltechlibrary/iga@main</span>
 <span class="w">        </span><span class="nt">with</span><span class="p">:</span>
@@ -618,10 +626,18 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">          </span><span class="nt">community</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.community || env.community}}</span>
 <span class="w">          </span><span class="nt">parent_record</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.parent_record || env.parent_record}}</span>
 <span class="w">          </span><span class="nt">release_tag</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">${{github.event.inputs.release_tag || 'latest'}}</span>
+<span class="w">  </span><span class="nt">get_repository</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Get</span><span class="nv"> </span><span class="s">repository</span><span class="nv"> </span><span class="s">name"</span>
+<span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<span class="w">    </span><span class="nt">outputs</span><span class="p">:</span>
+<span class="w">      </span><span class="nt">server</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{steps.parse.outputs.host}}</span>
+<span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">parse</span>
+<span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">echo "host=$(cut -d'/' -f3 &lt;&lt;&lt; ${{env.INVENIO_SERVER}} | cut -d':' -f1)" &gt;&gt; $GITHUB_OUTPUT</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>Edit the value of the <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> variable (line 5 above)</strong> ↑</p></li>
+<li><p><strong>Edit the value of the <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> variable near the top of the file above</strong> ↑</p></li>
 <li><p>Optionally, change the <a class="reference external" href="https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters">values of other options (<code class="docutils literal notranslate"><span class="pre">parent_record</span></code>, <code class="docutils literal notranslate"><span class="pre">community</span></code>, etc.)</a></p></li>
 <li><p>Save the file, commit the changes to git, and push your changes to GitHub</p></li>
 </ol>
@@ -676,7 +692,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
               
           </div>
             Last updated on
-              May 23, 2023.
+              May 24, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
