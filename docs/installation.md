@@ -51,7 +51,7 @@ python3 setup.py install
 A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated process that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
-2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/develop/sample-workflow.yml):
+2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml):
     ```{literalinclude} ../sample-workflow.yml
     :language: yaml
     ```
