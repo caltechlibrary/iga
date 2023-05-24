@@ -45,6 +45,7 @@ python3 setup.py install
 ```
 
 
+(iga_as_a_github_action)=
 ## IGA as a GitHub workflow
 
 A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated process that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
