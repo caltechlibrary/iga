@@ -45,7 +45,7 @@ def partial_json(content, skip_line=None, recursion=0):
     except dirtyjson.error.Error as ex:
         # Do we have a line number?
         log('error parsing JSON: ' + str(ex))
-        if line := getattr(ex, 'lineno'):
+        if line := getattr(ex, 'lineno', None):
             if recursion <= _MAX_RECURSION_DEPTH:
                 return partial_json(content, line, recursion + 1)
             else:
