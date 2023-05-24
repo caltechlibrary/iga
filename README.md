@@ -1,6 +1,6 @@
 # IGA<img width="12%" align="right" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/cloud-upload.png">
 
-IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Action](https://github.com/marketplace/actions/iga) that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
+IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Actions](https://github.com/marketplace/actions/iga) workflow that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
 
 [![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases)
 [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/LICENSE)
@@ -25,7 +25,7 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitH
 
 [InvenioRDM](https://inveniosoftware.org/products/rdm/) is the basis for many institutional repositories such as [CaltechDATA](https://data.caltech.edu) that enable users to preserve software and data sets in long-term archive. Though such repositories are critical resources, creating detailed records and uploading assets can be a tedious and error-prone process if done manually. This is where the [_InvenioRDM GitHub Archiver_](https://github.com/caltechlibrary/iga) (IGA) comes in.
 
-IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Action](https://docs.github.com/en/actions) to archive GitHub releases automatically for a repository each time they are made.
+IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Actions](https://docs.github.com/en/actions) workflow to archive GitHub releases automatically for a repository each time they are made.
 
 <p align=center>
 <img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%">
@@ -100,31 +100,29 @@ iga --help
 ```
 
 
-### IGA as a GitHub Action
+### IGA as a GitHub Actions workflow
 
-A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
+A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated process that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
 2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/develop/sample-workflow.yml) into it:
     ```yaml
     name: InvenioRDM GitHub Archiver
-
     env:
       # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
       INVENIO_SERVER: https://your-invenio-server.org
 
-      # Set to an InvenioRDM record ID to mark releases as new versions.
+      # Set to an InvenioRDM record ID to mark release as a new version.
       parent_record: none
 
-      # The remaining variables are other IGA options. Please see the docs.
+      # The variables below are other IGA options. Please see the docs.
       community:     none
       draft:         false
       all_assets:    false
       all_metadata:  false
       debug:         false
 
-    # ~~~~~~~~~~~~~~~~ The rest of this file should be left as-is. ~~~~~~~~~~~~~~~~
-
+    # ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~
     on:
       release:
         types: [published]
@@ -149,8 +147,10 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
             default: false
             description: "Print debug info in the GitHub log:"
     jobs:
-      Send_to_InvenioRDM:
+      run_iga:
+        name: "Send to ${{needs.get_repository.outputs.server}}"
         runs-on: ubuntu-latest
+        needs: get_repository
         steps:
           - uses: caltechlibrary/iga@main
             with:
@@ -163,15 +163,23 @@ A [GitHub Action](https://docs.github.com/en/actions) is a workflow that runs on
               community:      ${{github.event.inputs.community || env.community}}
               parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
+      get_repository:
+        name: "Get repository name"
+        runs-on: ubuntu-latest
+        outputs:
+          server: ${{steps.parse.outputs.host}}
+        steps:
+          - id: parse
+            run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
     ```
-3. **Edit the value of the `INVENIO_SERVER` variable (line 5 above)** ↑
+3. **Edit the value of the `INVENIO_SERVER` variable (line 4 above)** ↑
 4. Optionally, change the values of other options (`parent_record`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
 
 ## Quick start
 
-No matter whether IGA is run locally on your computer or as a GitHub Action, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one 
+No matter whether IGA is run locally on your computer or as a GitHub Actions workflow, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one 
 is the first step.
 
 ### Getting an InvenioRDM token
@@ -207,9 +215,9 @@ iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 More options are described in the section on [detailed usage information](#usage) below.
 
 
-### Configuring and running IGA as a GitHub Action
+### Configuring and running IGA as a GitHub Actions workflow
 
-After doing the [GitHub Action installation](#as-a-github-action) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
+After doing the [GitHub Actions installation](#as-a-github-action) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
 
 1. Go to the _Settings_ page of your GitHub repository<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-tabs.png" width="85%"></p>
 2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
@@ -252,7 +260,7 @@ To obtain a PAT from an InvenioRDM server, first log in to the server, then visi
 
 It _may_ be possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for some repositories IGA will not hit the limit. However, if you run IGA multiple times in a row or your repository has many contributors, then you may need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use the option `--github-token` to pass the token on the command line, but **you are strongly advised to avoid this practice because it is insecure**.  To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication and follow the instructions for creating a "classic" personal access token.
 
-Note that when you run IGA as a GitHub Action, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Action workflow.
+Note that when you run IGA as a GitHub Actions workflow, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Actions workflow.
 
 ### Specifying a GitHub release
 
