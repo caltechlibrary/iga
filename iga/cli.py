@@ -431,7 +431,7 @@ _**Specification of the InvenioRDM server and access token**_
 \r
 The server address must be provided either as the value of the option
 `--invenio-server` or in an environment variable named `INVENIO_SERVER`.
-If the server address does not begin with "https://", IGA will prepended it
+If the server address does not begin with "https://", IGA will prepend it
 automatically.
 \r
 A Personal Access Token (PAT) for making API calls to the InvenioRDM server
@@ -590,10 +590,10 @@ destination is given, IGA will still print the final record URL to stdout.
 This makes it possible to invoke IGA from scripts that capture the record URL
 while still saving diagnostic output in case debugging is needed. E.g.,
 ```shell
-  record_url=`iga --mode verbose --log-dest iga.out ....`
+  record_url=`iga --log-dest iga.out --mode verbose ....`
 ```
 \r
-Networks latencies are unpredicatable. Reading and writing large files may take
+Networks latencies are unpredictable. Reading and writing large files may take
 a long time; on the other hand, IGA should not wait forever before reporting an
 error if a server or network becomes unresponsive. To balance these conflicting
 needs, IGA automatically scales its network timeout based on file sizes. To
