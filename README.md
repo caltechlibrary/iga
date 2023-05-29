@@ -57,12 +57,15 @@ Please choose an approach that suits your situation and preferences.
 
 <details><summary><h4><i>Alternative 1: using <code>pipx</code></i></h4></summary>
 
-[Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
+[Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
 ```sh
 pipx install iga
 ```
 
-Pipx can also let you run IGA directly using `pipx run iga`, although in that case, you must always prefix every IGA command with `pipx run`.  Consult the [documentation for `pipx run`](https://github.com/pypa/pipx#walkthrough-running-an-application-in-a-temporary-virtual-environment) for more information.
+After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
+```shell
+iga --help
+```
 </details>
 
 <details><summary><h4><i>Alternative 2: using <code>pip</code></i></h4></summary>
@@ -78,6 +81,11 @@ python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 ```
 
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
+
+After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
+```shell
+iga --help
+```
 </details>
 
 <details><summary><h4><i>Alternative 3: from sources</i></h4></summary>
@@ -93,11 +101,6 @@ cd iga
 python3 setup.py install
 ```
 </details>
-
-After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
-```shell
-iga --help
-```
 
 
 ### IGA as a GitHub Actions workflow
