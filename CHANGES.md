@@ -1,6 +1,6 @@
 # Change log for IGA
 
-## Version 1.0.3 (TBD)
+## Version 1.0.3 (2023-05-24)
 
 Changes in this release:
 * The sample workflow has been revised to be slightly more informative about where it's sending the release for archiving.
