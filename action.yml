@@ -8,10 +8,6 @@
 
 name: "InvenioRDM GitHub Archiver"
 description: "Automatically archive GitHub releases in an InvenioRDM repository"
-author: "Michael Hucka -- https://github.com/mhucka"
-branding:
-  icon: upload-cloud
-  color: orange
 
 inputs:
   INVENIO_SERVER:
@@ -208,3 +204,8 @@ runs:
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "This workflow ran $(iga --version | head -1 | sed s/iga/IGA/)." >> $GITHUB_STEP_SUMMARY
+
+author: "Michael Hucka -- https://github.com/mhucka"
+branding:
+  icon: upload-cloud
+  color: orange
