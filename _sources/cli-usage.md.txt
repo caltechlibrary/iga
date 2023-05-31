@@ -94,6 +94,8 @@ By default, informational output is sent to the standard output (normally the te
   record_url=$(iga --log-dest iga.out --mode verbose ....)
 ```
 
+By default, IGA prints only the record URL when done. The option `--print-doi` will make it also print the DOI of the record. (Note that this only works when publishing records; if options `--draft` or `--community` are used, then there will be no DOI. In those case, only the URL will be printed.)
+
 Reading and writing large files may take a long time; on the other hand, IGA should not wait forever on network operations before reporting an error if a server or network becomes unresponsive. To balance these conflicting needs, IGA automatically scales its network timeout based on file sizes. To override its adaptive algorithm and set an explicit timeout value, use the option `--timeout` with a value in seconds.
 
 If given the `--version` option, this program will print its version and other information, and exit without doing anything else.
@@ -115,6 +117,7 @@ As explain above, IGA takes one required argument on the command line: either (1
 | `--github-repo` _R_    | `-r` _R_ | Look in GitHub repository _R_ of account _A_ | Get repo name from release URL | ✯ |
 | `--github-token` _T_   | `-t` _T_ | Use GitHub access token _T_| Use value in env. var. `GITHUB_TOKEN` | |
 | `--help`               | `-h`     | Print help info and exit | | |
+| `--print-doi`          | `-i`     | Print both the DOI & record URL when done | Print only the record URL | |
 | `--invenio-server` _S_ | `-s` _S_ | Send record to InvenioRDM server at address _S_ | Use value in env. var. `INVENIO_SERVER` | | 
 | `--invenio-token` _K_  | `-k` _K_ | Use InvenioRDM access token _K_ | Use value in env. var. `INVENIO_TOKEN` | | 
 | `--list-communities`   | `-L`     | List communities available for use with `--community` | | |
