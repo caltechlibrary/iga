@@ -54,8 +54,6 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/doctools.js"></script>
     <script src="_static/sphinx_highlight.js"></script>
-    <script src="https://unpkg.com/mermaid@9.4.0/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({startOnLoad:true});</script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -492,6 +490,13 @@
       <a href="appendix-metadata.html#record-metadata" class="md-nav__link">Record metadata</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="appendix-metadata.html#known-limitations" class="md-nav__link">Known limitations</a>
+      
+    
     </li></ul>
     
     </li>
@@ -525,11 +530,10 @@
 <p>Please choose an approach that suits your situation and preferences.</p>
 <section id="alternative-1-installing-iga-using-pipx">
 <h3 id="alternative-1-installing-iga-using-pipx">Alternative 1: installing IGA using <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#alternative-1-installing-iga-using-pipx" title="Permalink to this heading">¶</a></h3>
-<p><a class="reference external" href="https://pypa.github.io/pipx/">Pipx</a> lets you install Python programs in a way that isolates Python dependencies, and yet the resulting <code class="docutils literal notranslate"><span class="pre">iga</span></code> command can be run from any shell and directory – like any normal program on your computer. If you use <code class="docutils literal notranslate"><span class="pre">pipx</span></code> on your system, you can install IGA with the following command:</p>
+<p><a class="reference external" href="https://pypa.github.io/pipx/">Pipx</a> lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting <code class="docutils literal notranslate"><span class="pre">iga</span></code> command can be run from any shell and directory – like any normal program on your computer. If you use <code class="docutils literal notranslate"><span class="pre">pipx</span></code> on your system, you can install IGA with the following command:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>iga
 </pre></div>
 </div>
-<p>Pipx can also let you run IGA directly using <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span> <span class="pre">iga</span></code>, although in that case, you must always prefix every IGA command with <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code>.  Consult the <a class="reference external" href="https://github.com/pypa/pipx#walkthrough-running-an-application-in-a-temporary-virtual-environment">documentation for <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code></a> for more information.</p>
 </section>
 <section id="alternative-2-installing-iga-using-pip">
 <h3 id="alternative-2-installing-iga-using-pip">Alternative 2: installing IGA using <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#alternative-2-installing-iga-using-pip" title="Permalink to this heading">¶</a></h3>
@@ -563,7 +567,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
 <li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the <a class="reference external" href="https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml">following contents</a>:</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ====================================================================</span>
-<span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.0.3</span>
+<span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.1.0</span>
 <span class="c1"># This is available as the file "sample-workflow.yml" from the open-</span>
 <span class="c1"># source repository for IGA at https://github.com/caltechlibrary/iga/.</span>
 <span class="c1"># ====================================================================</span>
@@ -692,7 +696,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
               
           </div>
             Last updated on
-              May 24, 2023.
+              May 31, 2023.
             <br/>
             Created using
             <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
