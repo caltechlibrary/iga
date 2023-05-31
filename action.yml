@@ -84,7 +84,7 @@ runs:
     - name: Install IGA.
       shell: bash
       run: |
-        python -m pip install iga
+        python -m pip install https://github.com/caltechlibrary/iga/archive/develop.zip
 
     - name: Find out the latest release tag for this repo.
       shell: bash
