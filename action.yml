@@ -59,7 +59,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Perform some sanity checks and report errors.
+    - name: Perform some sanity checks.
       shell: bash
       run: |
         echo "Performing initial sanity checks …"
@@ -74,7 +74,7 @@ runs:
           echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
         fi
 
-    - name: Abort rest of workflow if errors found.
+    - name: Abort rest of workflow and report errors.
       uses: actions/github-script@v6
       if: env.error != ''
       with:
@@ -84,7 +84,7 @@ runs:
     - name: Install IGA.
       shell: bash
       run: |
-        python -m pip install iga
+        python -m pip install https://github.com/caltechlibrary/iga/archive/develop.zip
 
     - name: Find out the latest release tag for this repo.
       shell: bash
