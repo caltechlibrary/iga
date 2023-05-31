@@ -1,5 +1,15 @@
 # Change log for IGA
 
+## Version 1.1.0 (2023-05-31)
+
+New features:
+* New option `--print-doi` makes IGA print the DOI of a published record in addition to printing the URL. (Without the option, IGA only prints the URL.)
+
+Changes:
+* The color of text messages printed to the terminal has been changed slightly in an effort to improve readability.
+* Documentation has been updated and expanded.
+
+
 ## Version 1.0.3 (2023-05-24)
 
 Changes in this release:
