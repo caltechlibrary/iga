@@ -7,6 +7,7 @@ New features:
 
 Changes:
 * The color of text messages printed to the terminal has been changed slightly in an effort to improve readability.
+* The versions of some dependencies in `requirements.txt` have been updated.
 * Documentation has been updated and expanded.
 
 
