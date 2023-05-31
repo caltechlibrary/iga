@@ -223,7 +223,7 @@ def _print_help_and_exit(ctx):
     sys.exit(int(ExitCode.success))
 
 
-def _print_text(text, color='turquoise4', end='\n', wrap=True):
+def _print_text(text, color='dark_cyan', end='\n', wrap=True):
     '''Print text to the console.
 
     If quiet mode is in effect or the log destination is not stdout, this does
@@ -304,7 +304,7 @@ def _inform(text, end='\n'):
             ustart, uend = match.start(), match.end()
             url = text[ustart:uend]
             text = text[:ustart] + '[link=' + url + ']' + url + '[/]' + text[uend:]
-    _print_text(text, 'turquoise4', end=end, wrap=(not contains_url))
+    _print_text(text, 'dark_cyan', end=end, wrap=(not contains_url))
 
 
 def _quiet_or_redirected():
