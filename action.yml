@@ -59,7 +59,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Perform some sanity checks and report errors.
+    - name: Perform some sanity checks.
       shell: bash
       run: |
         echo "Performing initial sanity checks …"
@@ -74,7 +74,7 @@ runs:
           echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
         fi
 
-    - name: Abort rest of workflow if errors found.
+    - name: Abort rest of workflow and report errors.
       uses: actions/github-script@v6
       if: env.error != ''
       with:
@@ -84,7 +84,7 @@ runs:
     - name: Install IGA.
       shell: bash
       run: |
-        python -m pip install iga
+        python -m pip install https://github.com/caltechlibrary/iga/archive/develop.zip
 
     - name: Find out the latest release tag for this repo.
       shell: bash
@@ -161,8 +161,9 @@ runs:
       shell: bash
       run: |
         echo "Running IGA …"
-        if record_url=$(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}}); then
-          echo record_url="$record_url" >> $GITHUB_ENV
+        if results=($(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --print-doi ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}})); then
+          echo record_url=${results[0]} >> $GITHUB_ENV
+          echo record_doi=${results[1]} >> $GITHUB_ENV
         else
           export exit_code=$?
           case $exit_code in
@@ -198,6 +199,8 @@ runs:
         echo URL of the new InvenioRDM record: ${{env.record_url}} >> $GITHUB_STEP_SUMMARY
         if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
           echo "This is a **draft** record – it has not been finalized." >> $GITHUB_STEP_SUMMARY
+        elif [ -n "${{env.record_doi}}" ]; then
+          echo DOI of the new InvenioRDM record: \`${{env.record_doi}}\` >> $GITHUB_STEP_SUMMARY
         fi
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
           echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY

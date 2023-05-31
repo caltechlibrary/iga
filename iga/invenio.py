@@ -47,6 +47,7 @@ class InvenioRecord():
     record_url  : str                   # links 'record_html' URL
     files_url   : str                   # links 'files'
     assets      : list                  # List of file names or URLs
+    doi         : str                   # links 'doi' (for published records)
 
 
 @dataclass
@@ -183,7 +184,8 @@ def invenio_create(metadata, parent_id=None):
                            publish_url=result['links']['publish'],
                            record_url='',
                            files_url=result['links']['files'],
-                           assets=[])
+                           assets=[],
+                           doi='')
     log(f'new record record_html = {record.draft_url}')
     return record
 
@@ -274,8 +276,11 @@ def invenio_publish(record):
     '''Tell the InvenioRDM server to publish the record.'''
     log('telling the server to publish the record')
     result = _invenio('post', url=record.publish_url, msg='publish record')
-    record.record_url = result.get('links', {}).get('self_html', '')
+    links = result.get('links', {})
+    record.record_url = links.get('self_html', '')
+    record.doi = links.get('doi', '').replace('https://doi.org/', '')
     log(f'successfully published record at {record.record_url}')
+    log(f'DOI of record is {record.doi}')
 
 
 @cache

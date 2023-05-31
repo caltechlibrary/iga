@@ -223,7 +223,7 @@ def _print_help_and_exit(ctx):
     sys.exit(int(ExitCode.success))
 
 
-def _print_text(text, color='turquoise4', end='\n', wrap=True):
+def _print_text(text, color='dark_cyan', end='\n', wrap=True):
     '''Print text to the console.
 
     If quiet mode is in effect or the log destination is not stdout, this does
@@ -304,7 +304,7 @@ def _inform(text, end='\n'):
             ustart, uend = match.start(), match.end()
             url = text[ustart:uend]
             text = text[:ustart] + '[link=' + url + ']' + url + '[/]' + text[uend:]
-    _print_text(text, 'turquoise4', end=end, wrap=(not contains_url))
+    _print_text(text, 'dark_cyan', end=end, wrap=(not contains_url))
 
 
 def _quiet_or_redirected():
@@ -377,6 +377,9 @@ def _list_communities(ctx, param, value):
 #
 @click.help_option('--help', '-h', help='Show this help message and exit')
 #
+@click.option('--print-doi', '-i', 'print_doi', is_flag=True,
+              help='Print the DOI in addition to the record URL')
+#
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
               help='InvenioRDM server address', is_eager=True)
 #
@@ -416,7 +419,7 @@ def _list_communities(ctx, param, value):
 @click.pass_context
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
         files_to_upload=None, account=None, repo=None, github_token=None,
-        server=None, invenio_token=None, list_communities=False,
+        print_doi=False, server=None, invenio_token=None, list_communities=False,
         open_in_browser=False, log_dest=None, mode='normal', parent_id=None,
         all_metadata=False, source=None, dest=None, timeout=None,
         help=False, version=False):  # noqa A002
@@ -593,6 +596,11 @@ while still saving diagnostic output in case debugging is needed. E.g.,
   record_url=`iga --log-dest iga.out --mode verbose ....`
 ```
 \r
+By default, IGA prints only the record URL when done. The option `--print-doi`
+will make it also print the DOI of the record. (Note that this only works when
+publishing records; if options `--draft` or `--community` are used, then there
+will be no DOI. In those case, only the URL will be printed.)
+\r
 Networks latencies are unpredictable. Reading and writing large files may take
 a long time; on the other hand, IGA should not wait forever before reporting an
 error if a server or network becomes unresponsive. To balance these conflicting
@@ -708,10 +716,14 @@ possible values:
             else:
                 invenio_publish(record)
                 _inform(f'The published record is available at {record.record_url}')
+                if print_doi and record.doi:
+                    _inform(f'The DOI of the record is {record.doi}')
 
             if _quiet_or_redirected():
-                # If no other output is printed, we still print the URL.
+                # If no other output is printed, we still print the URL & DOI.
                 click.echo(record.record_url or record.draft_url)
+                if print_doi and record.doi:
+                    click.echo(record.doi)
             if open_in_browser:
                 log(f'opening {record.record_url or record.draft_url}')
                 click.launch(record.record_url or record.draft_url)
