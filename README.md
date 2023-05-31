@@ -335,6 +335,8 @@ The `--mode` option can be used to change the run mode. Four run modes are avail
 
 By default, informational output is sent to the standard output (normally the terminal console). The option `--log-dest` can be used to send the output to the given destination instead. The value can be `-` (i.e., a dash) to indicate console output, or it can be a file path to send the output to the file. A special exception is that even if a log destination is given, IGA will still print the final record URL to stdout.  This makes it possible to invoke IGA from scripts that capture the record URL while still saving diagnostic output in case debugging is needed.
 
+By default, IGA prints only the record URL when done. The option `--print-doi` will make it also print the DOI of the record. (Note that this only works when publishing records; if options `--draft` or `--community` are used, then there will be no DOI. In those case, only the URL will be printed.)
+
 Reading and writing large files may take a long time; on the other hand, IGA should not wait forever on network operations before reporting an error if a server or network becomes unresponsive. To balance these conflicting needs, IGA automatically scales its network timeout based on file sizes. To override its adaptive algorithm and set an explicit timeout value, use the option `--timeout` with a value in seconds.
 
 If given the `--version` option, this program will print its version and other information, and exit without doing anything else.
