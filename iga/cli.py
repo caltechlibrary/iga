@@ -377,9 +377,6 @@ def _list_communities(ctx, param, value):
 #
 @click.help_option('--help', '-h', help='Show this help message and exit')
 #
-@click.option('--print-doi', '-i', 'print_doi', is_flag=True,
-              help='Print the DOI in addition to the record URL')
-#
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
               help='InvenioRDM server address', is_eager=True)
 #
@@ -402,6 +399,9 @@ def _list_communities(ctx, param, value):
 #
 @click.option('--parent-record', '-p', 'parent_id', metavar='STR',
               help='Make this a new version of an existing record')
+#
+@click.option('--print-doi', '-i', 'print_doi', is_flag=True,
+              help='Print the DOI in addition to the record URL')
 #
 @click.option('--read-metadata', '-R', 'source', metavar='FILE', type=File('r'),
               help='Read metadata record from _FILE_; don\'t build one')
