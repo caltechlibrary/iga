@@ -200,7 +200,7 @@ runs:
         if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
           echo "This is a **draft** record – it has not been finalized." >> $GITHUB_STEP_SUMMARY
         elif [ -n "${{env.record_doi}}" ]; then
-          echo DOI of the new InvenioRDM record: ${{env.record_doi}} >> $GITHUB_STEP_SUMMARY
+          echo DOI of the new InvenioRDM record: `${{env.record_doi}}` >> $GITHUB_STEP_SUMMARY
         fi
         if [ "${{inputs.community || 'none'}}" != 'none' ]; then
           echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY
