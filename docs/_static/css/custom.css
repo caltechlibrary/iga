@@ -42,6 +42,7 @@ body, input {
 }
 
 .md-content {
+  margin-left: 1rem;
   margin-right: 0;
 }
 
@@ -162,7 +163,7 @@ dt {
 }
 
 h1 {
-  font-weight: 500 !important;
+  font-weight: 700 !important;
   color: #000 !important;
 }
 
@@ -190,4 +191,10 @@ img.shadowed {
 
 #metadata-table td:nth-child(1) {
   width: 15em;
+}
+
+@media only screen and (min-width:76.25em) {
+    .md-content {
+        margin-left: 12.1rem;
+    }
 }
