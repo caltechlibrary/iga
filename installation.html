@@ -527,16 +527,16 @@
 <p>IGA can be installed as either (or both) a command-line program on your computer or a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> in a GitHub repository.</p>
 <section id="iga-as-a-normal-program">
 <h2 id="iga-as-a-normal-program">IGA as a normal program<a class="headerlink" href="#iga-as-a-normal-program" title="Permalink to this heading">¶</a></h2>
-<p>Please choose an approach that suits your situation and preferences.</p>
-<section id="alternative-1-installing-iga-using-pipx">
-<h3 id="alternative-1-installing-iga-using-pipx">Alternative 1: installing IGA using <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#alternative-1-installing-iga-using-pipx" title="Permalink to this heading">¶</a></h3>
+<p>Please choose an approach that suits your situation and preferences. Then, after installation, proceed to (1) <a class="reference internal" href="quick-start.html#getting-an-inveniordm-token"><span class="std std-ref">get an InvenioRDM token</span></a> and (2) <a class="reference internal" href="quick-start.html#configuring-a-local-iga"><span class="std std-ref">configure IGA for command-line use</span></a>.</p>
+<section id="installation-alternative-1-installing-iga-using-pipx">
+<h3 id="installation-alternative-1-installing-iga-using-pipx">Installation alternative 1: installing IGA using <code class="docutils literal notranslate"><span class="pre">pipx</span></code><a class="headerlink" href="#installation-alternative-1-installing-iga-using-pipx" title="Permalink to this heading">¶</a></h3>
 <p><a class="reference external" href="https://pypa.github.io/pipx/">Pipx</a> lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting <code class="docutils literal notranslate"><span class="pre">iga</span></code> command can be run from any shell and directory – like any normal program on your computer. If you use <code class="docutils literal notranslate"><span class="pre">pipx</span></code> on your system, you can install IGA with the following command:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>install<span class="w"> </span>iga
 </pre></div>
 </div>
 </section>
-<section id="alternative-2-installing-iga-using-pip">
-<h3 id="alternative-2-installing-iga-using-pip">Alternative 2: installing IGA using <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#alternative-2-installing-iga-using-pip" title="Permalink to this heading">¶</a></h3>
+<section id="installation-alternative-2-installing-iga-using-pip">
+<h3 id="installation-alternative-2-installing-iga-using-pip">Installation alternative 2: installing IGA using <code class="docutils literal notranslate"><span class="pre">pip</span></code><a class="headerlink" href="#installation-alternative-2-installing-iga-using-pip" title="Permalink to this heading">¶</a></h3>
 <p>IGA is available from the <a class="reference external" href="https://pypi.org">Python package repository PyPI</a> and can be installed using <a class="reference external" href="https://pip.pypa.io/en/stable/installing/"><code class="docutils literal notranslate"><span class="pre">pip</span></code></a>:</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>iga
 </pre></div>
@@ -547,8 +547,8 @@
 </div>
 <p><em>If you already installed IGA once before</em>, and want to update to the latest version, add <code class="docutils literal notranslate"><span class="pre">--upgrade</span></code> to the end of either command line above.</p>
 </section>
-<section id="alternative-3-installing-iga-from-sources">
-<h3 id="alternative-3-installing-iga-from-sources">Alternative 3: installing IGA from sources<a class="headerlink" href="#alternative-3-installing-iga-from-sources" title="Permalink to this heading">¶</a></h3>
+<section id="installation-alternative-3-installing-iga-from-sources">
+<h3 id="installation-alternative-3-installing-iga-from-sources">Installation alternative 3: installing IGA from sources<a class="headerlink" href="#installation-alternative-3-installing-iga-from-sources" title="Permalink to this heading">¶</a></h3>
 <p>If  you prefer to install IGA directly from the source code, first obtain a copy by either downloading the source archive from the <a class="reference external" href="https://github.com/caltechlibrary/iga/releases">IGA releases page on GitHub</a>, or by using <code class="docutils literal notranslate"><span class="pre">git</span></code> to clone the repository to a location on your computer. For example,</p>
 <div class="highlight-sh notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/caltechlibrary/iga
 </pre></div>
@@ -565,7 +565,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <p>A <a class="reference external" href="https://docs.github.com/en/actions">GitHub Actions</a> workflow is an automated process that runs on GitHub’s servers under control of a file in your repository. Follow these steps to create the IGA workflow file:</p>
 <ol class="arabic">
 <li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
-<li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the <a class="reference external" href="https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml">following contents</a>:</p>
+<li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the following content (which is also available as file <a class="reference external" href="https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml"><code class="docutils literal notranslate"><span class="pre">sample-workflow.yml</span></code></a> in the GitHub repository for IGA):</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ====================================================================</span>
 <span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.1.0</span>
 <span class="c1"># This is available as the file "sample-workflow.yml" from the open-</span>
@@ -645,7 +645,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <li><p>Optionally, change the <a class="reference external" href="https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters">values of other options (<code class="docutils literal notranslate"><span class="pre">parent_record</span></code>, <code class="docutils literal notranslate"><span class="pre">community</span></code>, etc.)</a></p></li>
 <li><p>Save the file, commit the changes to git, and push your changes to GitHub</p></li>
 </ol>
-<p>The sample <code class="docutils literal notranslate"><span class="pre">.yml</span></code> workflow file above is also available from the GitHub repository for IGA as file <a class="reference external" href="https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml"><code class="docutils literal notranslate"><span class="pre">sample-workflow.yml</span></code></a>.</p>
+<p>Once you have installed the GitHub Action workflow for IGA, the next steps are (1) <a class="reference internal" href="quick-start.html#getting-an-inveniordm-token"><span class="std std-ref">get an InvenioRDM token</span></a> and (2) <a class="reference internal" href="quick-start.html#configuring-a-github-action"><span class="std std-ref">configure the GitHub Action workflow</span></a>.</p>
 </section>
 </section>
 
