@@ -103,6 +103,8 @@ python3 setup.py install
 ```
 </details>
 
+Once you have installed `iga`, the next steps are (1) [get an InvenioRDM token](#getting-an-inveniordm-token) and (2) [configure `iga` for running locally](#configuring-and-running-iga-locally).
+
 
 ### IGA as a GitHub Actions workflow
 
@@ -179,6 +181,8 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 3. **Edit the value of the `INVENIO_SERVER` variable (line 4 above)** ↑
 4. Optionally, change the values of other options (`parent_record`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
+
+Once you have installed the GitHub Action workflow for IGA, the next steps are (1) [get an InvenioRDM token](#getting-an-inveniordm-token) and (2) [configure the GitHub Action workflow](#configuring-and-running-iga-as-a-github-actions-workflow).
 
 
 ## Quick start
