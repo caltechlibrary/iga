@@ -397,6 +397,13 @@
       <a href="gha-usage.html#input-parameters" class="md-nav__link">Input parameters</a>
       
     
+    </li>
+    <li class="md-nav__item">
+    
+    
+      <a href="gha-usage.html#status-and-notifications" class="md-nav__link">Status and notifications</a>
+      
+    
     </li></ul>
     
     </li>
@@ -482,19 +489,19 @@
     <li class="md-nav__item">
     
     
-      <a href="appendix-metadata.html" class="md-nav__link">Appendix</a>
+      <a href="appendix.html" class="md-nav__link">Appendix</a>
       <ul class="md-nav__list"> 
     <li class="md-nav__item">
     
     
-      <a href="appendix-metadata.html#record-metadata" class="md-nav__link">Record metadata</a>
+      <a href="appendix.html#record-metadata" class="md-nav__link">Record metadata</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="appendix-metadata.html#known-limitations" class="md-nav__link">Known limitations</a>
+      <a href="appendix.html#known-limitations" class="md-nav__link">Known limitations</a>
       
     
     </li></ul>
@@ -704,7 +711,7 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>It can be helpful to have a sense for how IGA computes the values of the fields above. The following summarizes the scheme, while the <a class="reference internal" href="appendix-metadata.html#record-metadata"><span class="std std-ref">Appendix on record metadata</span></a> provides a more detailed explanation:</p>
+<p>It can be helpful to have a sense for how IGA computes the values of the fields above. The following summarizes the scheme, while the <a class="reference internal" href="#appendix-metadata.md#record-metadata"><span class="xref myst">Appendix on record metadata</span></a> provides a more detailed explanation:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">additional_descriptions</span></code>: the InvenioRDM record has a primary <code class="docutils literal notranslate"><span class="pre">description</span></code> field (see below) that IGA obtains from the description of the software release in GitHub. The “additional descriptions” are other descriptions such as release notes.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">additional_titles</span></code>: the InvenioRDM record has a primary <code class="docutils literal notranslate"><span class="pre">title</span></code> field (see below) that IGA creates using a combination of the software name and the version. The “additional titles” are other descriptions that IGA finds in the <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> and/or <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> files.</p></li>
