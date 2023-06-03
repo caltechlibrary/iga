@@ -160,12 +160,21 @@ install:
 
 # make release ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-release: | test-branch release-on-github print-instructions
+release: | test-branch confirm-release release-on-github print-instructions
 
 test-branch:
 ifneq ($(branch),main)
 	$(error Current git branch != main. Merge changes into main first!)
 endif
+
+confirm-release:
+	@read -p "Have you uploaded to PyPI? [y/N] " ans && : $${ans:=N} ;\
+	if [ $${ans::1} != y ]; then \
+	  echo ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+	  echo ┃ Release on PyPI and wait 5 min before releasing on GitHub. ┃
+	  echo ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+	  exit 1
+	fi
 
 update-all: update-init update-meta update-citation update-example
 
