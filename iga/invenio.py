@@ -257,19 +257,18 @@ def invenio_community_send(record, community):
     }
     result = _invenio('put', url=record.review_url, data=data,
                       msg='get community submission link from InvenioRDM')
-    if submit_url := result.get('links', {}).get('actions', {}).get('submit', ''):
-        data = {
+    submit_url = record.review_url.replace('/review','/actions/submit-review')
+    data = {
             'payload': {
                 'format': 'html',
-                'content': 'This record is being submitted automatically using'
-                f'the InvenioRDM GitHub Archiver (IGA) version {iga.__version__}',
+                'content': f'''This record is being submitted automatically using 
+                the InvenioRDM GitHub Archiver (IGA) version
+                {iga.__version__}''',
             }
         }
-        log(f'submitting the record to community {community}')
-        result = _invenio('post', url=submit_url, data=data,
+    log(f'submitting the record to community {community}')
+    result = _invenio('post', url=submit_url, data=data,
                           msg='submit record to community {community}')
-    else:
-        raise InternalError('Unexpected result in community submission step')
 
 
 def invenio_publish(record):
