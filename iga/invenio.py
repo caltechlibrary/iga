@@ -257,7 +257,7 @@ def invenio_community_send(record, community):
     }
     result = _invenio('put', url=record.review_url, data=data,
                       msg='get community submission link from InvenioRDM')
-    submit_url = record.review_url.replace('/review','/actions/submit-review')
+    submit_url = record.get('review_url','').replace('/review','/actions/submit-review')
     data = {
             'payload': {
                 'format': 'html',
