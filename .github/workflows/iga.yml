@@ -64,3 +64,5 @@ jobs:
     steps:
       - id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
+
+run-name: Archive ${{inputs.release_tag || github.ref}}
