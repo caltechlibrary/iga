@@ -2,6 +2,7 @@
   "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
   "@type": "SoftwareSourceCode",
   "name": "InvenioRDM GitHub Archiver (IGA)",
+  "identifier": "iga",
   "description": "The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.",
   "version": "1.2.0",
   "datePublished": "2023-07-13",
