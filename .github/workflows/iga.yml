@@ -65,5 +65,4 @@ jobs:
       - id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
 
-run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
-
+run-name: Archive ${{inputs.release_tag || github.event.head_commit.message}}
