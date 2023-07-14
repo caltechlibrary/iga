@@ -1,10 +1,11 @@
-# ====================================================================
-# GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.1.0
+# GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.2.0
 # This is available as the file "sample-workflow.yml" from the open-
 # source repository for IGA at https://github.com/caltechlibrary/iga/.
-# ====================================================================
 
-name: InvenioRDM GitHub Archiver
+# ╭────────────────────────────────────────────╮
+# │ Configure this section                     │
+# ╰────────────────────────────────────────────╯
+
 env:
   # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
   INVENIO_SERVER: https://your-invenio-server.org
@@ -19,8 +20,11 @@ env:
   all_metadata:  false
   debug:         false
 
-# ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~
+# ╭────────────────────────────────────────────╮
+# │ The rest of this file should be left as-is │
+# ╰────────────────────────────────────────────╯
 
+name: InvenioRDM GitHub Archiver
 on:
   release:
     types: [published]

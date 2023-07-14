@@ -1,10 +1,8 @@
-# =============================================================================
 # @file    requirements.txt
 # @brief   Python dependencies for iga
 # @created 2023-03-24
 # @license Please see the file named LICENSE in the project directory
 # @website https://github.com/caltechlibrary/iga
-# =============================================================================
 
 aenum               == 3.1.12
 arrow               == 1.2.3

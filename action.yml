@@ -1,10 +1,8 @@
-# =============================================================================
 # @file    action.yml
 # @brief   GitHub Action definition file for the InvenioRDM GitHub Archiver
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the repository
 # @repo    https://github.com/caltechlibrary/iga
-# =============================================================================
 
 name: "InvenioRDM GitHub Archiver"
 description: "Automatically archive GitHub releases in an InvenioRDM repository"

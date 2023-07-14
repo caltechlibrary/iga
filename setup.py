@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# =============================================================================
 # @file    setup.py
 # @brief   Installation setup file
 # @created 2022-12-08
@@ -9,7 +8,6 @@
 # Note: the full configuration metadata is maintained in setup.cfg, not here.
 # This file exists to hook in setup.cfg and requirements.txt, so that the
 # requirements don't have to be repeated and so that "python3 setup.py" works.
-# =============================================================================
 
 from setuptools import setup
 
