@@ -27,43 +27,43 @@ on:
   workflow_dispatch:
     inputs:
       INVENIO_SERVER:
-        description: "Address of destination InvenioRDM server."
-        required: true
+        description: "Address of destination server:"
+        required: false
         type: string
       all_assets:
-        description: "Attach all GitHub assets, not just the source ZIP."
+        description: "Attach all GitHub assets:"
         default: false
         required: false
         type: boolean
       all_metadata:
-        description: "Include additional metadata from GitHub."
+        description: "Include additional GitHub metadata:"
         default: false
         required: false
         type: boolean
       debug:
         # Note that IGA has more modes than only debug on/off, but for
         # simplicity, this action workflow only offers a binary toggle.
-        description: "Print debugging info in the GitHub Action output."
+        description: "Print debug info in the GitHub log:"
         default: false
         required: false
         type: boolean
       draft:
-        description: "Mark the InvenioRDM record as a draft."
+        description: "Mark the InvenioRDM record as a draft:"
         default: false
         required: false
         type: boolean
       community:
-        description: "Submit record to the designated RDM community."
+        description: "Name of InvenioRDM community (if any):"
         default: 'none'
         required: false
         type: string
       parent_record:
-        description: "The record ID of a parent record (to make a new version)."
+        description: "ID of parent record (for versioning):"
         default: 'none'
         required: false
         type: string
       release_tag:
-        description: "The tag of the release to archive."
+        description: "The release tag (empty = latest):"
         default: 'latest'
         required: false
         type: string
