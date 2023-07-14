@@ -49,6 +49,7 @@ on:
         default: false
         description: "Print debug info in the GitHub log:"
 
+run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
 jobs:
   run_iga:
     name: "Send to ${{needs.get_repository.outputs.server}}"
