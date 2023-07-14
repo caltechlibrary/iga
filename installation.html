@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -573,13 +572,14 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <ol class="arabic">
 <li><p>In the main branch of your GitHub repository, create a <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory</p></li>
 <li><p>In the <code class="docutils literal notranslate"><span class="pre">.github/workflows</span></code> directory, create a file named (e.g.) <code class="docutils literal notranslate"><span class="pre">iga.yml</span></code> and copy the following content (which is also available as file <a class="reference external" href="https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml"><code class="docutils literal notranslate"><span class="pre">sample-workflow.yml</span></code></a> in the GitHub repository for IGA):</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># ====================================================================</span>
-<span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.1.0</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.2.0</span>
 <span class="c1"># This is available as the file "sample-workflow.yml" from the open-</span>
 <span class="c1"># source repository for IGA at https://github.com/caltechlibrary/iga/.</span>
-<span class="c1"># ====================================================================</span>
 
-<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InvenioRDM GitHub Archiver</span>
+<span class="c1"># ╭────────────────────────────────────────────╮</span>
+<span class="c1"># │ Configure this section                     │</span>
+<span class="c1"># ╰────────────────────────────────────────────╯</span>
+
 <span class="nt">env</span><span class="p">:</span>
 <span class="w">  </span><span class="c1"># 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻</span>
 <span class="w">  </span><span class="nt">INVENIO_SERVER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://your-invenio-server.org</span>
@@ -594,8 +594,11 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">  </span><span class="nt">all_metadata</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">debug</span><span class="p">:</span><span class="w">         </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 
-<span class="c1"># ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~</span>
+<span class="c1"># ╭────────────────────────────────────────────╮</span>
+<span class="c1"># │ The rest of this file should be left as-is │</span>
+<span class="c1"># ╰────────────────────────────────────────────╯</span>
 
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">InvenioRDM GitHub Archiver</span>
 <span class="nt">on</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">release</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">types</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">published</span><span class="p p-Indicator">]</span>
@@ -703,10 +706,10 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
               
           </div>
             Last updated on
-              Jun 02, 2023.
+              Jul 14, 2023.
             <br/>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 6.2.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
