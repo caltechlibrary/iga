@@ -623,6 +623,7 @@ python3<span class="w"> </span>setup.py<span class="w"> </span>install
 <span class="w">        </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">        </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">"Print</span><span class="nv"> </span><span class="s">debug</span><span class="nv"> </span><span class="s">info</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">GitHub</span><span class="nv"> </span><span class="s">log:"</span>
 
+<span class="nt">run-name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM</span>
 <span class="nt">jobs</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">run_iga</span><span class="p">:</span>
 <span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">"Send</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">${{needs.get_repository.outputs.server}}"</span>
