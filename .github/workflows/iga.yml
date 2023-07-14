@@ -1,16 +1,10 @@
-# ====================================================================
-# GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.0.3
-# This is available as the file "sample-workflow.yml" from the open-
-# source repository for IGA at https://github.com/caltechlibrary/iga/.
-# ====================================================================
-
 name: InvenioRDM GitHub Archiver
 
 env:
-  INVENIO_SERVER: https://data.caltech.edu
+  INVENIO_SERVER: https://data.caltechlibrary.dev
 
   # Set to an InvenioRDM record ID to mark release as a new version.
-  parent_record: htgnd-z2954
+  parent_record: none
 
   # The variables below are other IGA options. Please see the docs.
   community:     none
@@ -51,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: get_repository
     steps:
-      - uses: caltechlibrary/iga@main
+      - uses: caltechlibrary/iga@develop
         with:
           INVENIO_SERVER: ${{env.INVENIO_SERVER}}
           INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
