@@ -32,22 +32,22 @@ on:
     inputs:
       release_tag:
         description: "The release tag (empty = latest):"
-      draft:
-        default: false
-        description: "Mark the InvenioRDM record as a draft:"
       parent_record:
         description: "ID of parent record (for versioning):"
       community:
         description: "Name of InvenioRDM community (if any):"
+      draft:
+        description: "Mark the record as a draft"
+        type: boolean
       all_assets:
-        default: false
-        description: "Attach all GitHub assets:"
+        description: "Attach all GitHub assets"
+        type: boolean
       all_metadata:
-        default: false
-        description: "Include additional GitHub metadata:"
+        description: "Include additional GitHub metadata"
+        type: boolean
       debug:
-        default: false
-        description: "Print debug info in the GitHub log:"
+        description: "Print debug info in the GitHub log"
+        type: boolean
 
 run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
 jobs:
