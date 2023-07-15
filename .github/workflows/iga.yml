@@ -60,6 +60,7 @@ jobs:
 
   parameters:
     name: "Read environment variables"
+    runs-on: ubuntu-latest
     outputs:
       INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || steps.values.outputs.INVENIO_SERVER}}
       all_assets:     ${{github.event.inputs.all_assets     || steps.values.outputs.all_assets}}
