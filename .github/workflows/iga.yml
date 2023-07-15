@@ -81,7 +81,7 @@ jobs:
     needs: [get_repository, parameters]
     runs-on: ubuntu-latest
     env:
-      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || INVENIO_SERVER}}
+      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || $INVENIO_SERVER}}
     steps:
       - name: Perform some sanity checks.
         shell: bash
