@@ -62,7 +62,7 @@ jobs:
     name: "Send to ${{needs.get_repository.outputs.server}}"
     needs: get_repository
     runs-on: ubuntu-latest
-    with:
+    env:
       INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
       INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || env.INVENIO_SERVER}}
       all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
@@ -78,13 +78,13 @@ jobs:
         run: |
           echo "Performing initial sanity checks …"
           echo "error=" >> $GITHUB_ENV
-          if [ "${{inputs.INVENIO_SERVER}}" == '' ]; then
+          if [ "${{env.INVENIO_SERVER}}" == '' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{inputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
+          if [ "${{env.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
+          if [ "${{env.INVENIO_TOKEN}}" == '' ]; then
             echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
           fi
 
@@ -124,34 +124,34 @@ jobs:
           echo "parent=" >> $GITHUB_ENV
           echo "tag=" >> $GITHUB_ENV
           echo "mode=verbose" >> $GITHUB_ENV
-          if [ "${{inputs.release_tag || 'latest'}}" == 'latest' ]; then
+          if [ "${{env.release_tag || 'latest'}}" == 'latest' ]; then
             echo "tag=${{env.latest_tag}}" >> $GITHUB_ENV
           else
-            echo "tag=${{inputs.release_tag}}" >> $GITHUB_ENV
+            echo "tag=${{env.release_tag}}" >> $GITHUB_ENV
           fi
-          if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
+          if [ "${{env.draft || 'false'}}" != 'false' ]; then
             echo 'draft=--draft' >> $GITHUB_ENV
           fi
-          if [ "${{inputs.all_assets || 'false'}}" != 'false' ]; then
+          if [ "${{env.all_assets || 'false'}}" != 'false' ]; then
             echo 'all_assets=--all-assets' >> $GITHUB_ENV
           fi
-          if [ "${{inputs.all_metadata || 'false'}}" != 'false' ]; then
+          if [ "${{env.all_metadata || 'false'}}" != 'false' ]; then
             echo 'all_metadata=--all-metadata' >> $GITHUB_ENV
           fi
-          if [ "${{inputs.community || 'none'}}" != 'none' ]; then
+          if [ "${{env.community || 'none'}}" != 'none' ]; then
             echo 'use_community=--community' >> $GITHUB_ENV
-            echo "community=${{inputs.community}}" >> $GITHUB_ENV
+            echo "community=${{env.community}}" >> $GITHUB_ENV
           fi
-          if [ "${{inputs.parent_record || 'none'}}" != 'none' ]; then
+          if [ "${{env.parent_record || 'none'}}" != 'none' ]; then
             echo 'use_parent=--parent-record' >> $GITHUB_ENV
-            echo "parent=${{inputs.parent_record}}" >> $GITHUB_ENV
+            echo "parent=${{env.parent_record}}" >> $GITHUB_ENV
           fi
-          if [ "${{inputs.debug || 'false'}}" != 'false' ]; then
+          if [ "${{env.debug || 'false'}}" != 'false' ]; then
             echo "mode=debug" >> $GITHUB_ENV
           fi
 
       - name: Dump GitHub Actions context and variables if debugging is on.
-        if: inputs.debug == true || inputs.debug == 'true'
+        if: env.debug == true || env.debug == 'true'
         env:
           # Setting this variable and then printing it below is not strictly
           # necessary; you could put the expression directly into the echo
@@ -169,8 +169,8 @@ jobs:
       - name: Run IGA.
         id: run_iga
         env:
-          INVENIO_SERVER: ${{inputs.INVENIO_SERVER}}
-          INVENIO_TOKEN: ${{inputs.INVENIO_TOKEN}}
+          INVENIO_SERVER: ${{env.INVENIO_SERVER}}
+          INVENIO_TOKEN: ${{env.INVENIO_TOKEN}}
           GITHUB_TOKEN: ${{github.token}}
         shell: bash
         run: |
@@ -211,13 +211,13 @@ jobs:
         run: |
           echo \#\# Successfully archived release \"${{env.tag}}\"   >> $GITHUB_STEP_SUMMARY
           echo URL of the new InvenioRDM record: ${{env.record_url}} >> $GITHUB_STEP_SUMMARY
-          if [ "${{inputs.draft || 'false'}}" != 'false' ]; then
+          if [ "${{env.draft || 'false'}}" != 'false' ]; then
             echo "This is a **draft** record – it has not been finalized." >> $GITHUB_STEP_SUMMARY
           elif [ -n "${{env.record_doi}}" ]; then
             echo DOI of the new InvenioRDM record: \`${{env.record_doi}}\` >> $GITHUB_STEP_SUMMARY
           fi
-          if [ "${{inputs.community || 'none'}}" != 'none' ]; then
-            echo "It has been submitted to community ${{inputs.community}}." >> $GITHUB_STEP_SUMMARY
+          if [ "${{env.community || 'none'}}" != 'none' ]; then
+            echo "It has been submitted to community ${{env.community}}." >> $GITHUB_STEP_SUMMARY
           fi
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "This workflow ran $(iga --version | head -1 | sed s/iga/IGA/)." >> $GITHUB_STEP_SUMMARY
