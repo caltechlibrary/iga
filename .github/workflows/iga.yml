@@ -58,33 +58,46 @@ jobs:
       - id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
 
+  parameters:
+    name: "Read environment variables"
+    outputs:
+      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || steps.values.outputs.INVENIO_SERVER}}
+      all_assets:     ${{github.event.inputs.all_assets     || steps.values.outputs.all_assets}}
+      all_metadata:   ${{github.event.inputs.all_metadata   || steps.values.outputs.all_metadata}}
+      debug:          ${{github.event.inputs.debug          || steps.values.outputs.debug}}
+      draft:          ${{github.event.inputs.draft          || steps.values.outputs.draft}}
+      parent_record:  ${{github.event.inputs.parent_record  || steps.values.outputs.parent_record}}
+      community:      ${{github.event.inputs.community      || 'none'}}
+      release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
+    steps:
+      - id: values
+        run: |
+          echo "INVENIO_SERVER=$INVENIO_SERVER" >> $GITHUB_OUTPUT
+          echo "all_assets=$all_assets" >> $GITHUB_OUTPUT
+          echo "all_metadata=$all_metadata" >> $GITHUB_OUTPUT
+          echo "debug=$debug" >> $GITHUB_OUTPUT
+          echo "draft=$draft" >> $GITHUB_OUTPUT
+          echo "community=$community" >> $GITHUB_OUTPUT
+          echo "parent_record=$parent_record" >> $GITHUB_OUTPUT
+          echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+
   run_iga:
     name: "Send to ${{needs.get_repository.outputs.server}}"
-    needs: get_repository
+    needs: [get_repository, parameters]
     runs-on: ubuntu-latest
-    env:
-      INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
-      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || env.INVENIO_SERVER}}
-      all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
-      all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
-      debug:          ${{github.event.inputs.debug || env.debug}}
-      draft:          ${{github.event.inputs.draft || env.draft}}
-      community:      ${{github.event.inputs.community || env.community}}
-      parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
-      release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
     steps:
       - name: Perform some sanity checks.
         shell: bash
         run: |
           echo "Performing initial sanity checks …"
           echo "error=" >> $GITHUB_ENV
-          if [ "${{env.INVENIO_SERVER}}" == '' ]; then
+          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == '' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{env.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
+          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{env.INVENIO_TOKEN}}" == '' ]; then
+          if [ "${{secrets.INVENIO_TOKEN}}" == '' ]; then
             echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
           fi
 
@@ -124,29 +137,29 @@ jobs:
           echo "parent=" >> $GITHUB_ENV
           echo "tag=" >> $GITHUB_ENV
           echo "mode=verbose" >> $GITHUB_ENV
-          if [ "${{env.release_tag || 'latest'}}" == 'latest' ]; then
-            echo "tag=${{env.latest_tag}}" >> $GITHUB_ENV
+          if [ "${{needs.parameters.outputs.release_tag || 'latest'}}" == 'latest' ]; then
+            echo "tag=${{needs.parameters.outputs.latest_tag}}" >> $GITHUB_ENV
           else
-            echo "tag=${{env.release_tag}}" >> $GITHUB_ENV
+            echo "tag=${{needs.parameters.outputs.release_tag}}" >> $GITHUB_ENV
           fi
-          if [ "${{env.draft || 'false'}}" != 'false' ]; then
+          if [ "${{needs.parameters.outputs.draft || 'false'}}" != 'false' ]; then
             echo 'draft=--draft' >> $GITHUB_ENV
           fi
-          if [ "${{env.all_assets || 'false'}}" != 'false' ]; then
+          if [ "${{needs.parameters.outputs.all_assets || 'false'}}" != 'false' ]; then
             echo 'all_assets=--all-assets' >> $GITHUB_ENV
           fi
-          if [ "${{env.all_metadata || 'false'}}" != 'false' ]; then
+          if [ "${{needs.parameters.outputs.all_metadata || 'false'}}" != 'false' ]; then
             echo 'all_metadata=--all-metadata' >> $GITHUB_ENV
           fi
-          if [ "${{env.community || 'none'}}" != 'none' ]; then
+          if [ "${{needs.parameters.outputs.community || 'none'}}" != 'none' ]; then
             echo 'use_community=--community' >> $GITHUB_ENV
-            echo "community=${{env.community}}" >> $GITHUB_ENV
+            echo "community=${{needs.parameters.outputs.community}}" >> $GITHUB_ENV
           fi
-          if [ "${{env.parent_record || 'none'}}" != 'none' ]; then
+          if [ "${{needs.parameters.outputs.parent_record || 'none'}}" != 'none' ]; then
             echo 'use_parent=--parent-record' >> $GITHUB_ENV
-            echo "parent=${{env.parent_record}}" >> $GITHUB_ENV
+            echo "parent=${{needs.parameters.outputs.parent_record}}" >> $GITHUB_ENV
           fi
-          if [ "${{env.debug || 'false'}}" != 'false' ]; then
+          if [ "${{needs.parameters.outputs.debug || 'false'}}" != 'false' ]; then
             echo "mode=debug" >> $GITHUB_ENV
           fi
 
@@ -169,8 +182,8 @@ jobs:
       - name: Run IGA.
         id: run_iga
         env:
-          INVENIO_SERVER: ${{env.INVENIO_SERVER}}
-          INVENIO_TOKEN: ${{env.INVENIO_TOKEN}}
+          INVENIO_SERVER: ${{needs.parameters.outputs.INVENIO_SERVER}}
+          INVENIO_TOKEN: ${{secrets.INVENIO_TOKEN}}
           GITHUB_TOKEN: ${{github.token}}
         shell: bash
         run: |
