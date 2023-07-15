@@ -62,25 +62,38 @@ jobs:
     name: "Read job parameters"
     runs-on: ubuntu-latest
     outputs:
-      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || steps.values.outputs.INVENIO_SERVER}}
-      all_assets:     ${{github.event.inputs.all_assets     || steps.values.outputs.all_assets}}
-      all_metadata:   ${{github.event.inputs.all_metadata   || steps.values.outputs.all_metadata}}
-      debug:          ${{github.event.inputs.debug          || steps.values.outputs.debug}}
-      draft:          ${{github.event.inputs.draft          || steps.values.outputs.draft}}
-      parent_record:  ${{github.event.inputs.parent_record  || steps.values.outputs.parent_record}}
-      community:      ${{github.event.inputs.community      || ''}}
+      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || env.INVENIO_SERVER}}
+      all_assets:     ${{github.event.inputs.all_assets     || env.all_assets}}
+      all_metadata:   ${{github.event.inputs.all_metadata   || env.all_metadata}}
+      debug:          ${{github.event.inputs.debug          || env.debug}}
+      draft:          ${{github.event.inputs.draft          || env.draft}}
+      parent_record:  ${{github.event.inputs.parent_record  || env.parent_record}}
+      community:      ${{github.event.inputs.community      || env.community}}
       release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
-    steps:
-      - id: values
-        run: |
-          echo "INVENIO_SERVER=$INVENIO_SERVER" >> $GITHUB_OUTPUT
-          echo "all_assets=$all_assets" >> $GITHUB_OUTPUT
-          echo "all_metadata=$all_metadata" >> $GITHUB_OUTPUT
-          echo "debug=$debug" >> $GITHUB_OUTPUT
-          echo "draft=$draft" >> $GITHUB_OUTPUT
-          echo "community=$community" >> $GITHUB_OUTPUT
-          echo "parent_record=$parent_record" >> $GITHUB_OUTPUT
-          echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
+
+  # parameters:
+  #   name: "Read job parameters"
+  #   runs-on: ubuntu-latest
+  #   outputs:
+  #     INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || steps.values.outputs.INVENIO_SERVER}}
+  #     all_assets:     ${{github.event.inputs.all_assets     || steps.values.outputs.all_assets}}
+  #     all_metadata:   ${{github.event.inputs.all_metadata   || steps.values.outputs.all_metadata}}
+  #     debug:          ${{github.event.inputs.debug          || steps.values.outputs.debug}}
+  #     draft:          ${{github.event.inputs.draft          || steps.values.outputs.draft}}
+  #     parent_record:  ${{github.event.inputs.parent_record  || steps.values.outputs.parent_record}}
+  #     community:      ${{github.event.inputs.community      || ''}}
+  #     release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
+  #   steps:
+  #     - id: values
+  #       run: |
+  #         echo "INVENIO_SERVER=$INVENIO_SERVER" >> $GITHUB_OUTPUT
+  #         echo "all_assets=$all_assets" >> $GITHUB_OUTPUT
+  #         echo "all_metadata=$all_metadata" >> $GITHUB_OUTPUT
+  #         echo "debug=$debug" >> $GITHUB_OUTPUT
+  #         echo "draft=$draft" >> $GITHUB_OUTPUT
+  #         echo "community=$community" >> $GITHUB_OUTPUT
+  #         echo "parent_record=$parent_record" >> $GITHUB_OUTPUT
+  #         echo "release_tag=$release_tag" >> $GITHUB_OUTPUT
 
   run_iga:
     name: "Send to ${{needs.get_repository.outputs.server}}"
