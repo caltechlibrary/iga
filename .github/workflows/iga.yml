@@ -59,7 +59,7 @@ jobs:
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
 
   parameters:
-    name: "Read environment variables"
+    name: "Read job parameters"
     runs-on: ubuntu-latest
     outputs:
       INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || steps.values.outputs.INVENIO_SERVER}}
@@ -68,7 +68,7 @@ jobs:
       debug:          ${{github.event.inputs.debug          || steps.values.outputs.debug}}
       draft:          ${{github.event.inputs.draft          || steps.values.outputs.draft}}
       parent_record:  ${{github.event.inputs.parent_record  || steps.values.outputs.parent_record}}
-      community:      ${{github.event.inputs.community      || 'none'}}
+      community:      ${{github.event.inputs.community      || ''}}
       release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
     steps:
       - id: values
