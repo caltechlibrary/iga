@@ -3,11 +3,24 @@
 # │ sample workflow suggested for users because using IGA with IGA   │
 # │ leads to a chicken and egg problem.                              │
 # │                                                                  │
-# │ DO NOT USE THIS WORKFLOW FOR YOUR SOFTWARE. Instead, use the     │
-# │ recommend sample workflow for IGA, which is available as file    │
-# │ "sample-workflow.yml" from the IGA source repository at          │
+# │ DO NOT USE THIS WORKFLOW FOR YOUR OWN SOFTWARE. Instead, use the │
+# │ recommended sample workflow for IGA, which is available as the   │
+# │ file "sample-workflow.yml" from the IGA source repository at     │
 # │ https://github.com/caltechlibrary/iga/.                          │
 # ╰─────────────────── Notice ── Notice ── Notice ───────────────────╯
+
+# This workflow uses the latest copy of IGA in the GitHub development
+# branch rather than the copy of IGA on PyPI. This makes it possible
+# to release IGA normally and have the latest version of IGA be the
+# version that the GHA workflow runs to archive the release in our
+# RDM server. (The normal workflow runs the PyPI version. If we used
+# *that* version instead of this special version, then the archiving
+# workflow would end up running the *previous* version of IGA because
+# we don't update PyPI until after the release is made on GitHub.
+# While running the old version is not always a problem, it is if the
+# new version has a bug fix or change that we want to take advantage
+# of when we send the archive to our RDM server. Running the latest
+# version to do our archiving also acts as an additional error check.)
 
 name: InvenioRDM GitHub Archiver
 run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
