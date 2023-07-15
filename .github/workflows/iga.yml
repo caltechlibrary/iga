@@ -40,7 +40,7 @@ on:
         description: "Mark the record as a draft"
         type: boolean
       all_assets:
-        description: "Attach all GitHub assets"
+        description: "Attach all GitHub assets to record"
         type: boolean
       all_metadata:
         description: "Include additional GitHub metadata"
