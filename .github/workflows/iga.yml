@@ -34,7 +34,6 @@ on:
         type: string
       community:
         description: "Name of InvenioRDM community (if any):"
-        default: 'none'
         type: string
       draft:
         description: "Mark the record as a draft"
@@ -46,8 +45,6 @@ on:
         description: "Include additional GitHub metadata"
         type: boolean
       debug:
-        # Note that IGA has more modes than only debug on/off, but for
-        # simplicity, this action workflow only offers a binary toggle.
         description: "Print debug info in the GitHub log"
         type: boolean
 
