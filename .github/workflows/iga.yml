@@ -70,6 +70,9 @@ jobs:
       parent_record:  ${{github.event.inputs.parent_record  || env.parent_record}}
       community:      ${{github.event.inputs.community      || env.community}}
       release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
+    steps:
+      - id: values
+        run: echo "Parameters set"
 
   # parameters:
   #   name: "Read job parameters"
