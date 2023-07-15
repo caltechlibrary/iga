@@ -80,25 +80,18 @@ jobs:
     name: "Send to ${{needs.get_repository.outputs.server}}"
     needs: [get_repository, parameters]
     runs-on: ubuntu-latest
-    with:
+    env:
       INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || env.INVENIO_SERVER}}
-      all_assets:     ${{github.event.inputs.all_assets     || env.all_assets}}
-      all_metadata:   ${{github.event.inputs.all_metadata   || env.all_metadata}}
-      debug:          ${{github.event.inputs.debug          || env.debug}}
-      draft:          ${{github.event.inputs.draft          || env.draft}}
-      parent_record:  ${{github.event.inputs.parent_record  || env.parent_record}}
-      community:      ${{github.event.inputs.community      || env.community}}
-      release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
     steps:
       - name: Perform some sanity checks.
         shell: bash
         run: |
           echo "Performing initial sanity checks …"
           echo "error=" >> $GITHUB_ENV
-          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == '' ]; then
+          if [ "${{env.INVENIO_SERVER}}" == '' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
+          if [ "${{env.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
           if [ "${{secrets.INVENIO_TOKEN}}" == '' ]; then
