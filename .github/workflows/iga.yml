@@ -59,8 +59,18 @@ jobs:
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
 
   parameters:
-    # This step proved necessary because I couldn't get GHA to accept a
-    # "with:" block using env vars, so we have to do this round-about approach.
+    # This step is here only because it was impossible to do the obvious
+    # thing in GHA, which would have been to use something like
+    #    env:
+    #      XYZ: ${{github.event.inputs.XYZ || env.XYZ}}
+    # in the definition of the run_iga job. If you try to use the "env:" line
+    # like that, you'll get an error about "env" being undefined (for
+    # env.XYZ). Confusingly, note how we *can* use env.XYZ in the context of
+    # "outputs:" below. It doesn't seem consistent that the syntax works in
+    # this context but not in an "env:" block (although I agree that having
+    # an "env:" block in which variable definitions refer to "env.XYZ" is a
+    # recipe for confusion). The following extra level of indirection seems
+    # to be the shortest way to gather the values we need.
     name: "Read job parameters"
     runs-on: ubuntu-latest
     outputs:
@@ -80,18 +90,16 @@ jobs:
     name: "Send to ${{needs.get_repository.outputs.server}}"
     needs: [get_repository, parameters]
     runs-on: ubuntu-latest
-    env:
-      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || $INVENIO_SERVER}}
     steps:
       - name: Perform some sanity checks.
         shell: bash
         run: |
           echo "Performing initial sanity checks …"
           echo "error=" >> $GITHUB_ENV
-          if [ "${{env.INVENIO_SERVER}}" == '' ]; then
+          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == '' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
-          if [ "${{env.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
+          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
             echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
           fi
           if [ "${{secrets.INVENIO_TOKEN}}" == '' ]; then
