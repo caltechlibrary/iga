@@ -139,7 +139,7 @@ jobs:
           echo "tag=" >> $GITHUB_ENV
           echo "mode=verbose" >> $GITHUB_ENV
           if [ "${{needs.parameters.outputs.release_tag || 'latest'}}" == 'latest' ]; then
-            echo "tag=${{needs.parameters.outputs.latest_tag}}" >> $GITHUB_ENV
+            echo "tag=${{env.latest_tag}}" >> $GITHUB_ENV
           else
             echo "tag=${{needs.parameters.outputs.release_tag}}" >> $GITHUB_ENV
           fi
