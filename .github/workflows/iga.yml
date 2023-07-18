@@ -1,7 +1,7 @@
 # ╭─────────────────── Notice ── Notice ── Notice ───────────────────╮
 # │ This is a custom IGA workflow file. It is different from the     │
 # │ sample workflow suggested for users because using IGA with IGA   │
-# │ leads to a chicken and egg problem.                              │
+# │ leads to a chicken-and-egg problem.                              │
 # │                                                                  │
 # │ DO NOT USE THIS WORKFLOW FOR YOUR OWN SOFTWARE. Instead, use the │
 # │ recommended sample workflow for IGA, which is available as the   │
@@ -13,27 +13,30 @@
 # branch rather than the copy of IGA on PyPI. This makes it possible
 # to release IGA normally and have the latest version of IGA be the
 # version that the GHA workflow runs to archive the release in our
-# RDM server. (The normal workflow runs the PyPI version. If we used
-# *that* version instead of this special version, then the archiving
+# RDM server. (The normal suggested workflow runs the PyPI version.
+# If we used *that* version instead of this special version, the
 # workflow would end up running the *previous* version of IGA because
-# we don't update PyPI until after the release is made on GitHub.
+# we don't update PyPI until *after* the release is made on GitHub.
 # While running the old version is not always a problem, it is if the
 # new version has a bug fix or change that we want to take advantage
 # of when we send the archive to our RDM server. Running the latest
 # version to do our archiving also acts as an additional error check.)
 
-name: InvenioRDM GitHub Archiver
-run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
-
 env:
-  INVENIO_SERVER: https://data.caltechlibrary.dev
-  parent_record: none
+  # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
+  INVENIO_SERVER: https://data.caltech.edu
+
+  # Set to an InvenioRDM record ID to mark release as a new version.
+  parent_record: htgnd-z2954
+
+  # The variables below are other IGA options. Please see the docs.
   community:     none
   draft:         false
   all_assets:    false
   all_metadata:  false
-  debug:         false
+  debug:         true
 
+name: InvenioRDM GitHub Archiver
 on:
   release:
     types: [published]
@@ -41,18 +44,15 @@ on:
     inputs:
       release_tag:
         description: "The release tag (empty = latest):"
-        type: string
       parent_record:
         description: "ID of parent record (for versioning):"
-        type: string
       community:
         description: "Name of InvenioRDM community (if any):"
-        type: string
       draft:
         description: "Mark the record as a draft"
         type: boolean
       all_assets:
-        description: "Attach all GitHub assets to record"
+        description: "Attach all GitHub assets"
         type: boolean
       all_metadata:
         description: "Include additional GitHub metadata"
@@ -61,194 +61,31 @@ on:
         description: "Print debug info in the GitHub log"
         type: boolean
 
+run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
 jobs:
+  run_iga:
+    name: "Send to ${{needs.get_repository.outputs.server}}"
+    runs-on: ubuntu-latest
+    needs: get_repository
+    steps:
+      - uses: caltechlibrary/iga@develop
+        with:
+          INVENIO_SERVER: ${{env.INVENIO_SERVER}}
+          INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
+          all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
+          all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
+          debug:          ${{github.event.inputs.debug || env.debug}}
+          draft:          ${{github.event.inputs.draft || env.draft}}
+          community:      ${{github.event.inputs.community || env.community}}
+          parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
+          release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
+          iga_copy:       'git+https://github.com/caltechlibrary/iga@develop'
   get_repository:
     name: "Get repository name"
     runs-on: ubuntu-latest
     outputs:
       server: ${{steps.parse.outputs.host}}
     steps:
-      - id: parse
+      - name: Extract name from INVENIO_SERVER
+        id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
-
-  parameters:
-    # This step is here only because it was impossible to do the obvious
-    # thing in GHA, which would have been to use something like
-    #    env:
-    #      XYZ: ${{github.event.inputs.XYZ || env.XYZ}}
-    # in the definition of the run_iga job. If you try to use the "env:" line
-    # like that, you'll get an error about "env" being undefined (for
-    # env.XYZ). Confusingly, note how we *can* use env.XYZ in the context of
-    # "outputs:" below. It doesn't seem consistent that the syntax works in
-    # this context but not in an "env:" block (although I agree that having
-    # an "env:" block in which variable definitions refer to "env.XYZ" is a
-    # recipe for confusion). The following extra level of indirection seems
-    # to be the shortest way to gather the values we need.
-    name: "Read job parameters"
-    runs-on: ubuntu-latest
-    outputs:
-      INVENIO_SERVER: ${{github.event.inputs.INVENIO_SERVER || env.INVENIO_SERVER}}
-      all_assets:     ${{github.event.inputs.all_assets     || env.all_assets}}
-      all_metadata:   ${{github.event.inputs.all_metadata   || env.all_metadata}}
-      debug:          ${{github.event.inputs.debug          || env.debug}}
-      draft:          ${{github.event.inputs.draft          || env.draft}}
-      parent_record:  ${{github.event.inputs.parent_record  || env.parent_record}}
-      community:      ${{github.event.inputs.community      || env.community}}
-      release_tag:    ${{github.event.inputs.release_tag    || 'latest'}}
-    steps:
-      - id: values
-        run: echo "Parameters set"
-
-  run_iga:
-    name: "Send to ${{needs.get_repository.outputs.server}}"
-    needs: [get_repository, parameters]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Perform some sanity checks.
-        shell: bash
-        run: |
-          echo "Performing initial sanity checks …"
-          echo "error=" >> $GITHUB_ENV
-          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == '' ]; then
-            echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.INVENIO_SERVER}}" == 'https://your-invenio-server.org' ]; then
-            echo "error='the value of INVENIO_SERVER is not set.'" >> $GITHUB_ENV
-          fi
-          if [ "${{secrets.INVENIO_TOKEN}}" == '' ]; then
-            echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
-          fi
-
-      - name: Abort rest of workflow and report errors.
-        uses: actions/github-script@v6
-        if: env.error != ''
-        with:
-          script: |
-            core.setFailed("IGA workflow configuration error: ${{env.error}}")
-
-      - name: Install IGA.
-        shell: bash
-        run: |
-          python -m pip install git+https://github.com/caltechlibrary/iga@develop
-
-      - name: Find out the latest release tag for this repo.
-        shell: bash
-        run: |
-          echo "Getting the latest release tag for this repo …"
-          echo "latest_tag=$(curl -qsSL \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{github.token}}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            "${{github.api_url}}/repos/${{github.repository}}/releases/latest" \
-            | jq -r .tag_name)" >> $GITHUB_ENV
-
-      - name: Configure IGA run-time options.
-        shell: bash
-        run: |
-          echo "Configuring IGA options …"
-          echo "draft=" >> $GITHUB_ENV
-          echo "all_assets=" >> $GITHUB_ENV
-          echo "all_metadata=" >> $GITHUB_ENV
-          echo "use_community=" >> $GITHUB_ENV
-          echo "community=" >> $GITHUB_ENV
-          echo "use_parent=" >> $GITHUB_ENV
-          echo "parent=" >> $GITHUB_ENV
-          echo "tag=" >> $GITHUB_ENV
-          echo "mode=verbose" >> $GITHUB_ENV
-          if [ "${{needs.parameters.outputs.release_tag || 'latest'}}" == 'latest' ]; then
-            echo "tag=${{env.latest_tag}}" >> $GITHUB_ENV
-          else
-            echo "tag=${{needs.parameters.outputs.release_tag}}" >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.draft || 'false'}}" != 'false' ]; then
-            echo 'draft=--draft' >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.all_assets || 'false'}}" != 'false' ]; then
-            echo 'all_assets=--all-assets' >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.all_metadata || 'false'}}" != 'false' ]; then
-            echo 'all_metadata=--all-metadata' >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.community || 'none'}}" != 'none' ]; then
-            echo 'use_community=--community' >> $GITHUB_ENV
-            echo "community=${{needs.parameters.outputs.community}}" >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.parent_record || 'none'}}" != 'none' ]; then
-            echo 'use_parent=--parent-record' >> $GITHUB_ENV
-            echo "parent=${{needs.parameters.outputs.parent_record}}" >> $GITHUB_ENV
-          fi
-          if [ "${{needs.parameters.outputs.debug || 'false'}}" != 'false' ]; then
-            echo "mode=debug" >> $GITHUB_ENV
-          fi
-
-      - name: Dump GitHub Actions context and variables if debugging is on.
-        if: env.debug == true || env.debug == 'true'
-        env:
-          # Setting this variable and then printing it below is not strictly
-          # necessary; you could put the expression directly into the echo
-          # command below. But when I do that, I get a doubling of the output.
-          GITHUB_CONTEXT: ${{toJSON(github)}}
-        shell: bash
-        run: |
-          echo "Printing context for debugging …"
-          echo "repository_owner = ${{github.repository_owner}}"
-          echo "repository = ${{github.event.repository.name}}"
-          echo "release tag = ${{env.tag}}"
-          echo "====================="
-          echo "$GITHUB_CONTEXT"
-
-      - name: Run IGA.
-        id: run_iga
-        env:
-          INVENIO_SERVER: ${{needs.parameters.outputs.INVENIO_SERVER}}
-          INVENIO_TOKEN: ${{secrets.INVENIO_TOKEN}}
-          GITHUB_TOKEN: ${{github.token}}
-        shell: bash
-        run: |
-          echo "Running IGA …"
-          if results=($(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --print-doi ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}})); then
-            echo record_url=${results[0]} >> $GITHUB_ENV
-            echo record_doi=${results[1]} >> $GITHUB_ENV
-          else
-            export exit_code=$?
-            case $exit_code in
-              2) echo error='IGA was passed a bad option or option value.' >> $GITHUB_ENV ;;
-              3) echo error='IGA experienced a problem with a file or directory.' >> $GITHUB_ENV ;;
-              4) echo error='IGA experienced a problem interacting with GitHub.' >> $GITHUB_ENV ;;
-              5) echo error='IGA experienced a problem interacting with InvenioRDM.' >> $GITHUB_ENV ;;
-              6) echo error='The personal access token was rejected.' >> $GITHUB_ENV ;;
-              *) echo error='IGA failed due to an exception.' >> $GITHUB_ENV ;;
-            esac
-            echo exit_code=$exit_code >> $GITHUB_ENV
-          fi
-
-      - name: Error report.
-        if: env.error != ''
-        shell: bash
-        run: |
-          echo "::error::${{env.error}}"
-          echo "::group::IGA run log"
-          echo "The following output from IGA may help identify the problem."
-          echo ━━━━━━━━━━━━━━━━━━━━━━━━━
-          iga --version
-          echo ━━━━━━━━━━━━━━━━━━━━━━━━━
-          cat ${{github.workspace}}/iga.out
-          echo ━━━━━━━━━━━━━━━━━━━━━━━━━
-          echo "::endgroup::"
-          exit ${{env.exit_code}}
-
-      - name: Summarize the results.
-        shell: bash
-        run: |
-          echo \#\# Successfully archived release \"${{env.tag}}\"   >> $GITHUB_STEP_SUMMARY
-          echo URL of the new InvenioRDM record: ${{env.record_url}} >> $GITHUB_STEP_SUMMARY
-          if [ "${{env.draft || 'false'}}" != 'false' ]; then
-            echo "This is a **draft** record – it has not been finalized." >> $GITHUB_STEP_SUMMARY
-          elif [ -n "${{env.record_doi}}" ]; then
-            echo DOI of the new InvenioRDM record: \`${{env.record_doi}}\` >> $GITHUB_STEP_SUMMARY
-          fi
-          if [ "${{env.community || 'none'}}" != 'none' ]; then
-            echo "It has been submitted to community ${{env.community}}." >> $GITHUB_STEP_SUMMARY
-          fi
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "This workflow ran $(iga --version | head -1 | sed s/iga/IGA/)." >> $GITHUB_STEP_SUMMARY
