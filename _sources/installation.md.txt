@@ -4,9 +4,10 @@ IGA can be installed as either (or both) a command-line program on your computer
 
 ## IGA as a normal program
 
-Please choose an approach that suits your situation and preferences.
+Please choose an approach that suits your situation and preferences. Then, after installation, proceed to (1) [get an InvenioRDM token](quick-start.md#getting-an-inveniordm-token) and (2) [configure IGA for command-line use](quick-start.md#configuring-a-local-iga).
 
-### Alternative 1: installing IGA using `pipx`
+
+### Installation alternative 1: installing IGA using `pipx`
 
 [Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
 ```sh
@@ -14,7 +15,7 @@ pipx install iga
 ```
 
 
-### Alternative 2: installing IGA using `pip`
+### Installation alternative 2: installing IGA using `pip`
 
 IGA is available from the [Python package repository PyPI](https://pypi.org) and can be installed using [`pip`](https://pip.pypa.io/en/stable/installing/):
 ```sh
@@ -29,7 +30,7 @@ python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
 
 
-### Alternative 3: installing IGA from sources
+### Installation alternative 3: installing IGA from sources
 
 If  you prefer to install IGA directly from the source code, first obtain a copy by either downloading the source archive from the [IGA releases page on GitHub](https://github.com/caltechlibrary/iga/releases), or by using `git` to clone the repository to a location on your computer. For example,
 ```sh
@@ -49,7 +50,7 @@ python3 setup.py install
 A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated process that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
-2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml):
+2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following content (which is also available as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml) in the GitHub repository for IGA):
     ```{literalinclude} ../sample-workflow.yml
     :language: yaml
     ```
@@ -57,4 +58,4 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 4. Optionally, change the [values of other options (`parent_record`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
-The sample `.yml` workflow file above is also available from the GitHub repository for IGA as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml).
+Once you have installed the GitHub Action workflow for IGA, the next steps are (1) [get an InvenioRDM token](quick-start.md#getting-an-inveniordm-token) and (2) [configure the GitHub Action workflow](quick-start.md#configuring-a-github-action).

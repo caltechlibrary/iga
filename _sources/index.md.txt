@@ -26,5 +26,5 @@ gha-usage.md
 tips.md
 glossary.md
 colophon.md
-appendix-metadata.md
+appendix.md
 ```
