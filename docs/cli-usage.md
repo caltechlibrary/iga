@@ -70,7 +70,7 @@ If both `--read-metadata` and `--file` are used, then IGA does not actually cont
 
 ## InvenioRDM communities
 
-To submit your record to a community, use the `--community` option together with a community name. The option `--list-communities` can be used to get a list of communities supported by the InvenioRDM server. Note that submitting a record to a community means that the record will not be finalized and will not be publicly visible when IGA finishes; instead, the record URL that you receive will be for a draft version, pending review by the community moderators.
+To submit your record to a community, use the `--community` option together with a community identifier. IGA supports the "friendly" community identifier that is found at the end of the comunity url (e.g., `"tccon"`). The option `--list-communities` can be used to get a list of communities supported by the InvenioRDM server. Note that submitting a record to a community means that the record will not be finalized and will not be publicly visible when IGA finishes; instead, the record URL that you receive will be for a draft version, pending review by the community moderators.
 
 ## Draft vs. published records
 
