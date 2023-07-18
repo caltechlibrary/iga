@@ -176,7 +176,14 @@ confirm-release:
 	  exit 1
 	fi
 
-update-all: update-init update-meta update-citation update-example
+update-all: update-setup update-init update-meta update-citation update-example
+
+update-setup: vars
+	@sed -i .bak -e '/^version/ s|= .*|= $(version)|'  setup.cfg
+	@sed -i .bak -e '/^description/ s|= .*|= $(desc)|' setup.cfg
+	@sed -i .bak -e '/^author/ s|= .*|= $(author)|'	   setup.cfg
+	@sed -i .bak -e '/^email/ s|= .*|= $(email)|'	   setup.cfg
+	@sed -i .bak -e '/^license / s|= .*|= $(license)|' setup.cfg
 
 update-init: vars
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
@@ -204,7 +211,7 @@ update-citation: vars
 update-example:
 	@sed -i .bak -E -e "/.* version [0-9].[0-9]+.[0-9]+/ s/[0-9].[0-9]+.[0-9]+/$(version)/" sample-workflow.yml
 
-edited := codemeta.json $(initfile) CITATION.cff sample-workflow.yml
+edited := setup.cfg codemeta.json $(initfile) CITATION.cff sample-workflow.yml
 
 commit-updates:
 	git add $(edited)
@@ -335,7 +342,7 @@ reset  := $(shell tput sgr0)
 
 .PHONY: help vars report release test-branch test tests update-all \
 	update-init update-meta update-citation update-example commit-updates \
-	release-on-github print-instructions update-doi \
+	update-setup release-on-github print-instructions update-doi \
 	packages test-pypi pypi clean really-clean completely-clean \
 	clean-dist really-clean-dist clean-build really-clean-build \
 	clean-release clean-other
