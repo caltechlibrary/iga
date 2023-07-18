@@ -58,6 +58,7 @@ distdir  := dist
 builddir := build
 today	 := $(shell date "+%F")
 
+
 # Print help if no command is given ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # The help scheme works by looking for lines beginning with "#:" above make
@@ -98,6 +99,9 @@ define instructions_text =
 10. Wait for IGA to finish running its GitHub action at
     $(link)$(repo_url)/actions$(reset)
 11. Run $(color)make post-release$(reset).
+12. Run $(color)make test-pypi$(reset).
+13. Check $(link)https://test.pypi.org/project/$(progname)$(reset)
+14. Run $(color)make pypi$(reset).
 endef
 
 
@@ -144,7 +148,6 @@ report: vars
 lint:
 	flake8 iga
 
-
 #: Run unit tests and coverage tests.
 tests:;
 	pytest -v --cov=iga -l tests/
@@ -179,11 +182,11 @@ confirm-release:
 update-all: update-setup update-init update-meta update-citation update-example
 
 update-setup: vars
-	@sed -i .bak -e '/^version/ s|= .*|= $(version)|'  setup.cfg
-	@sed -i .bak -e '/^description/ s|= .*|= $(desc)|' setup.cfg
-	@sed -i .bak -e '/^author/ s|= .*|= $(author)|'	   setup.cfg
-	@sed -i .bak -e '/^email/ s|= .*|= $(email)|'	   setup.cfg
-	@sed -i .bak -e '/^license / s|= .*|= $(license)|' setup.cfg
+	@sed -i .bak -e '/^version/ s|= .*|= $(version)|'    setup.cfg
+	@sed -i .bak -e '/^description/ s|= .*|= $(desc)|'   setup.cfg
+	@sed -i .bak -e '/^author / s|= .*|= $(author)|'     setup.cfg
+	@sed -i .bak -e '/^author_email/ s|= .*|= $(email)|' setup.cfg
+	@sed -i .bak -e '/^license / s|= .*|= $(license)|'   setup.cfg
 
 update-init: vars
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
@@ -236,8 +239,8 @@ wait-on-iga:
 	@$(info ┃ Wait for the archiving workflow to finish on GitHub ┃)
 	@$(info ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛)
 	sleep 2
-	$(eval pid := $(shell gh run list --workflow=iga.yml --limit 1 | tail -1 | awk -F $'\t' '{print $7}'))
-	$(shell gh run watch $pid)
+	$(eval pid := $(shell gh run list --workflow=iga.yml --limit 1 | tail -1 | awk -F $$'\t' '{print $$7}'))
+	$(shell gh run watch $(pid))
 
 print-next-steps: vars
 	@$(info ┏━━━━━━━━━━━━┓)
@@ -245,8 +248,7 @@ print-next-steps: vars
 	@$(info ┗━━━━━━━━━━━━┛)
 	@$(info  Next steps:
 	@$(info  1. Check $(repo_url)/releases )
-	@$(info  2. Run "make update-doi" to update the DOI in README.md
-	@$(info  3. Run "make packages" and check the results
+	@$(info  2. Run "make post-release"
 	@$(info  4. Run "make test-pypi" to push to test.pypi.org
 	@$(info  5. Check https://test.pypi.org/project/$(progname) )
 	@$(info  6. Run "make pypi" to push to pypi for real
