@@ -73,5 +73,6 @@ jobs:
     outputs:
       server: ${{steps.parse.outputs.host}}
     steps:
-      - id: parse
+      - name: Extract name from INVENIO_SERVER
+        id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
