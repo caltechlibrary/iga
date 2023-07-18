@@ -1,6 +1,6 @@
 # Change log for IGA
 
-## Version 1.2.0 (TBD)
+## Version 1.2.0 (2023-07-18)
 
 This version fixes problems with handling Invenio Communities. First, an internal bug in IGA would cause an exception if the user attempted to list communities in an InvenioRDM server that defined more than one community. Second, a bug in InvenioRDM itself meant that community links were broken. (Thanks to @tmorrell for a fix via PR #23.)
 
