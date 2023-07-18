@@ -12,15 +12,15 @@ file "LICENSE" for more information.
 # .............................................................................
 #
 #  ╭────────────────────── Notice ── Notice ── Notice ─────────────────────╮
-#  |    The following values are automatically updated at every release    |
-#  |    by the Makefile. Manual changes to these values will be lost.      |
+#  │    The following values are automatically updated at every release    │
+#  │    by the Makefile. Manual changes to these values will be lost.      │
 #  ╰────────────────────── Notice ── Notice ── Notice ─────────────────────╯
 
-__version__     = '1.1.0'
-__description__ = 'InvenioRDM GitHub Archiver'
-__url__         = 'https://github.com/caltechlibrary/iga'
+__version__     = '1.2.0'
+__description__ = 'The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.'
+__url__         = 'https://caltechlibrary.github.io/iga'
 __author__      = 'Michael Hucka'
-__email__       = 'helpdesk@library.caltech.edu'
+__email__       = 'mhucka@caltech.edu'
 __license__     = 'https://github.com/caltechlibrary/iga/blob/main/LICENSE'
 
 
