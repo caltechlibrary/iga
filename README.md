@@ -113,7 +113,10 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
 2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml) into it:
     ```yaml
-    name: InvenioRDM GitHub Archiver
+    # ╭────────────────────────────────────────────╮
+    # │ Configure this section                     │
+    # ╰────────────────────────────────────────────╯
+
     env:
       # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
       INVENIO_SERVER: https://your-invenio-server.org
@@ -128,7 +131,11 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
       all_metadata:  false
       debug:         false
 
-    # ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~
+    # ╭────────────────────────────────────────────╮
+    # │ The rest of this file should be left as-is │
+    # ╰────────────────────────────────────────────╯
+
+    name: InvenioRDM GitHub Archiver
     on:
       release:
         types: [published]
@@ -136,22 +143,24 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
         inputs:
           release_tag:
             description: "The release tag (empty = latest):"
-          draft:
-            default: false
-            description: "Mark the InvenioRDM record as a draft:"
           parent_record:
             description: "ID of parent record (for versioning):"
           community:
             description: "Name of InvenioRDM community (if any):"
+          draft:
+            description: "Mark the record as a draft"
+            type: boolean
           all_assets:
-            default: false
-            description: "Attach all GitHub assets:"
+            description: "Attach all GitHub assets"
+            type: boolean
           all_metadata:
-            default: false
-            description: "Include additional GitHub metadata:"
+            description: "Include additional GitHub metadata"
+            type: boolean
           debug:
-            default: false
-            description: "Print debug info in the GitHub log:"
+            description: "Print debug info in the GitHub log"
+            type: boolean
+
+    run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
     jobs:
       run_iga:
         name: "Send to ${{needs.get_repository.outputs.server}}"
@@ -175,10 +184,11 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
         outputs:
           server: ${{steps.parse.outputs.host}}
         steps:
-          - id: parse
+          - name: Extract name from INVENIO_SERVER
+            id: parse
             run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
     ```
-3. **Edit the value of the `INVENIO_SERVER` variable (line 4 above)** ↑
+3. **Edit the value of the `INVENIO_SERVER` variable (line 7 above)** ↑
 4. Optionally, change the values of other options (`parent_record`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
