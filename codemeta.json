@@ -68,7 +68,7 @@
   "issueTracker": "https://github.com/caltechlibrary/iga/issues",
   "downloadUrl": "https://github.com/caltechlibrary/iga/releases",
   "softwareHelp": "https://caltechlibrary.github.io/iga",
-  "relatedLink": "https://data.caltech.edu/records/609yn-s5391",
+  "relatedLink": "https://data.caltech.edu/records/v0nq3-4a516",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "Python",
