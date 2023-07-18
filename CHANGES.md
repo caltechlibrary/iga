@@ -1,5 +1,15 @@
 # Change log for IGA
 
+## Version 1.2.0 (2023-07-18)
+
+This version fixes problems with handling Invenio Communities. First, an internal bug in IGA would cause an exception if the user attempted to list communities in an InvenioRDM server that defined more than one community. Second, a bug in InvenioRDM itself meant that community links were broken. (Thanks to @tmorrell for a fix via PR #23.)
+
+Additional changes in this version:
+* Switched to using `codemeta.json` as the main source of truth for version info. The `setup.cfg` file is now updated from `codemeta.json`, not the other way around.
+* With respect to how the InvenioRDM metadata field `related_identifiers` is handled, the IGA [documentation](https://caltechlibrary.github.io/iga/appendix.html#record-metadata) and the [Google spreadsheet describing how IGA maps fields](https://docs.google.com/spreadsheets/d/1QgFrZIhip1qKA_M45QkeYe9SH238XL1K/edit?usp=sharing&ouid=111701691832013929970&rtpof=true&sd=true) both omitted the use of CodeMeta fields `downloadUrl` and `installUrl` and CFF field `repository-artifact`. These fields are now in the documentation.
+* The Makefile has been updated in various ways based on experiences with other projects.
+
+
 ## Version 1.1.0 (2023-05-31)
 
 New features:

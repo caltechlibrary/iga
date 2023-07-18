@@ -1,4 +1,3 @@
-# =========================================================== -*- gitignore -*-
 # @file    .gitignore
 # @brief   Files and patterns for files and subdirs that git should ignore
 # @date    2022-12-08
@@ -18,7 +17,6 @@
 #
 # A useful starting point for global .gitignore file contents can be found at
 # https://github.com/github/gitignore/tree/main/Global (as of 2022-07-14).
-# =============================================================================
 
 # Ignore backup files created by our Makefile
 # .............................................................................
@@ -35,7 +33,6 @@ __pycache__/
 .eggs/
 .pytest_cache
 .coverage
-*.tmp
 tests/*.log
 
 # Project-specific things to ignore:
@@ -46,6 +43,7 @@ dist
 docs/_build
 e.sh
 iga/tmp
+*.tmp
 *.log
 fake.txt
 debug.out

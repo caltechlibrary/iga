@@ -59,6 +59,33 @@ class InvenioCommunity():
     id    : str                        # The id field value.       # noqa: A003
     title : str                        # The metadata['title'] value
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name == other.name
+        else:
+            return NotImplemented
+
+    def __lt__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name.lower() < other.name.lower()
+        else:
+            return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, self.__class__):
+            return self.name.lower() <= other.name.lower()
+        else:
+            return NotImplemented
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __gt__(self, other):
+        return not self.__le__(self, other)
+
+    def __ge__(self, other):
+        return not self.__lt__(self, other)
+
 
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -257,19 +284,18 @@ def invenio_community_send(record, community):
     }
     result = _invenio('put', url=record.review_url, data=data,
                       msg='get community submission link from InvenioRDM')
-    if submit_url := result.get('links', {}).get('actions', {}).get('submit', ''):
-        data = {
+    submit_url = record.get('review_url','').replace('/review','/actions/submit-review')
+    data = {
             'payload': {
                 'format': 'html',
-                'content': 'This record is being submitted automatically using'
-                f'the InvenioRDM GitHub Archiver (IGA) version {iga.__version__}',
+                'content': f'''This record is being submitted automatically using 
+                the InvenioRDM GitHub Archiver (IGA) version
+                {iga.__version__}''',
             }
         }
-        log(f'submitting the record to community {community}')
-        result = _invenio('post', url=submit_url, data=data,
+    log(f'submitting the record to community {community}')
+    result = _invenio('post', url=submit_url, data=data,
                           msg='submit record to community {community}')
-    else:
-        raise InternalError('Unexpected result in community submission step')
 
 
 def invenio_publish(record):

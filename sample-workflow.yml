@@ -1,10 +1,11 @@
-# ====================================================================
-# GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.1.0
+# GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.2.0
 # This is available as the file "sample-workflow.yml" from the open-
 # source repository for IGA at https://github.com/caltechlibrary/iga/.
-# ====================================================================
 
-name: InvenioRDM GitHub Archiver
+# ╭────────────────────────────────────────────╮
+# │ Configure this section                     │
+# ╰────────────────────────────────────────────╯
+
 env:
   # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
   INVENIO_SERVER: https://your-invenio-server.org
@@ -19,8 +20,11 @@ env:
   all_metadata:  false
   debug:         false
 
-# ~~~~~~~~~~~~ The rest of this file should be left as-is ~~~~~~~~~~~~
+# ╭────────────────────────────────────────────╮
+# │ The rest of this file should be left as-is │
+# ╰────────────────────────────────────────────╯
 
+name: InvenioRDM GitHub Archiver
 on:
   release:
     types: [published]
@@ -28,23 +32,24 @@ on:
     inputs:
       release_tag:
         description: "The release tag (empty = latest):"
-      draft:
-        default: false
-        description: "Mark the InvenioRDM record as a draft:"
       parent_record:
         description: "ID of parent record (for versioning):"
       community:
         description: "Name of InvenioRDM community (if any):"
+      draft:
+        description: "Mark the record as a draft"
+        type: boolean
       all_assets:
-        default: false
-        description: "Attach all GitHub assets:"
+        description: "Attach all GitHub assets"
+        type: boolean
       all_metadata:
-        default: false
-        description: "Include additional GitHub metadata:"
+        description: "Include additional GitHub metadata"
+        type: boolean
       debug:
-        default: false
-        description: "Print debug info in the GitHub log:"
+        description: "Print debug info in the GitHub log"
+        type: boolean
 
+run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
 jobs:
   run_iga:
     name: "Send to ${{needs.get_repository.outputs.server}}"
@@ -68,5 +73,6 @@ jobs:
     outputs:
       server: ${{steps.parse.outputs.host}}
     steps:
-      - id: parse
+      - name: Extract name from INVENIO_SERVER
+        id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT

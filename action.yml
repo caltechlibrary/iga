@@ -1,10 +1,8 @@
-# =============================================================================
 # @file    action.yml
 # @brief   GitHub Action definition file for the InvenioRDM GitHub Archiver
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the repository
 # @repo    https://github.com/caltechlibrary/iga
-# =============================================================================
 
 name: "InvenioRDM GitHub Archiver"
 description: "Automatically archive GitHub releases in an InvenioRDM repository"
@@ -55,6 +53,11 @@ inputs:
     default: 'latest'
     required: false
     type: string
+  iga_copy:
+    description: "(For developers only) Which copy of IGA to install."
+    default: 'iga'
+    required: false
+    type: string
 
 runs:
   using: composite
@@ -84,7 +87,7 @@ runs:
     - name: Install IGA.
       shell: bash
       run: |
-        python -m pip install iga
+        python -m pip install ${{inputs.iga_copy}}
 
     - name: Find out the latest release tag for this repo.
       shell: bash
