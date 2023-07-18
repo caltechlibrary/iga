@@ -61,19 +61,19 @@ class InvenioCommunity():
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self.id == other.id
+            return self.name == other.name
         else:
             return NotImplemented
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
-            return self.id.lower() < other.id.lower()
+            return self.name.lower() < other.name.lower()
         else:
             return NotImplemented
 
     def __le__(self, other):
         if isinstance(other, self.__class__):
-            return self.id.lower() <= other.id.lower()
+            return self.name.lower() <= other.name.lower()
         else:
             return NotImplemented
 
