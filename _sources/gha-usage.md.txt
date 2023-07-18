@@ -1,10 +1,10 @@
 # Usage (GitHub Action)
 
-After creating a GitHub Action workflow as described in [the installation instructions](installation.md#iga-as-a-github-action) (making sure to set the value of `INVENIO_SERVER` in the `.yml` file) and storing your InvenioRDM token as [a GitHub "secret" in the repository](quick-start.md#configuring-a-github-action), the workflow should run automatically the next time you make a release. The IGA workflow can also be run manually; in addition, the trigger condition(s) and some IGA options can be set by editing the workflow definition `.yml` file.
+After you create a GitHub Action workflow as described in [the installation instructions](installation.md#iga-as-a-github-action) (making sure to set the value of `INVENIO_SERVER` in the `.yml` file) and store your InvenioRDM token as [a GitHub "secret" in the repository](quick-start.md#configuring-a-github-action), the workflow should run automatically the next time you make a release. The IGA workflow can also be run manually; in addition, the trigger condition(s) and some IGA options can be set by editing the workflow definition `.yml` file.
 
 ## Manual invocation
 
-You can run the IGA GitHub Action workflow manually in two ways: from the web page of your GitHub repository, and using GitHub's `gh` command line tool.
+You can run the IGA GitHub Action workflow manually in two ways: from the web page of your GitHub repository, and with GitHub's `gh` command line tool.
 
 ### Manual workflow invocation on GitHub
 
@@ -89,3 +89,52 @@ Normally, the GitHub Action is intended to be triggered by the latest release. W
 ### `debug` (default: false)
 
 Turning on debugging will add more data into the GitHub Action workflow record. This is useful when debugging problems in IGA. For the GitHub Action workflow, the behavior is slightly different from the command-line version: the normal mode for the GitHub Action is the equivalent of `verbose` mode in the command-line version of IGA, and while `debug` mode adds more info to the output, it will (understandably) not cause IGA to drop into the `pdb` debugger upon errors.
+
+
+## Status and notifications
+
+GitHub offers numerous ways of checking the status and results of a GitHub Action workflow. Here are three ways:
+1. Visit the _Actions_ tab of the repository on the web
+2. Use the `gh` command-line tool in a terminal on your local computer
+3. Get notifications via email
+
+### Using the _Actions_ tab of the repository
+
+Once IGA has been triggered and is running on GitHub, you can check on the status by visiting the _Actions_ tab of your repository, as shown here:
+
+<figure><img src="_static/media/github-tabs-actions.png" width="75%"></figure>
+
+Next, look for _InvenioRDM GitHub Archiver_ in the list of workflows in the left sidebar:
+
+<figure><img src="_static/media/github-actions-all-workflows.png" width="50%"></figure>
+
+Finally, in the list underneath the blue bar in the right half of the page, click on the most recent workflow titled _InvenioRDM GitHub Archiver_ &ndash; it should be the top-most, or near the top:
+
+<figure><img src="_static/media/github-running-workflow.png" width="90%"></figure>
+
+If IGA is still running, the workflow page will show the steps it is executing. If it has finished running, it will display the results in a page similar to this:
+
+<figure><img src="_static/media/github-action-details.png" width="90%"></figure>
+
+The finished output will show the URL and (if the record is not a draft) the DOI of the archived record in the InvenioRDM server. If an error occurred, the page will show diagnostics about what happened.
+
+
+### Using `gh`
+
+As mentioned [above](#manual-workflow-invocation-using-gh), the GitHub command-line utility [`gh`](https://cli.github.com) lets you start workflows on GitHub from your computer. You can use it to monitor a workflow run, even those triggered automatically when you make a GitHub release. The command is:
+```shell
+gh run list --workflow=iga.yml
+```
+
+
+### Using email
+
+GitHub can send you email upon completion of a workflow, whether the run was a success or a failure. To set your notification preferences, go to your account settings on GitHub (note: _not_ the repository settings!) and click on the notifications link in the left sidebar:
+
+<figure><img src="_static/media/github-notifications-link.png" width="50%"></figure>
+
+then scroll to the bottom of the page to find the section titled _System_, and click on the "Notify me" button. This will produce a pop-up menu. Make sure that the _Email_ checkbox is **selected** but the _Only notify for failed workflows_ checkbox is **unselected**.
+
+<figure><img src="_static/media/github-notifications-selections.png" width="78%"></figure>
+
+After that, when a workflow is triggered by an event such as a release of your software or data, GitHub will send you email upon completion of the workflow. The email will include the status, either success or failure. A caveat to this, however, is that if you started the workflow manually on GitHub using the method [described above](#manual-workflow-invocation-on-github), GitHub will _not_ send you email (presumably because it assumes you are watching the status page on the web).
