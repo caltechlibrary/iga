@@ -1,5 +1,4 @@
 # @file    Makefile
-# @brief   Makefile for steps in creating new releases on GitHub
 # @date    2022-12-08
 # @license Please see the file named LICENSE in the project directory
 # @website https://github.com/caltechlibrary/iga
@@ -179,7 +178,7 @@ confirm-release:
 
 update-all: update-init update-meta update-citation update-example
 
-update-init: vars;
+update-init: vars
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
 	@sed -i .bak -e "s|^\(__description__ *=\).*|\1 '$(desc)'|" $(initfile)
 	@sed -i .bak -e "s|^\(__url__ *=\).*|\1 '$(url)'|"	    $(initfile)
@@ -187,11 +186,13 @@ update-init: vars;
 	@sed -i .bak -e "s|^\(__email__ *=\).*|\1 '$(email)'|"	    $(initfile)
 	@sed -i .bak -e "s|^\(__license__ *=\).*|\1 '$(license)'|"  $(initfile)
 
+# Note that this doesn't replace "version" in codemeta.json, because that's the
+# variable from which this makefile gets its version number in the first place.
 update-meta:
 	@sed -i .bak -e '/"softwareVersion"/ s|: ".*"|: "$(version)"|' codemeta.json
 	@sed -i .bak -e '/"datePublished"/ s|: ".*"|: "$(today)"|' codemeta.json
 
-update-citation:
+update-citation: vars
 	@sed -i .bak -e '/^url:/ s|".*"|"$(url)"|' CITATION.cff
 	@sed -i .bak -e '/^title:/ s|".*"|"$(name)"|' CITATION.cff
 	@sed -i .bak -e '/^version:/ s|".*"|"$(version)"|' CITATION.cff
