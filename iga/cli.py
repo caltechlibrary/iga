@@ -326,7 +326,7 @@ def _list_communities(ctx, param, value):
     table.add_column('Title', style='medium_turquoise')
     table.add_column('Web page', style='light_cyan3', no_wrap=False)
     try:
-        for community in invenio_communities().values():
+        for community in sorted(invenio_communities().values()):
             table.add_row(community.name, community.title,
                           f'[link={community.url}]{community.url}[/]')
         Console().print()
