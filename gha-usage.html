@@ -405,13 +405,6 @@
       <a href="#input-parameters" class="md-nav__link">Input parameters</a>
       
     
-    </li>
-    <li class="md-nav__item">
-    
-    
-      <a href="#status-and-notifications" class="md-nav__link">Status and notifications</a>
-      
-    
     </li></ul>
     
     </li>
@@ -488,19 +481,19 @@
     <li class="md-nav__item">
     
     
-      <a href="appendix.html" class="md-nav__link">Appendix</a>
+      <a href="appendix-metadata.html" class="md-nav__link">Appendix</a>
       <ul class="md-nav__list"> 
     <li class="md-nav__item">
     
     
-      <a href="appendix.html#record-metadata" class="md-nav__link">Record metadata</a>
+      <a href="appendix-metadata.html#record-metadata" class="md-nav__link">Record metadata</a>
       
     
     </li>
     <li class="md-nav__item">
     
     
-      <a href="appendix.html#known-limitations" class="md-nav__link">Known limitations</a>
+      <a href="appendix-metadata.html#known-limitations" class="md-nav__link">Known limitations</a>
       
     
     </li></ul>
@@ -530,10 +523,10 @@
             
   <section id="usage-github-action">
 <h1 id="gha-usage--page-root">Usage (GitHub Action)<a class="headerlink" href="#gha-usage--page-root" title="Permalink to this heading">¶</a></h1>
-<p>After you create a GitHub Action workflow as described in <a class="reference internal" href="installation.html#iga-as-a-github-action"><span class="std std-ref">the installation instructions</span></a> (making sure to set the value of <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> in the <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file) and store your InvenioRDM token as <a class="reference internal" href="quick-start.html#configuring-a-github-action"><span class="std std-ref">a GitHub “secret” in the repository</span></a>, the workflow should run automatically the next time you make a release. The IGA workflow can also be run manually; in addition, the trigger condition(s) and some IGA options can be set by editing the workflow definition <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file.</p>
+<p>After creating a GitHub Action workflow as described in <a class="reference internal" href="installation.html#iga-as-a-github-action"><span class="std std-ref">the installation instructions</span></a> (making sure to set the value of <code class="docutils literal notranslate"><span class="pre">INVENIO_SERVER</span></code> in the <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file) and storing your InvenioRDM token as <a class="reference internal" href="quick-start.html#configuring-a-github-action"><span class="std std-ref">a GitHub “secret” in the repository</span></a>, the workflow should run automatically the next time you make a release. The IGA workflow can also be run manually; in addition, the trigger condition(s) and some IGA options can be set by editing the workflow definition <code class="docutils literal notranslate"><span class="pre">.yml</span></code> file.</p>
 <section id="manual-invocation">
 <h2 id="manual-invocation">Manual invocation<a class="headerlink" href="#manual-invocation" title="Permalink to this heading">¶</a></h2>
-<p>You can run the IGA GitHub Action workflow manually in two ways: from the web page of your GitHub repository, and with GitHub’s <code class="docutils literal notranslate"><span class="pre">gh</span></code> command line tool.</p>
+<p>You can run the IGA GitHub Action workflow manually in two ways: from the web page of your GitHub repository, and using GitHub’s <code class="docutils literal notranslate"><span class="pre">gh</span></code> command line tool.</p>
 <section id="manual-workflow-invocation-on-github">
 <h3 id="manual-workflow-invocation-on-github">Manual workflow invocation on GitHub<a class="headerlink" href="#manual-workflow-invocation-on-github" title="Permalink to this heading">¶</a></h3>
 <ol class="arabic simple">
@@ -612,42 +605,6 @@
 <section id="debug-default-false">
 <h3 id="debug-default-false"><code class="docutils literal notranslate"><span class="pre">debug</span></code> (default: false)<a class="headerlink" href="#debug-default-false" title="Permalink to this heading">¶</a></h3>
 <p>Turning on debugging will add more data into the GitHub Action workflow record. This is useful when debugging problems in IGA. For the GitHub Action workflow, the behavior is slightly different from the command-line version: the normal mode for the GitHub Action is the equivalent of <code class="docutils literal notranslate"><span class="pre">verbose</span></code> mode in the command-line version of IGA, and while <code class="docutils literal notranslate"><span class="pre">debug</span></code> mode adds more info to the output, it will (understandably) not cause IGA to drop into the <code class="docutils literal notranslate"><span class="pre">pdb</span></code> debugger upon errors.</p>
-</section>
-</section>
-<section id="status-and-notifications">
-<h2 id="status-and-notifications">Status and notifications<a class="headerlink" href="#status-and-notifications" title="Permalink to this heading">¶</a></h2>
-<p>GitHub offers numerous ways of checking the status and results of a GitHub Action workflow. Here are three ways:</p>
-<ol class="arabic simple">
-<li><p>Visit the <em>Actions</em> tab of the repository on the web</p></li>
-<li><p>Use the <code class="docutils literal notranslate"><span class="pre">gh</span></code> command-line tool in a terminal on your local computer</p></li>
-<li><p>Get notifications via email</p></li>
-</ol>
-<section id="using-the-actions-tab-of-the-repository">
-<h3 id="using-the-actions-tab-of-the-repository">Using the <em>Actions</em> tab of the repository<a class="headerlink" href="#using-the-actions-tab-of-the-repository" title="Permalink to this heading">¶</a></h3>
-<p>Once IGA has been triggered and is running on GitHub, you can check on the status by visiting the <em>Actions</em> tab of your repository, as shown here:</p>
-<figure><img src="_static/media/github-tabs-actions.png" width="75%"/></figure>
-<p>Next, look for <em>InvenioRDM GitHub Archiver</em> in the list of workflows in the left sidebar:</p>
-<figure><img src="_static/media/github-actions-all-workflows.png" width="50%"/></figure>
-<p>Finally, in the list underneath the blue bar in the right half of the page, click on the most recent workflow titled <em>InvenioRDM GitHub Archiver</em> – it should be the top-most, or near the top:</p>
-<figure><img src="_static/media/github-running-workflow.png" width="90%"/></figure>
-<p>If IGA is still running, the workflow page will show the steps it is executing. If it has finished running, it will display the results in a page similar to this:</p>
-<figure><img src="_static/media/github-action-details.png" width="90%"/></figure>
-<p>The finished output will show the URL and (if the record is not a draft) the DOI of the archived record in the InvenioRDM server. If an error occurred, the page will show diagnostics about what happened.</p>
-</section>
-<section id="using-gh">
-<h3 id="using-gh">Using <code class="docutils literal notranslate"><span class="pre">gh</span></code><a class="headerlink" href="#using-gh" title="Permalink to this heading">¶</a></h3>
-<p>As mentioned <a class="reference internal" href="#manual-workflow-invocation-using-gh"><span class="xref myst">above</span></a>, the GitHub command-line utility <a class="reference external" href="https://cli.github.com"><code class="docutils literal notranslate"><span class="pre">gh</span></code></a> lets you start workflows on GitHub from your computer. You can use it to monitor a workflow run, even those triggered automatically when you make a GitHub release. The command is:</p>
-<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gh<span class="w"> </span>run<span class="w"> </span>list<span class="w"> </span>--workflow<span class="o">=</span>iga.yml
-</pre></div>
-</div>
-</section>
-<section id="using-email">
-<h3 id="using-email">Using email<a class="headerlink" href="#using-email" title="Permalink to this heading">¶</a></h3>
-<p>GitHub can send you email upon completion of a workflow, whether the run was a success or a failure. To set your notification preferences, go to your account settings on GitHub (note: <em>not</em> the repository settings!) and click on the notifications link in the left sidebar:</p>
-<figure><img src="_static/media/github-notifications-link.png" width="50%"/></figure>
-<p>then scroll to the bottom of the page to find the section titled <em>System</em>, and click on the “Notify me” button. This will produce a pop-up menu. Make sure that the <em>Email</em> checkbox is <strong>selected</strong> but the <em>Only notify for failed workflows</em> checkbox is <strong>unselected</strong>.</p>
-<figure><img src="_static/media/github-notifications-selections.png" width="78%"/></figure>
-<p>After that, when a workflow is triggered by an event such as a release of your software or data, GitHub will send you email upon completion of the workflow. The email will include the status, either success or failure. A caveat to this, however, is that if you started the workflow manually on GitHub using the method <a class="reference internal" href="#manual-workflow-invocation-on-github"><span class="xref myst">described above</span></a>, GitHub will <em>not</em> send you email (presumably because it assumes you are watching the status page on the web).</p>
 </section>
 </section>
 </section>
