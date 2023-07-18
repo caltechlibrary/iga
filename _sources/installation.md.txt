@@ -54,7 +54,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
     ```{literalinclude} ../sample-workflow.yml
     :language: yaml
     ```
-3. **Edit the value of the `INVENIO_SERVER` variable near the top of the file above** ↑
+3. **Edit the value of the `INVENIO_SERVER` variable near the top of the file above** ↑. For CaltechDATA the value should be `https://data.caltech.edu`.
 4. Optionally, change the [values of other options (`parent_record`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
 5. Save the file, commit the changes to git, and push your changes to GitHub
 
