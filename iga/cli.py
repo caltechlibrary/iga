@@ -428,7 +428,7 @@ def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
 IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
 release archive to the record. The GitHub release can be specified using
 _either_ a full release URL, _or_ a combination of GitHub account + repository
-\+ tag. Different command-line options can be used to adjust this behavior.
+\\+ tag. Different command-line options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
 \r

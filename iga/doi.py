@@ -27,7 +27,7 @@ def doi_for_publication(pub_id, scheme=None):
     '''Given a publication id, try to get a corresponding DOI.'''
     if not pub_id:
         return ''
-    scheme = recognized_scheme(pub_id) if not scheme else scheme
+    scheme = scheme if scheme else recognized_scheme(pub_id)
     if scheme == 'doi':
         return pub_id
     elif scheme == 'arxiv':

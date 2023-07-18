@@ -48,3 +48,4 @@ per-file-ignores =
     # so there's no way to tell it to ignore a rule only for a block of code.
     iga/__main__.py: E251
     tests/*: F403, W391, E202, E251
+    vendor:*: A003, E301, E302, E305, W291, W293, W605, F821

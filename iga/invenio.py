@@ -56,7 +56,7 @@ class InvenioCommunity():
     data  : dict                       # The complete record returned by RDM.
     name  : str                        # The slug field value
     url   : str                        # The links['self_html'] field value
-    id    : str                        # The id field value
+    id    : str                        # The id field value.       # noqa: A003
     title : str                        # The metadata['title'] value
 
     def __eq__(self, other):

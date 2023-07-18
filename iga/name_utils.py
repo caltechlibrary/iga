@@ -8,7 +8,6 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
-from commonpy.data_structures import CaseFoldSet
 from functools import cache
 from sidetrack import log
 
