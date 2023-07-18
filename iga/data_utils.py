@@ -19,7 +19,7 @@ def deduplicated(lst):
     elif isinstance(lst, Generator):
         return deduplicated(list(lst))
     elif isinstance(lst, Iterator):
-        return deduplicated([x for x in lst])
+        return deduplicated(x for x in lst)
     elif not isinstance(lst, list):
         return lst
     elif isinstance(lst[0], dict):
@@ -62,7 +62,7 @@ def normalized_url(url):
     url = url.split('#')[0]
     url = url.removesuffix('.git')
     url = url_normalize(url)
-    return url
+    return url                          # noqa: PIE781
 
 
 def similar_urls(url1, url2):
