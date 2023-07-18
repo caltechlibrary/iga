@@ -361,7 +361,7 @@ def _list_communities(ctx, param, value):
               help='Submit record to the designated RDM community')
 #
 @click.option('--draft', '-d', is_flag=True,
-              help='Mark the record as a draft; don\'t publish it')
+              help="Mark the record as a draft; don\'t publish it")
 #
 @click.option('--file', '-f', 'files_to_upload', metavar='FILE', multiple=True,
               type=Path(exists=True), help='Upload _FILE_ (repeat for multiple files)')
@@ -404,10 +404,10 @@ def _list_communities(ctx, param, value):
               help='Print the DOI in addition to the record URL')
 #
 @click.option('--read-metadata', '-R', 'source', metavar='FILE', type=File('r'),
-              help='Read metadata record from _FILE_; don\'t build one')
+              help="Read metadata record from _FILE_; don\'t build one")
 #
 @click.option('--save-metadata', '-S', 'dest', metavar='FILE', type=File('w', lazy=False),
-              help='Save metadata record to _FILE_; don\'t upload it')
+              help="Save metadata record to _FILE_; don\'t upload it")
 #
 @click.option('--timeout', '-T', metavar='NUM', type=INT, callback=_read_timeout,
               help='Wait on network operations a max of _NUM_ seconds')
@@ -428,7 +428,7 @@ def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
 IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
 release archive to the record. The GitHub release can be specified using
 _either_ a full release URL, _or_ a combination of GitHub account + repository
-\+ tag. Different command-line options can be used to adjust this behavior.
+\\+ tag. Different command-line options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
 \r
