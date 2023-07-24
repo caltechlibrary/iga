@@ -7,9 +7,9 @@ authors:
     given-names: Michael
     affiliation: "Caltech Library"
     orcid: "https://orid.org/0000-0001-9105-5960"
-version: "1.2.0"
-date-released: "2023-07-18"
-doi: 10.22002/v0nq3-4a516
+version: "1.2.1"
+date-released: "2023-07-24"
+doi: 10.22002/62htz-vpt80
 url: "https://caltechlibrary.github.io/iga"
 repository-code: "https://github.com/caltechlibrary/iga"
 license-url: "https://github.com/caltechlibrary/iga/blob/main/LICENSE"
