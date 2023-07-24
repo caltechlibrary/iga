@@ -87,21 +87,20 @@ define instructions_text =
  1. Run $(color)make lint$(reset), fix any problems, and commit any changes.
  2. Run $(color)make tests$(reset) fix any problems, and commit any changes.
  3. Update the version number in codemeta.json.
- 4. Check the output of $(color)make report$(reset) (ignoring current id & DOI).
- 5. Run $(color)make really-clean$(reset).
- 6. Run $(color)make packages$(reset) and fix any problems.
- 7. Check CHANGES.md, update if needed, and commit changes.
- 8. Run $(color)make release$(reset); after some steps, it will open a file
+ 4. Check CHANGES.md, update if needed, and commit changes.
+ 5. Check the output of $(color)make report$(reset) (ignoring current id & DOI).
+ 6. Run $(color)make really-clean$(reset).
+ 7. Run $(color)make release$(reset); after some steps, it will open a file
     in your editor to write GitHub release notes. Copy the notes
     from CHANGES.md. Save the opened file to finish the process.
- 9. Check that everything looks okay with the GitHub release at
+ 8. Check that everything looks okay with the GitHub release at
     $(link)$(repo_url)/releases$(reset)
-10. Wait for IGA to finish running its GitHub action at
+ 9. Wait for IGA to finish running its GitHub action at
     $(link)$(repo_url)/actions$(reset)
-11. Run $(color)make post-release$(reset).
-12. Run $(color)make test-pypi$(reset).
-13. Check $(link)https://test.pypi.org/project/$(progname)$(reset)
-14. Run $(color)make pypi$(reset).
+10. Run $(color)make post-release$(reset).
+11. Run $(color)make test-pypi$(reset).
+12. Check $(link)https://test.pypi.org/project/$(progname)$(reset)
+13. Run $(color)make pypi$(reset).
 endef
 
 
