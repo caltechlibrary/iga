@@ -1,5 +1,14 @@
 # Change log for IGA
 
+## Version 1.2.1 (2023-07-24)
+
+Changes in this release:
+* Fixed `setup.cfg`, which had some garbled content.
+* Fixed the GitHub Action for building the IGA documentation pages to avoid needlessly running it on every push.
+* The GitHub Actions workflow (`action.yml`) for IGA now caches Python package dependencies for a slight speed up in run times on GitHub.
+* Added a GitHub Actions workflow to lint the code on pushes & pull requests.
+
+
 ## Version 1.2.0 (2023-07-18)
 
 This version fixes problems with handling Invenio Communities. First, an internal bug in IGA would cause an exception if the user attempted to list communities in an InvenioRDM server that defined more than one community. Second, a bug in InvenioRDM itself meant that community links were broken. (Thanks to @tmorrell for a fix via PR #23.)
