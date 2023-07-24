@@ -1,10 +1,8 @@
-# =============================================================================
 # @file    archive-github-pages.yml
 # @brief   Save the Github pages in the Internet Archive
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the repository
-# @repo    https://github.com/caltechlibrary/foliage
-# =============================================================================
+# @repo    https://github.com/caltechlibrary/iga
 
 name: Archive latest GitHub Pages in IA
 on:
