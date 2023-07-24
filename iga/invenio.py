@@ -296,6 +296,7 @@ def invenio_community_send(record, community):
     log(f'submitting the record to community {community}')
     result = _invenio('post', url=submit_url, data=data,
                       msg='submit record to community {community}')
+    log(f'result: {result}')
 
 
 def invenio_publish(record):
