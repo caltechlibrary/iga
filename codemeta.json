@@ -4,8 +4,8 @@
   "name": "InvenioRDM GitHub Archiver (IGA)",
   "identifier": "iga",
   "description": "The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.",
-  "version": "1.2.0",
-  "datePublished": "2023-07-18",
+  "version": "1.2.1",
+  "datePublished": "2023-07-24",
   "dateCreated": "2022-12-07",
   "author": [
     {
