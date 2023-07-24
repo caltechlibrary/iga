@@ -84,7 +84,30 @@ runs:
         script: |
           core.setFailed("IGA workflow configuration error: ${{env.error}}")
 
-    - name: Install IGA.
+    - name: Check out copy of repo being archived.
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Create .git/iga-requirements.txt in the working directory.
+      shell: bash
+      run: |
+        wget -q -O .git/iga-requirements.txt "https://raw.githubusercontent.com/caltechlibrary/iga/${{ github.action_ref || 'main' }}/requirements.txt"
+
+    - name: Install Python.
+      uses: actions/setup-python@v4.5.0
+      with:
+        python-version: "3.11.4"
+
+    - name: Set up cache for Python dependencies.
+      uses: actions/cache@v3.2.4
+      id: cache
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}
+
+    - name: Install IGA and dependencies if not found in cache.
+      if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
         python -m pip install ${{inputs.iga_copy}}

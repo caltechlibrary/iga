@@ -1,4 +1,3 @@
-# =============================================================================
 # @file    build-myst.yml
 # @brief   GitHub Actions workflow to build IGA docs using MyST 
 # @author  Michael Hucka <mhucka@caltech.edu>
@@ -6,16 +5,14 @@
 # @website https://github.com/caltechlibrary/iga
 #
 # This workflow file was originally based on work by GitHub user "peaceiris":
-# https://github.com/peaceiris/actions-gh-pages#%EF%B8%8F-static-site-generators-with-python
-# =============================================================================
+# https://github.com/peaceiris/actions-gh-pages
 
 name: Update docs on GitHub
 
 on:
   push:
-    branches:
-      - develop
-      - main
+    branches: ['main']
+    paths: ['docs/**']
 
 jobs:
   deploy:
