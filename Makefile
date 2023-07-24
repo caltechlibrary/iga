@@ -239,7 +239,7 @@ wait-on-iga:
 	@$(info ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛)
 	sleep 2
 	$(eval pid := $(shell gh run list --workflow=iga.yml --limit 1 | tail -1 | awk -F $$'\t' '{print $$7}'))
-	$(shell gh run watch $(pid))
+	gh run watch $(pid)
 
 print-next-steps: vars
 	@$(info ┏━━━━━━━━━━━━┓)
