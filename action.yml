@@ -53,11 +53,19 @@ inputs:
     default: 'latest'
     required: false
     type: string
+
+  # The following input parameters are not exposed in the workflow recommended
+  # for users, but can be added by developers when desired.
   iga_copy:
     description: "(For developers only) Which copy of IGA to install."
     default: 'iga'
     required: false
     type: string
+  no_cache:
+    description: "(For developers only) Don't cache Python dependencies."
+    default: false
+    required: false
+    type: boolean
 
 runs:
   using: composite
@@ -104,10 +112,10 @@ runs:
       id: cache
       with:
         path: ${{ env.pythonLocation }}
-        key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}-1
 
     - name: Install IGA and dependencies if not found in cache.
-      if: steps.cache.outputs.cache-hit != 'true'
+      if: steps.cache.outputs.cache-hit != 'true' || inputs.no_cache == 'true'
       shell: bash
       run: |
         echo '::notice::Installing Python packages – this will take a long time'
