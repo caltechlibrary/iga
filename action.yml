@@ -110,6 +110,7 @@ runs:
       if: steps.cache.outputs.cache-hit != 'true'
       shell: bash
       run: |
+        echo '::notice::Installing Python packages – this will take a long time'
         python -m pip install ${{inputs.iga_copy}}
 
     - name: Find out the latest release tag for this repo.
