@@ -84,6 +84,7 @@ runs:
         if [ "${{inputs.INVENIO_TOKEN}}" == '' ]; then
           echo "error='the value of INVENIO_TOKEN is not set.'" >> $GITHUB_ENV
         fi
+        echo python_packages_installed=false >> $GITHUB_ENV
 
     - name: Abort rest of workflow and report errors.
       uses: actions/github-script@v6
@@ -112,13 +113,13 @@ runs:
       id: cache
       with:
         path: ${{ env.pythonLocation }}
-        key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}-1
+        key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}
 
     - name: Install IGA and dependencies if not found in cache.
       if: steps.cache.outputs.cache-hit != 'true' || inputs.no_cache == 'true'
       shell: bash
       run: |
-        echo '::notice::Installing Python packages – this will take a long time'
+        echo python_packages_installed=true >> $GITHUB_ENV
         python -m pip install ${{inputs.iga_copy}}
 
     - name: Find out the latest release tag for this repo.
@@ -242,6 +243,14 @@ runs:
         fi
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "This workflow ran $(iga --version | head -1 | sed s/iga/IGA/)." >> $GITHUB_STEP_SUMMARY
+        if [ "${{env.python_packages_installed}}" == 'true' ]; then
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo -n "_Note: This run of IGA took extra long because it" >> $GITHUB_STEP_SUMMARY
+          echo -n " had to install many Python packages and cache"    >> $GITHUB_STEP_SUMMARY
+          echo -n " them in GitHub's workflow framework. Future runs" >> $GITHUB_STEP_SUMMARY
+          echo -n " of IGA will not need to perform this step and"    >> $GITHUB_STEP_SUMMARY
+          echo    " the workflow should take much less time to run._" >> $GITHUB_STEP_SUMMARY
+        fi
 
 author: "Michael Hucka -- https://github.com/mhucka"
 branding:
