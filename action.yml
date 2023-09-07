@@ -107,13 +107,16 @@ runs:
       uses: actions/setup-python@v4.5.0
       with:
         python-version: "3.11.4"
+        cache: 'pip'
+        cache-dependency-path: '.git/iga-requirements.txt'
 
     - name: Set up cache for Python dependencies.
-      uses: actions/cache@v3.2.4
+      uses: actions/cache@v3.3.1
       id: cache
       with:
         path: ${{ env.pythonLocation }}
         key: ${{ env.pythonLocation }}-${{ hashFiles('.git/iga-requirements.txt') }}
+        enableCrossOsArchive: true
 
     - name: Install IGA and dependencies if not found in cache.
       if: steps.cache.outputs.cache-hit != 'true' || inputs.no_cache == 'true'
