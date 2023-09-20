@@ -7,7 +7,7 @@
 # This workflow file was originally based on work by GitHub user "peaceiris":
 # https://github.com/peaceiris/actions-gh-pages
 
-name: Update docs on GitHub
+name: Build docs for gh-pages
 
 on:
   push:
