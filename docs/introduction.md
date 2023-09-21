@@ -1,10 +1,10 @@
 # Introduction
 
-[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). Of particular interest to software developers is that a repository like [CaltechDATA](https://data.caltech.edu) offers the means to preserve software projects in a long-term archive managed by their institution. Here is a screenshot of an example software project release archived in [CaltechDATA](https://data.caltech.edu):
+[InvenioRDM](https://inveniosoftware.org/products/rdm/) is a research data management (RDM) repository platform based on the [Invenio Framework](https://inveniosoftware.org/products/framework/) and [Zenodo](https://www.zenodo.org). At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as [CaltechDATA](https://data.caltech.edu). It offers the means to preserve software and data projects in a long-term archive managed by their institution.
 
 <figure>
     <img src="_static/media/example-record-landing-page.jpg" width="80%">
-    <figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
+    <figcaption>Screenshot of a landing page for a record in <a href="https://data.caltech.edu">CaltechDATA</a>. The source code for version 1.3.5 of the software project <a href="https://data.caltech.edu/records/fqmae-krq60">eprints2archives</a> has been archived in the repository, and this example shows some of the metadata associated with that archived copy.</figcaption>
 </figure>
 
 The metadata contained in the record of a deposit is critical to making the record widely discoverable by other people, but it can be tedious and error-prone to enter the metadata by hand.  This is where automation such as IGA come in: _IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically._
@@ -50,12 +50,12 @@ IGA looks for `codemeta.json` and `CITATION.cff` files in a repository and uses 
 
 ## Using IGA
 
-IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token ([PAT](glossary.md#term-PAT)) for InvenioRDM (and optionally for GitHub too) and have set the environment variable `INVENIO_TOKEN` (and optionally `GITHUB_TOKEN`), you can archive a GitHub release as easily as in this example:
+IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token ([PAT](glossary.md#term-PAT)) for InvenioRDM (and optionally, one for GitHub too) and have set the environment variable `INVENIO_TOKEN` (and optionally `GITHUB_TOKEN`), you can archive a GitHub release as easily as in this example:
 ```shell
 iga -s data.caltech.edu https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 IGA will contact GitHub, extract metadata from the release and the repository, construct a metadata record in the format required by InvenioRDM, and send the record plus the GitHub release source archive (a [ZIP](https://en.wikipedia.org/wiki/ZIP_(file_format)) file) to the InvenioRDM server. Various options can modify IGA's behavior, as explained in detail in the section on [command-line usage of IGA](cli-usage.md).
 
-Note that the availability of a command-line version of IGA means you can also use it to send _past_ releases to an InvenioRDM server &ndash; IGA doesn't care if what you're asking it to archive is the _latest_ release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.
+Note that the availability of a command-line version of IGA means you can also use it to send _past_ GitHub releases to an InvenioRDM server &ndash; IGA doesn't care if what you're asking it to archive is the _latest_ release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.
 
 As a GitHub Action, IGA allows you to set up a GitHub workflow that will automatically send new releases to a designated InvenioRDM server. The procedure for this is detailed in the section on [GitHub Action usage of IGA](gha-usage.md). Once set up, you do not have to remember to send releases of a particular GitHub project to InvenioRDM &ndash; it will do it for you.
