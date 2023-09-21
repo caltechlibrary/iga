@@ -7,6 +7,10 @@ authors:
     given-names: Michael
     affiliation: "Caltech Library"
     orcid: "https://orid.org/0000-0001-9105-5960"
+  - family-names: Morrell
+    given-names: Tom
+    affiliation: "Caltech Library"
+    orcid: "https://orcid.org/0000-0001-9266-5146"
 version: "1.2.1"
 date-released: "2023-07-24"
 doi: 10.22002/62htz-vpt80
