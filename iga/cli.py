@@ -173,11 +173,11 @@ def _read_server(ctx, param, value):
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
     if not invenio_api_available(server):
-        _alert(ctx, f'The server address ({server}) does not appear to be'
-               ' reacheable or does not support the InvenioRDM API.')
+        _alert(ctx, f'The InvenioRDM server address ({server}) does not appear'
+               ' to be reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
     if not invenio_token_valid(server):
-        _alert(ctx, f'The personal access token was rejected by {server}.')
+        _alert(ctx, f'The InvenioRDM personal access token was rejected by {server}.')
         sys.exit(int(ExitCode.bad_token))
     if name := invenio_server_name(server):
         os.environ['INVENIO_SERVER_NAME'] = name
@@ -735,10 +735,10 @@ possible values:
         pass
     except Exception as ex:             # noqa: PIE786
         if isinstance(ex, GitHubError):
-            _alert(ctx, f'Experienced an error interacting with GitHub: {ex}')
+            _alert(ctx, str(ex))
             exit_code = ExitCode.github_error
         elif isinstance(ex, InvenioRDMError):
-            text = 'Experienced an error interacting with InvenioRDM.'
+            text = 'Failed while interacting with InvenioRDM.'
             if record:
                 text += (' The partially-completed record can be found at'
                          f' [{record.draft_url}]({record.draft_url}). You'
