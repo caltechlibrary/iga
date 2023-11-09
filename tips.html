@@ -47,12 +47,12 @@
   
   
     <title>Getting the most out of IGA &#8212; IGA</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/material.css" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=3e432fdf" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -104,7 +104,7 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" action="search.html" method="get" name="search">
-      <input type="text" class="md-search__input" name="q" placeholder="Search"
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
       <label class="md-icon md-search__icon" for="__search"></label>
@@ -267,7 +267,7 @@
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#configuring-a-local-iga" class="md-nav__link">Configuring a local IGA</a>
+      <a href="quick-start.html#configuring-iga-for-local-use" class="md-nav__link">Configuring IGA for local use</a>
       
     
     </li>
@@ -562,84 +562,104 @@
 </ul>
 <section id="example-codemeta-json-file">
 <h3 id="example-codemeta-json-file">Example <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file<a class="headerlink" href="#example-codemeta-json-file" title="Permalink to this heading">¶</a></h3>
-<p>To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for an early version of IGA itself:</p>
+<p>To give a sense for what a <code class="docutils literal notranslate"><span class="pre">codemeta.json</span></code> file looks like, here is the one for a version of IGA itself:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SoftwareSourceCode"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"IGA: InvenioRDM GitHub Archiver"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub software releases in an InvenioRDM repository."</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.0.7"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"datePublished"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-04-25"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"dateCreated"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-12-07"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">"maintainer"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">"funder"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
-<span class="w">        </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="nt">"https://ror.org/05dxps055"</span>
-<span class="w">        </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span><span class="p">,</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">    </span><span class="nt">"copyrightHolder"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="p">{</span>
-<span class="w">            </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="nt">"https://ror.org/05dxps055"</span>
-<span class="w">            </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
-<span class="w">            </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology"</span><span class="p">,</span>
-<span class="w">        </span><span class="p">}</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">"copyrightYear"</span><span class="p">:</span><span class="w"> </span><span class="mi">2023</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/LICENSE"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"isAccessibleForFree"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"codeRepository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"readme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/README.md"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"issueTracker"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/issues"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"softwareHelp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://caltechlibrary.github.io/iga"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"releaseNotes"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/CHANGES.md"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"downloadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/archive/main.zip"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"relatedLink"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://pypi.org/project/iga"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"programmingLanguage"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ComputerLanguage"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Python"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.9"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.python.org/"</span>
+<span class="w">  </span><span class="nt">"@context"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://doi.org/10.5063/schema/codemeta-2.0"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SoftwareSourceCode"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"InvenioRDM GitHub Archiver (IGA)"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"iga"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"description"</span><span class="p">:</span><span class="w"> </span><span class="s2">"The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository."</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.2.1"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"datePublished"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2023-07-24"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"dateCreated"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2022-12-07"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"author"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span>
 <span class="w">    </span><span class="p">},</span>
-<span class="w">    </span><span class="nt">"keywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">        </span><span class="s2">"software"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"science"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"archiving"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"archives"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"preservation"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"source code"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"source code archiving"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"source code preservation"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"code preservation"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"automation"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"reproducibility"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"research reproducibility"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"InvenioRDM"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"Invenio"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"GitHub"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"GitHub Actions"</span><span class="p">,</span>
-<span class="w">        </span><span class="s2">"GitHub Automation"</span>
-<span class="w">    </span><span class="p">],</span>
-<span class="w">    </span><span class="nt">"developmentStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"contributor"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Thomas E"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Morrell"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tmorrell@caltech.edu"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9266-5146"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span><span class="w">        </span>
+<span class="w">  </span><span class="nt">"maintainer"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Person"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"givenName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Michael"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"familyName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Hucka"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"affiliation"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span>
+<span class="w">    </span><span class="p">},</span>
+<span class="w">    </span><span class="nt">"email"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mhucka@caltech.edu"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://orcid.org/0000-0001-9105-5960"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"funder"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span>
+<span class="w">    </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://ror.org/05dxps055"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology Library"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"copyrightHolder"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"@id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://ror.org/05dxps055"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Organization"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"California Institute of Technology"</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"copyrightYear"</span><span class="p">:</span><span class="w"> </span><span class="mi">2023</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"license"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/LICENSE"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"isAccessibleForFree"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://caltechlibrary.github.io/iga"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"codeRepository"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"readme"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/README.md"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"releaseNotes"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/blob/main/CHANGES.md"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"issueTracker"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/issues"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"downloadUrl"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://github.com/caltechlibrary/iga/releases"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"softwareHelp"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://caltechlibrary.github.io/iga"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"relatedLink"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://data.caltech.edu/records/62htz-vpt80"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"programmingLanguage"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"@type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ComputerLanguage"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Python"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.9"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"https://www.python.org/"</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"keywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="s2">"software"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"science"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"archiving"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"archives"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"preservation"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"source code"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"source code archiving"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"source code preservation"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"code preservation"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"automation"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"reproducibility"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"research reproducibility"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"InvenioRDM"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"Invenio"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"GitHub"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"GitHub Actions"</span><span class="p">,</span>
+<span class="w">    </span><span class="s2">"GitHub Automation"</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"developmentStatus"</span><span class="p">:</span><span class="w"> </span><span class="s2">"active"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -773,7 +793,7 @@
               <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
                 <span class="md-flex__ellipsis">
                   <span
-                      class="md-footer-nav__direction"> Previous </span> Usage (GitHub Action) </span>
+                      class="md-footer-nav__direction"> "Previous" </span> Usage (GitHub Action) </span>
               </div>
             </a>
           
@@ -783,7 +803,7 @@
                rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
                 class="md-flex__ellipsis"> <span
-                class="md-footer-nav__direction"> Next </span> Glossary </span>
+                class="md-footer-nav__direction"> "Next" </span> Glossary </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink"><i
                 class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
@@ -801,10 +821,10 @@
               
           </div>
             Last updated on
-              Jul 19, 2023.
+              Nov 09, 2023.
             <br/>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

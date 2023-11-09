@@ -34,7 +34,7 @@ flowchart TD;
 4. On the page that is shown after you click that button, name your token (the name does not matter) and click the <kbd>Create</kbd> button<figure><img src="_static/media/new-pat.png" width="50%"></figure>
 5. After InvenioRDM creates and shows you the token, **copy it to a safe location** because InvenioRDM will not show it again
 
-## Configuring a local IGA
+## Configuring IGA for local use
 
 To send a GitHub release to your InvenioRDM server, IGA needs this information:
 1. (Required) The identity of the GitHub release to be archived
@@ -49,7 +49,7 @@ export INVENIO_TOKEN=qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
 export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 ```
 
-Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for another project in GitHub and tells IGA to open (the `-o` option is short for `--open`) the newly-created InvenioRDM entry in a web browser:
+Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for a certain project in GitHub and tells IGA to open (the `-o` option is short for `--open`) the newly-created InvenioRDM entry in a web browser:
 ```shell
 iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```

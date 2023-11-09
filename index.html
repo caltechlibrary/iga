@@ -47,12 +47,12 @@
   
   
     <title>InvenioRDM GitHub Archiver &#8212; IGA</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/material.css" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=3e432fdf" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -103,7 +103,7 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" action="search.html" method="get" name="search">
-      <input type="text" class="md-search__input" name="q" placeholder="Search"
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
       <label class="md-icon md-search__icon" for="__search"></label>
@@ -266,7 +266,7 @@
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#configuring-a-local-iga" class="md-nav__link">Configuring a local IGA</a>
+      <a href="quick-start.html#configuring-iga-for-local-use" class="md-nav__link">Configuring IGA for local use</a>
       
     
     </li>
@@ -520,8 +520,8 @@
             
   <section id="inveniordm-github-archiver">
 <h1 id="index--page-root">InvenioRDM GitHub Archiver<a class="reference internal" href="#index--page-root"><img alt="_images/cloud-upload.svg" class="align-right" src="_images/cloud-upload.svg" width="50em"/></a><a class="headerlink" href="#index--page-root" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is the basis for many institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> that enable users to preserve software and data sets in long-term archive. Though such repositories are critical resources, creating detailed records and uploading assets can be a tedious and error-prone process if done manually. This is where the <a class="reference external" href="https://github.com/caltechlibrary/iga"><em>InvenioRDM GitHub Archiver</em></a> (IGA) comes in.</p>
-<p>IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to archive GitHub releases automatically for a repository each time they are made.</p>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is used by many institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> to let users preserve software and data in a long-term archive managed by their institution. Depositing software and/or data into these repositories requires the creation of detailed metadata records – a tedious and error-prone process if done manually. This is where the <a class="reference external" href="https://github.com/caltechlibrary/iga"><em>InvenioRDM GitHub Archiver</em></a> (IGA) comes in.</p>
+<p>IGA can create metadata records and send releases from GitHub to an InvenioRDM-based repository server. It can be run as a command line program; it also can be set up as a <a class="reference external" href="https://docs.github.com/en/actions">GitHub Action</a> to archive GitHub releases in InvenioRDM automatically each time they are made.</p>
 <figure>
 <img align="middle" src="_static/media/example-github-release.jpg" width="40%"/>
 <span style="font-size: 150%">➜</span>
@@ -546,7 +546,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quick-start.html">Quick start</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="quick-start.html#getting-an-inveniordm-token">Getting an InvenioRDM token</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick-start.html#configuring-a-local-iga">Configuring a local IGA</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick-start.html#configuring-iga-for-local-use">Configuring IGA for local use</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick-start.html#configuring-a-github-action">Configuring a GitHub Action</a></li>
 </ul>
 </li>
@@ -610,7 +610,7 @@
                rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
                 class="md-flex__ellipsis"> <span
-                class="md-footer-nav__direction"> Next </span> Introduction </span>
+                class="md-footer-nav__direction"> "Next" </span> Introduction </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink"><i
                 class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
@@ -628,10 +628,10 @@
               
           </div>
             Last updated on
-              Jul 19, 2023.
+              Nov 09, 2023.
             <br/>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
