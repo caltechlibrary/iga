@@ -22,6 +22,7 @@ from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
 from iga.github import (
     github_account_repo_tag,
+    github_release,
     github_release_assets,
     valid_github_release_url,
 )
@@ -173,11 +174,11 @@ def _read_server(ctx, param, value):
                        ' does not appear to be a valid host or IP address.')
                 sys.exit(int(ExitCode.bad_arg))
     if not invenio_api_available(server):
-        _alert(ctx, f'The server address ({server}) does not appear to be'
-               ' reacheable or does not support the InvenioRDM API.')
+        _alert(ctx, f'The InvenioRDM server address ({server}) does not appear'
+               ' to be reacheable or does not support the InvenioRDM API.')
         sys.exit(int(ExitCode.bad_arg))
     if not invenio_token_valid(server):
-        _alert(ctx, f'The personal access token was rejected by {server}.')
+        _alert(ctx, f'The InvenioRDM personal access token was rejected by {server}.')
         sys.exit(int(ExitCode.bad_token))
     if name := invenio_server_name(server):
         os.environ['INVENIO_SERVER_NAME'] = name
@@ -650,6 +651,11 @@ possible values:
     else:
         tag = url_or_tag
 
+    if not github_release(account, repo, tag, test_only=True):
+        _alert(ctx, f'There does not appear to be a release **{tag}** in'
+               f' repository **{repo}** of account **{account}**.')
+        sys.exit(int(ExitCode.bad_arg))
+
     if files_to_upload and all_assets:
         _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
         sys.exit(int(ExitCode.bad_arg))
@@ -735,10 +741,10 @@ possible values:
         pass
     except Exception as ex:             # noqa: PIE786
         if isinstance(ex, GitHubError):
-            _alert(ctx, f'Experienced an error interacting with GitHub: {ex}')
+            _alert(ctx, str(ex))
             exit_code = ExitCode.github_error
         elif isinstance(ex, InvenioRDMError):
-            text = 'Experienced an error interacting with InvenioRDM.'
+            text = 'Failed while interacting with InvenioRDM.'
             if record:
                 text += (' The partially-completed record can be found at'
                          f' [{record.draft_url}]({record.draft_url}). You'

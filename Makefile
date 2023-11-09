@@ -101,6 +101,8 @@ define instructions_text =
 11. Run $(color)make test-pypi$(reset).
 12. Check $(link)https://test.pypi.org/project/$(progname)$(reset)
 13. Run $(color)make pypi$(reset).
+14. Update the GitHub Marketplace version via the interface at
+    $(link)$(repo_url)/releases$(reset)
 endef
 
 
@@ -232,6 +234,7 @@ release-on-github: | update-all commit-updates
 	sleep 2
 	$(EDITOR) $(tmp_file)
 	gh release create $(tag) -t "Release $(version)" -F $(tmp_file)
+	gh release edit $(tag) --latest
 
 wait-on-iga:
 	@$(info ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓)
@@ -239,7 +242,7 @@ wait-on-iga:
 	@$(info ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛)
 	sleep 2
 	$(eval pid := $(shell gh run list --workflow=iga.yml --limit 1 | tail -1 | awk -F $$'\t' '{print $$7}'))
-	$(shell gh run watch $(pid))
+	gh run watch $(pid)
 
 print-next-steps: vars
 	@$(info ┏━━━━━━━━━━━━┓)

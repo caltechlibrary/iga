@@ -9,7 +9,8 @@ file "LICENSE" for more information.
 '''
 
 import commonpy.exceptions
-from   commonpy.network_utils import network
+from   commonpy.network_utils import net
+import contextlib
 from   functools import cache
 import json
 import os
@@ -101,15 +102,27 @@ class GitHubFile(SimpleNamespace):
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def github_release(account_name, repo_name, tag_name):
-    '''Return a Release object corresponding to the tagged release in GitHub.'''
+def github_release(account_name, repo_name, tag_name, test_only=False):
+    '''Return a Release object corresponding to the tagged release in GitHub.
+
+    If test_only is True, only check existence; don't create a Release object.
+    '''
     endpoint = (_BASE_URL + '/repos/' + account_name + '/' + repo_name
                 + '/releases/tags/' + tag_name)
+    if test_only:
+        log('testing for existence: ' + endpoint)
+        return _github_get(endpoint, test_only)
+
     log('getting GitHub data for release at ' + endpoint)
     result = _object_for_github(endpoint, GitHubRelease)
     if not result:
-        raise GitHubError(f'Can\'t get GitHub release data for {tag_name} in'
-                          f' repository {repo_name} of account {account_name}')
+        raise GitHubError(f'Failed to get GitHub release data for {tag_name} in'
+                          f' repository {repo_name} of account {account_name}.'
+                          ' This could be due to a number of causes. Please'
+                          ' check that the repository and release do exist, and'
+                          ' that the GitHub access token (if one is being used)'
+                          ' is configured with appropriate permissions to grant'
+                          ' access to the repository.')
     return result
 
 
@@ -119,8 +132,13 @@ def github_repo(account_name, repo_name):
     log('getting GitHub data for repo at ' + endpoint)
     result = _object_for_github(endpoint, GitHubRepo)
     if not result:
-        raise GitHubError('Can\'t get GitHub repository data for'
-                          f' {account_name}/{repo_name}')
+        raise GitHubError('Failed to get GitHub repository data for'
+                          f' {account_name}/{repo_name}.'
+                          ' This could be due to a number of causes. Please'
+                          ' check that the repository and release do exist, and'
+                          ' that the GitHub access token (if one is being used)'
+                          ' is configured with appropriate permissions to grant'
+                          ' access to the repository.')
     return result
 
 
@@ -130,7 +148,12 @@ def github_account(account_name):
     log('getting GitHub data for user at ' + endpoint)
     result = _object_for_github(endpoint, GitHubAccount)
     if not result:
-        raise GitHubError(f'Can\'t get GitHub account data for {account_name}')
+        raise GitHubError(f'Failed to get GitHub account data for {account_name}.'
+                          ' This could be due to a number of causes. Please'
+                          ' check that the account exists, and that the GitHub'
+                          ' access token (if one is being used) is configured'
+                          ' with appropriate permissions to grant access to'
+                          ' user account data.')
     return result
 
 
@@ -350,31 +373,47 @@ def _object_for_github(api_url, cls):
         raise InternalError('Encountered error trying to unpack GitHub data.')
 
 
-def _github_get(endpoint):
+def _github_get(endpoint, test_only=False):
     headers = {'Accept': 'application/vnd.github+json'}
     using_token = 'GITHUB_TOKEN' in os.environ
     if using_token:
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
-    try:
-        response = network('get', endpoint, headers=headers)
-        return response                 # noqa PIE787
-    except KeyboardInterrupt:
-        raise
-    except commonpy.exceptions.NoContent:
+    method = 'head' if test_only else 'get'
+    (response, error) = net(method, endpoint, headers=headers)
+    if test_only:
+        return (not error)
+    elif not error:
+        return response
+    elif isinstance(error, commonpy.exceptions.NoContent):
         log(f'got no content for {endpoint}')
-    except commonpy.exceptions.AuthenticationFailure:
+    elif isinstance(error, commonpy.exceptions.AuthenticationFailure):
         # GitHub is unusual in returning 403 when you hit the rate limit.
         # https://docs.github.com/en/rest/overview/resources-in-the-rest-api
-        if 'API rate limit exceeded' in response.text:
-            if using_token:
-                raise GitHubError('Rate limit exceeded – try again later')
+        # This means an authentication failure could be due to rate limits OR
+        # a credentials problems, and we have to try to figure out which one.
+        message = ''
+        with contextlib.suppress(Exception):
+            if response and not isinstance(response, str):
+                # Preferable case: if the response value from net() is not a
+                # str, it'll be an httpx object & should have a message
+                # field. This will have more specific details than the
+                # generic Exception object we stored in the error variable.
+                message = response.json().get('message')
             else:
-                raise GitHubError('Rate limit exceeded – try to use a personal'
+                # Didn't get a response object. Use the text from the Exception.
+                message = getattr(error, 'text', '')
+        # Now try to distinguish what caused this GitHub error.
+        if 'rate limit' in message:
+            if using_token:
+                raise GitHubError('GitHub rate limit exceeded – try again later')
+            else:
+                raise GitHubError('GitHub rate limit exceeded – try to use a personal'
                                   ' access token, or wait and try again later.')
         else:
-            raise GitHubError('Permissions problem accessing ' + endpoint)
-    except commonpy.exceptions.CommonPyException as ex:
-        raise GitHubError(ex.args[0]) from ex
-    except Exception:
-        raise
+            details = f' ("{message}")' if message else ''
+            raise GitHubError(f'GitHub permissions error{details} accessing {endpoint}')
+    elif isinstance(error, commonpy.exceptions.CommonPyException):
+        raise GitHubError(error.args[0]) from error
+    else:
+        raise error
     return None
