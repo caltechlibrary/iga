@@ -94,7 +94,7 @@ def mocked_github_repo(account_name, repo_name):
         return repo
 
 
-def mocked_github_release(account_name, repo_name, tag_name):
+def mocked_github_release(account_name, repo_name, tag_name, test_only=False):
     log(f'returing mocked GitHubRelease for {tag_name}')
     with open(path.join(repo_dir, 'release.json'), 'r') as f:
         return GitHubRelease(json5.loads(f.read()))

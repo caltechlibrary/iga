@@ -56,7 +56,7 @@ def mocked_github_repo(account_name, repo_name):
         return repo
 
 
-def mocked_github_release(account_name, repo_name, tag_name):
+def mocked_github_release(account_name, repo_name, tag_name, test_only=False):
     log(f'returing mocked GitHubRelease for {tag_name}')
     with open(path.join(repo_dir, 'release.json'), 'r') as f:
         return GitHubRelease(json5.loads(f.read()))
@@ -113,7 +113,7 @@ def test_environment_vars_from_options(capsys):
             '--invenio-token', 'itoken',
             '--github-token', 'gtoken',
             '--save-metadata', '/tmp/fake.json',
-            'https://github.com/fakeaccount/fakerepo/releases/tag/fakerelease']
+            'https://github.com/caltechlibrary/iga/releases/tag/v1.0.0']
     result = runner.invoke(cli, args)
     assert result.exit_code == int(ExitCode.success)
     assert 'INVENIO_SERVER' in os.environ
