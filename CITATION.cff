@@ -11,8 +11,8 @@ authors:
     given-names: Tom
     affiliation: "Caltech Library"
     orcid: "https://orcid.org/0000-0001-9266-5146"
-version: "1.2.1"
-date-released: "2023-07-24"
+version: "1.2.2"
+date-released: "2023-11-08"
 doi: 10.22002/62htz-vpt80
 url: "https://caltechlibrary.github.io/iga"
 repository-code: "https://github.com/caltechlibrary/iga"
