@@ -47,12 +47,12 @@
   
   
     <title>Introduction &#8212; IGA</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/material.css" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=3e432fdf" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <link rel="icon" href="_static/favicon.ico"/>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -104,7 +104,7 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" action="search.html" method="get" name="search">
-      <input type="text" class="md-search__input" name="q" placeholder="Search"
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
       <label class="md-icon md-search__icon" for="__search"></label>
@@ -276,7 +276,7 @@
     <li class="md-nav__item">
     
     
-      <a href="quick-start.html#configuring-a-local-iga" class="md-nav__link">Configuring a local IGA</a>
+      <a href="quick-start.html#configuring-iga-for-local-use" class="md-nav__link">Configuring IGA for local use</a>
       
     
     </li>
@@ -530,10 +530,10 @@
             
   <section id="introduction">
 <h1 id="introduction--page-root">Introduction<a class="headerlink" href="#introduction--page-root" title="Permalink to this heading">¶</a></h1>
-<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on the <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. Of particular interest to software developers is that a repository like <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a> offers the means to preserve software projects in a long-term archive managed by their institution. Here is a screenshot of an example software project release archived in <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>:</p>
+<p><a class="reference external" href="https://inveniosoftware.org/products/rdm/">InvenioRDM</a> is a research data management (RDM) repository platform based on the <a class="reference external" href="https://inveniosoftware.org/products/framework/">Invenio Framework</a> and <a class="reference external" href="https://www.zenodo.org">Zenodo</a>. At institutions like Caltech, InvenioRDM is used as the basis for institutional repositories such as <a class="reference external" href="https://data.caltech.edu">CaltechDATA</a>. It offers the means to preserve software and data projects in a long-term archive managed by their institution.</p>
 <figure>
 <img src="_static/media/example-record-landing-page.jpg" width="80%"/>
-<figcaption>Example of a landing page for a record in CaltechDATA.</figcaption>
+<figcaption>Screenshot of a landing page for a record in <a href="https://data.caltech.edu">CaltechDATA</a>. The source code for version 1.3.5 of the software project <a href="https://data.caltech.edu/records/fqmae-krq60">eprints2archives</a> has been archived in the repository, and this example shows some of the metadata associated with that archived copy.</figcaption>
 </figure>
 <p>The metadata contained in the record of a deposit is critical to making the record widely discoverable by other people, but it can be tedious and error-prone to enter the metadata by hand.  This is where automation such as IGA come in: <em>IGA can save users the trouble of depositing software and filling out the metadata record in InvenioRDM by performing all the steps automatically.</em></p>
 <section id="iga-features">
@@ -574,12 +574,12 @@
 </section>
 <section id="using-iga">
 <h2 id="using-iga">Using IGA<a class="headerlink" href="#using-iga" title="Permalink to this heading">¶</a></h2>
-<p>IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token (<a class="reference internal" href="glossary.html#term-PAT"><span class="std std-ref">PAT</span></a>) for InvenioRDM (and optionally for GitHub too) and have set the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>), you can archive a GitHub release as easily as in this example:</p>
+<p>IGA makes it easy to archive any release from GitHub into an InvenioRDM server. Once you have a personal access token (<a class="reference internal" href="glossary.html#term-PAT"><span class="std std-ref">PAT</span></a>) for InvenioRDM (and optionally, one for GitHub too) and have set the environment variable <code class="docutils literal notranslate"><span class="pre">INVENIO_TOKEN</span></code> (and optionally <code class="docutils literal notranslate"><span class="pre">GITHUB_TOKEN</span></code>), you can archive a GitHub release as easily as in this example:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-s<span class="w"> </span>data.caltech.edu<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
 </pre></div>
 </div>
 <p>IGA will contact GitHub, extract metadata from the release and the repository, construct a metadata record in the format required by InvenioRDM, and send the record plus the GitHub release source archive (a <a class="reference external" href="https://en.wikipedia.org/wiki/ZIP_(file_format)">ZIP</a> file) to the InvenioRDM server. Various options can modify IGA’s behavior, as explained in detail in the section on <a class="reference internal" href="cli-usage.html"><span class="std std-doc">command-line usage of IGA</span></a>.</p>
-<p>Note that the availability of a command-line version of IGA means you can also use it to send <em>past</em> releases to an InvenioRDM server – IGA doesn’t care if what you’re asking it to archive is the <em>latest</em> release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.</p>
+<p>Note that the availability of a command-line version of IGA means you can also use it to send <em>past</em> GitHub releases to an InvenioRDM server – IGA doesn’t care if what you’re asking it to archive is the <em>latest</em> release of something; it can archive any release. This makes it useful for archiving past projects; it also makes it possible for institutions to easily perform activities such as archiving software on behalf of faculty and students.</p>
 <p>As a GitHub Action, IGA allows you to set up a GitHub workflow that will automatically send new releases to a designated InvenioRDM server. The procedure for this is detailed in the section on <a class="reference internal" href="gha-usage.html"><span class="std std-doc">GitHub Action usage of IGA</span></a>. Once set up, you do not have to remember to send releases of a particular GitHub project to InvenioRDM – it will do it for you.</p>
 </section>
 </section>
@@ -603,7 +603,7 @@
               <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
                 <span class="md-flex__ellipsis">
                   <span
-                      class="md-footer-nav__direction"> Previous </span> InvenioRDM GitHub Archiver </span>
+                      class="md-footer-nav__direction"> "Previous" </span> InvenioRDM GitHub Archiver </span>
               </div>
             </a>
           
@@ -613,7 +613,7 @@
                rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
                 class="md-flex__ellipsis"> <span
-                class="md-footer-nav__direction"> Next </span> Installation </span>
+                class="md-footer-nav__direction"> "Next" </span> Installation </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink"><i
                 class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
@@ -631,10 +631,10 @@
               
           </div>
             Last updated on
-              Jul 19, 2023.
+              Nov 09, 2023.
             <br/>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>

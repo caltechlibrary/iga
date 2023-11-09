@@ -36,86 +36,106 @@ IGA relies most on the `codemeta.json` file. It considers information sources in
 
 ### Example `codemeta.json` file
 
-To give a sense for what a `codemeta.json` file looks like, here is the one for an early version of IGA itself:
+To give a sense for what a `codemeta.json` file looks like, here is the one for a version of IGA itself:
 
 ```json
 {
-    "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
-    "@type": "SoftwareSourceCode",
-    "name": "IGA: InvenioRDM GitHub Archiver",
-    "description": "The InvenioRDM GitHub Archiver (IGA) lets you automatically archive GitHub software releases in an InvenioRDM repository.",
-    "version": "0.0.7",
-    "datePublished": "2023-04-25",
-    "dateCreated": "2022-12-07",
-    "author": [
-        {
-            "@type": "Person",
-            "givenName": "Michael",
-            "familyName": "Hucka",
-            "affiliation": "California Institute of Technology Library",
-            "email": "mhucka@caltech.edu",
-            "@id": "https://orcid.org/0000-0001-9105-5960"
-        }
-    ],
-    "maintainer": [
-        {
-            "@type": "Person",
-            "givenName": "Michael",
-            "familyName": "Hucka",
-            "affiliation": "California Institute of Technology Library",
-            "email": "mhucka@caltech.edu",
-            "@id": "https://orcid.org/0000-0001-9105-5960"
-        }
-    ],
-    "funder": { 
-        "@id": "https://ror.org/05dxps055"
-        "@type": "Organization",
-        "name": "California Institute of Technology Library",
-    }
-    "copyrightHolder": [
-        {
-            "@id": "https://ror.org/05dxps055"
-            "@type": "Organization",
-            "name": "California Institute of Technology",
-        }
-    ],
-    "copyrightYear": 2023,
-    "license": "https://github.com/caltechlibrary/iga/blob/main/LICENSE",
-    "isAccessibleForFree": true,
-    "url": "https://github.com/caltechlibrary/iga",
-    "codeRepository": "https://github.com/caltechlibrary/iga",
-    "readme": "https://github.com/caltechlibrary/iga/blob/main/README.md",
-    "issueTracker": "https://github.com/caltechlibrary/iga/issues",
-    "softwareHelp": "https://caltechlibrary.github.io/iga",
-    "releaseNotes": "https://github.com/caltechlibrary/iga/blob/main/CHANGES.md",
-    "downloadUrl": "https://github.com/caltechlibrary/iga/archive/main.zip",
-    "relatedLink": "https://pypi.org/project/iga",
-    "programmingLanguage": {
-        "@type": "ComputerLanguage",
-        "name": "Python",
-        "version": "3.9",
-        "url": "https://www.python.org/"
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "InvenioRDM GitHub Archiver (IGA)",
+  "identifier": "iga",
+  "description": "The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.",
+  "version": "1.2.1",
+  "datePublished": "2023-07-24",
+  "dateCreated": "2022-12-07",
+  "author": [
+    {
+    "@type": "Person",
+    "givenName": "Michael",
+    "familyName": "Hucka",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "California Institute of Technology Library"
     },
-    "keywords": [
-        "software",
-        "science",
-        "archiving",
-        "archives",
-        "preservation",
-        "source code",
-        "source code archiving",
-        "source code preservation",
-        "code preservation",
-        "automation",
-        "reproducibility",
-        "research reproducibility",
-        "InvenioRDM",
-        "Invenio",
-        "GitHub",
-        "GitHub Actions",
-        "GitHub Automation"
-    ],
-    "developmentStatus": "active",
+    "email": "mhucka@caltech.edu",
+    "@id": "https://orcid.org/0000-0001-9105-5960"
+  }
+  ],
+  "contributor": [
+    {
+    "@type": "Person",
+    "givenName": "Thomas E",
+    "familyName": "Morrell",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "California Institute of Technology Library"
+    },
+    "email": "tmorrell@caltech.edu",
+    "@id": "https://orcid.org/0000-0001-9266-5146"
+  }
+  ],        
+  "maintainer": [
+    {
+    "@type": "Person",
+    "givenName": "Michael",
+    "familyName": "Hucka",
+    "affiliation": {
+      "@type": "Organization",
+      "name": "California Institute of Technology Library"
+    },
+    "email": "mhucka@caltech.edu",
+    "@id": "https://orcid.org/0000-0001-9105-5960"
+  }
+  ],
+  "funder": { 
+    "@id": "https://ror.org/05dxps055",
+    "@type": "Organization",
+    "name": "California Institute of Technology Library"
+  },
+  "copyrightHolder": [
+    {
+    "@id": "https://ror.org/05dxps055",
+    "@type": "Organization",
+    "name": "California Institute of Technology"
+  }
+  ],
+  "copyrightYear": 2023,
+  "license": "https://github.com/caltechlibrary/iga/blob/main/LICENSE",
+  "isAccessibleForFree": true,
+  "url": "https://caltechlibrary.github.io/iga",
+  "codeRepository": "https://github.com/caltechlibrary/iga",
+  "readme": "https://github.com/caltechlibrary/iga/blob/main/README.md",
+  "releaseNotes": "https://github.com/caltechlibrary/iga/blob/main/CHANGES.md",
+  "issueTracker": "https://github.com/caltechlibrary/iga/issues",
+  "downloadUrl": "https://github.com/caltechlibrary/iga/releases",
+  "softwareHelp": "https://caltechlibrary.github.io/iga",
+  "relatedLink": "https://data.caltech.edu/records/62htz-vpt80",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "Python",
+    "version": "3.9",
+    "url": "https://www.python.org/"
+  },
+  "keywords": [
+    "software",
+    "science",
+    "archiving",
+    "archives",
+    "preservation",
+    "source code",
+    "source code archiving",
+    "source code preservation",
+    "code preservation",
+    "automation",
+    "reproducibility",
+    "research reproducibility",
+    "InvenioRDM",
+    "Invenio",
+    "GitHub",
+    "GitHub Actions",
+    "GitHub Automation"
+  ],
+  "developmentStatus": "active"
 }
 ```
 

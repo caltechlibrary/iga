@@ -47,12 +47,12 @@
   
   
     <title>Quick start &#8212; IGA</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/material.css" />
-    <link rel="stylesheet" type="text/css" href="_static/css/custom.css" />
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=83e35b93" />
+    <link rel="stylesheet" type="text/css" href="_static/material.css?v=79c92029" />
+    <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=3e432fdf" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=b3ba4146"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     <script src="https://unpkg.com/mermaid@10.2.0/dist/mermaid.min.js"></script>
     <script>mermaid.initialize({startOnLoad:true});</script>
     <link rel="icon" href="_static/favicon.ico"/>
@@ -106,7 +106,7 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" action="search.html" method="get" name="search">
-      <input type="text" class="md-search__input" name="q" placeholder="Search"
+      <input type="text" class="md-search__input" name="q" placeholder=""Search""
              autocapitalize="off" autocomplete="off" spellcheck="false"
              data-md-component="query" data-md-state="active">
       <label class="md-icon md-search__icon" for="__search"></label>
@@ -278,7 +278,7 @@
     <li class="md-nav__item">
     
     
-      <a href="#configuring-a-local-iga" class="md-nav__link">Configuring a local IGA</a>
+      <a href="#configuring-iga-for-local-use" class="md-nav__link">Configuring IGA for local use</a>
       
     
     </li>
@@ -562,8 +562,8 @@
 <li><p>After InvenioRDM creates and shows you the token, <strong>copy it to a safe location</strong> because InvenioRDM will not show it again</p></li>
 </ol>
 </section>
-<section id="configuring-a-local-iga">
-<h2 id="configuring-a-local-iga">Configuring a local IGA<a class="headerlink" href="#configuring-a-local-iga" title="Permalink to this heading">¶</a></h2>
+<section id="configuring-iga-for-local-use">
+<h2 id="configuring-iga-for-local-use">Configuring IGA for local use<a class="headerlink" href="#configuring-iga-for-local-use" title="Permalink to this heading">¶</a></h2>
 <p>To send a GitHub release to your InvenioRDM server, IGA needs this information:</p>
 <ol class="arabic simple">
 <li><p>(Required) The identity of the GitHub release to be archived</p></li>
@@ -577,7 +577,7 @@
 <span class="nb">export</span><span class="w"> </span><span class="nv">GITHUB_TOKEN</span><span class="o">=</span>ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 </pre></div>
 </div>
-<p>Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--draft</span></code>) for another project in GitHub and tells IGA to open (the <code class="docutils literal notranslate"><span class="pre">-o</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--open</span></code>) the newly-created InvenioRDM entry in a web browser:</p>
+<p>Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the <code class="docutils literal notranslate"><span class="pre">-d</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--draft</span></code>) for a certain project in GitHub and tells IGA to open (the <code class="docutils literal notranslate"><span class="pre">-o</span></code> option is short for <code class="docutils literal notranslate"><span class="pre">--open</span></code>) the newly-created InvenioRDM entry in a web browser:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>iga<span class="w"> </span>-d<span class="w"> </span>-o<span class="w"> </span>https://github.com/mhucka/taupe/releases/tag/v1.2.0
 </pre></div>
 </div>
@@ -635,7 +635,7 @@
               <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
                 <span class="md-flex__ellipsis">
                   <span
-                      class="md-footer-nav__direction"> Previous </span> Installation </span>
+                      class="md-footer-nav__direction"> "Previous" </span> Installation </span>
               </div>
             </a>
           
@@ -645,7 +645,7 @@
                rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title"><span
                 class="md-flex__ellipsis"> <span
-                class="md-footer-nav__direction"> Next </span> Usage (command-line) </span>
+                class="md-footer-nav__direction"> "Next" </span> Usage (command-line) </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink"><i
                 class="md-icon md-icon--arrow-forward md-footer-nav__button"></i>
@@ -663,10 +663,10 @@
               
           </div>
             Last updated on
-              Jul 19, 2023.
+              Nov 09, 2023.
             <br/>
             Created using
-            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.0.1.
+            <a href="http://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
              and
             <a href="https://github.com/bashtage/sphinx-material/">Material for
               Sphinx</a>
