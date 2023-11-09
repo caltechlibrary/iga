@@ -164,7 +164,7 @@ install:
 # make release ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #: Make a release on GitHub.
-release: | test-branch confirm-release release-on-github wait-on-iga print-next
+release: | test-branch confirm-release release-on-github wait-on-iga print-next-steps
 
 test-branch:
 ifneq ($(branch),main)
