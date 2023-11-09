@@ -1,5 +1,16 @@
 # Change log for IGA
 
+## Version 1.2.2 (2023-11-08)
+
+Changes in this release:
+* Fixed [issue #28](https://github.com/caltechlibrary/iga/issues/28): catch and report the case where a repo has no releases.
+* Fixed a bug that manifested when the GitHub access token was invalid.
+* Fixed a syntax bug in the Makefile.
+* Improved (hopefully) the caching of python dependencies to actually work this time.
+* Improved (hopefully) some of the diagnostic error messages.
+* Added Tom Morrell to the CITATION.cff file.
+
+
 ## Version 1.2.1 (2023-07-24)
 
 Changes in this release:
