@@ -102,10 +102,17 @@ class GitHubFile(SimpleNamespace):
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def github_release(account_name, repo_name, tag_name):
-    '''Return a Release object corresponding to the tagged release in GitHub.'''
+def github_release(account_name, repo_name, tag_name, test_only=False):
+    '''Return a Release object corresponding to the tagged release in GitHub.
+
+    If test_only is True, only check existence; don't create a Release object.
+    '''
     endpoint = (_BASE_URL + '/repos/' + account_name + '/' + repo_name
                 + '/releases/tags/' + tag_name)
+    if test_only:
+        log('testing for existence: ' + endpoint)
+        return _github_get(endpoint, test_only)
+
     log('getting GitHub data for release at ' + endpoint)
     result = _object_for_github(endpoint, GitHubRelease)
     if not result:
@@ -366,13 +373,16 @@ def _object_for_github(api_url, cls):
         raise InternalError('Encountered error trying to unpack GitHub data.')
 
 
-def _github_get(endpoint):
+def _github_get(endpoint, test_only=False):
     headers = {'Accept': 'application/vnd.github+json'}
     using_token = 'GITHUB_TOKEN' in os.environ
     if using_token:
         headers['Authorization'] = f'token {os.environ["GITHUB_TOKEN"]}'
-    (response, error) = net('get', endpoint, headers=headers)
-    if not error:
+    method = 'head' if test_only else 'get'
+    (response, error) = net(method, endpoint, headers=headers)
+    if test_only:
+        return (not error)
+    elif not error:
         return response
     elif isinstance(error, commonpy.exceptions.NoContent):
         log(f'got no content for {endpoint}')

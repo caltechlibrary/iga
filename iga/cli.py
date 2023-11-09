@@ -22,6 +22,7 @@ from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
 from iga.github import (
     github_account_repo_tag,
+    github_release,
     github_release_assets,
     valid_github_release_url,
 )
@@ -649,6 +650,11 @@ possible values:
         sys.exit(int(ExitCode.bad_arg))
     else:
         tag = url_or_tag
+
+    if not github_release(account, repo, tag, test_only=True):
+        _alert(ctx, f'There does not appear to be a release **{tag}** in'
+               f' repository **{repo}** of account **{account}**.')
+        sys.exit(int(ExitCode.bad_arg))
 
     if files_to_upload and all_assets:
         _alert(ctx, 'Option `--all-assets` cannot be used when using `--file`.')
