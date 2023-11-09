@@ -16,7 +16,7 @@ file "LICENSE" for more information.
 #  │    by the Makefile. Manual changes to these values will be lost.      │
 #  ╰────────────────────── Notice ── Notice ── Notice ─────────────────────╯
 
-__version__     = '1.2.1'
+__version__     = '1.2.2'
 __description__ = 'The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.'
 __url__         = 'https://caltechlibrary.github.io/iga'
 __author__      = 'Michael Hucka'
