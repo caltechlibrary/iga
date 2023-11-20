@@ -1,10 +1,10 @@
-# @file    lint.yml
+# @file    python-linter.yml
 # @brief   GitHub Actions workflow to run flake8 on codebase
 # @author  Michael Hucka <mhucka@caltech.edu>
 # @license Please see the file named LICENSE in the repository
 # @repo    https://github.com/caltechlibrary/iga
 
-name: Run linters on codebase
+name: Lint Python files
 run-name: Lint code after ${{github.event_name}} by ${{github.actor}}
 
 on: [push, pull_request]

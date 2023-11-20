@@ -1,3 +1,9 @@
+# @file    markdown-linter.yml
+# @brief   GitHub Actions workflow to run a Markdown linter on .md files
+# @author  Michael Hucka <mhucka@caltech.edu>
+# @license Please see the file named LICENSE in the repository
+# @repo    https://github.com/caltechlibrary/iga
+
 name: Lint Markdown files
 on: [workflow_dispatch]
 
