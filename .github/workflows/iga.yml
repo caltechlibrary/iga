@@ -36,7 +36,7 @@ env:
   all_metadata:  false
   debug:         true
 
-name: InvenioRDM GitHub Archiver
+name: Archive release in InvenioRDM
 on:
   release:
     types: [published]
