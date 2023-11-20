@@ -5,7 +5,9 @@
 # @repo    https://github.com/caltechlibrary/iga
 
 name: Lint Markdown files
-on: [workflow_dispatch]
+run-name: Lint Markdown files after ${{github.event_name}} by ${{github.actor}}
+
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   lint:
@@ -17,5 +19,4 @@ jobs:
       with:
         config: '.markdownlint.json'
         globs: |
-          README.md
-          CHANGES.md
+          *.md
