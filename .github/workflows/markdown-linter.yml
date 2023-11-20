@@ -1,4 +1,4 @@
-name: Markdown linter
+name: Lint Markdown files
 on: [workflow_dispatch]
 
 jobs:
