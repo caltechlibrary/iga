@@ -34,7 +34,7 @@ rdm_regex = re.compile(r'([abcdefghjkmnpqrstvwxyz0-9]{5}-[abcdefghjkmnpqrstvwxyz
 '''Matches an InvenioRDM record id.'''
 
 
-def is_invenio_rdm(val):
+def is_inveniordm_id(val):
     '''Return True if the given string is an InvenioRDM record identifier.'''
     return bool(normalize_invenio_rdm(val))
 
@@ -160,7 +160,7 @@ def detected_id(text):
 def recognized_scheme(text):
     # We allow URLs that contain InvenioRDM identifiers. They're URLs & would
     # be reported as 'url' by detect_identifier_schemes, so test this case 1st.
-    if is_invenio_rdm(text):
+    if is_inveniordm_id(text):
         return 'rdm'
     for scheme in detect_identifier_schemes(text):
         if scheme in RECOGNIZED_SCHEMES:

@@ -26,7 +26,7 @@ from iga.github import (
     github_release_assets,
     valid_github_release_url,
 )
-from iga.id_utils import is_invenio_rdm
+from iga.id_utils import is_inveniordm_id
 from iga.invenio import (
     invenio_api_available,
     invenio_communities,
@@ -666,7 +666,7 @@ possible values:
                ' by using the option `--list-communities`.')
         sys.exit(int(ExitCode.file_error))
 
-    if parent_id and not is_invenio_rdm(parent_id):
+    if parent_id and not is_inveniordm_id(parent_id):
         _alert(ctx, f'"{parent_id}" does not appear to be an InvenioRDM'
                ' record identifier.')
         sys.exit(int(ExitCode.file_error))
