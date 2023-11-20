@@ -1,0 +1,13 @@
+name: Markdown accessibility check
+on: [workflow_dispatch]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: DavidAnson/markdownlint-cli2-action@v13
+      with:
+        globs: |
+          README.md
+          CHANGES.md
