@@ -20,5 +20,8 @@
   },
   "blank_lines": {
     "maximum": 2
+  },
+  "no-duplicate-heading": {
+    "allow_different_nesting": true
   }
 }
