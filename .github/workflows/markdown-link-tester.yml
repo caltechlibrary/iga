@@ -126,7 +126,8 @@ jobs:
               -e 's/^## Errors per input//' \
               -e 's/{.*$//g' \
               -e 's/| Failed:/– Failed:/g' \
-              -e 's/^\[Full Github Actions output\(.*\)/\nThis content was prodcued by a [Github Action\1./' \
+              -e 's/| Timeout:/– Timeout:/g' \
+              -e 's/^\[Full Github Actions output\(.*\)/\nThis content was produced by a [Github Action\1./' \
               -e 's/\(.*\)\[\(.*\)\]\(.*\)/\1[`\2`]\3/' \
               < lychee/out.md > lychee/report.md
 
