@@ -715,7 +715,8 @@ possible values:
 
             if draft:
                 _inform(f'The draft record is available at {record.draft_url}')
-            elif community:
+            elif community and not parent_id:
+                # Record versions (when we have a parent_id) do not go through review workflow
                 invenio_community_send(record, community)
                 _inform(f'The record has been submitted to community "{community}"'
                         f' and the draft is available at {record.draft_url}')
