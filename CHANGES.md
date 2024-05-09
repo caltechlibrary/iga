@@ -1,5 +1,19 @@
 # Change log for IGA
 
+## Version 1.3.0
+
+Changes in this release:
+
+* Fix issue: when we have a parent id for a record,  records should not go through the community review workflow.
+* The IGA workflow uses the latest versions of GitHub Actions dependencies; this avoids runtime warnings about the version of Node being used by GitHub runners.
+* A new GitHub Actions workflow for linting the Markdown files helps improve accessibility.
+* A new GitHub Actions workflow checks URLs in Markdown files and reports invalid or broken links.
+* The README file has been edited to follow the Markdown lint rules and to add alt text to images.
+* Minor other internal code changes have been made.
+* Updated copyright year.
+* Updated miscellaenous repository files to match current Library template versions of those files.
+
+
 ## Version 1.2.2 (2023-11-08)
 
 Changes in this release:
