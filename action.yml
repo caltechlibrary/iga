@@ -87,14 +87,14 @@ runs:
         echo python_packages_installed=false >> $GITHUB_ENV
 
     - name: Abort rest of workflow and report errors.
-      uses: actions/github-script@v6
+      uses: actions/github-script@v7
       if: env.error != ''
       with:
         script: |
           core.setFailed("IGA workflow configuration error: ${{env.error}}")
 
     - name: Check out copy of repo being archived.
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -104,12 +104,12 @@ runs:
         wget -q -O .git/iga-requirements.txt "https://raw.githubusercontent.com/caltechlibrary/iga/${{ github.action_ref || 'main' }}/requirements.txt"
 
     - name: Install Python.
-      uses: actions/setup-python@v4.5.0
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11.4"
 
     - name: Set up cache for Python dependencies.
-      uses: actions/cache@v3.3.1
+      uses: actions/cache@v4
       id: cache
       with:
         path: ${{ env.pythonLocation }}
