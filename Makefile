@@ -1,11 +1,7 @@
-# @file    Makefile
-# @date    2022-12-08
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Makefile for developing and releasing IGA.
+# Run "make" or "make help" to get a list of commands in this makefile.
 #
-# ╭───────────────────────────── Important notes ─────────────────────────────╮
-# │ Run "make" or "make help" to get a list of commands in this makefile.     │
-# │                                                                           │
+# ╭──────────────────────── Notice ── Notice ── Notice ───────────────────────╮
 # │ The codemeta.json file is considered the master source for version and    │
 # │ other info. Information is pulled out of codemeta.json to update other    │
 # │ files like setup.cfg, the README, and others. Maintainers should update   │
@@ -21,6 +17,10 @@
 # │ release in RDM (because given any release, RDM can be queried for the     │
 # │ latest one) and we don't have to hardwire URLs or id's in this makefile.  │
 # ╰───────────────────────────────────────────────────────────────────────────╯
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 SHELL=/bin/bash
 .ONESHELL:                              # Run all commands in the same shell.
@@ -40,7 +40,7 @@ endif
 # The following is based on the approach posted by Jonathan Ben-Avraham to
 # Stack Overflow in 2014 at https://stackoverflow.com/a/25668869
 
-programs_needed = awk curl gh git jq sed python3
+programs_needed = awk curl gh git jq python3 sed jsonlint yamllint markdownlint
 TEST := $(foreach p,$(programs_needed),\
 	  $(if $(shell which $(p)),_,$(error Cannot find program "$(p)")))
 
@@ -78,16 +78,16 @@ help:
 
 #: Summarize how to do a release using this makefile.
 instructions:;
-	@$(info $(instructions_text))
+	$(info $(instructions_text))
 
 define instructions_text =
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Steps for doing a release                                       ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ Steps for doing a release                                          ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
  1. Run $(color)make lint$(reset), fix any problems, and commit any changes.
  2. Run $(color)make tests$(reset) fix any problems, and commit any changes.
- 3. Update the version number in codemeta.json.
- 4. Check CHANGES.md, update if needed, and commit changes.
+ 3. Update the version number in the file codemeta.json.
+ 4. Update CHANGES.md if needed & commit changes.
  5. Check the output of $(color)make report$(reset) (ignoring current id & DOI).
  6. Run $(color)make really-clean$(reset).
  7. Run $(color)make release$(reset); after some steps, it will open a file
@@ -95,7 +95,7 @@ define instructions_text =
     from CHANGES.md. Save the opened file to finish the process.
  8. Check that everything looks okay with the GitHub release at
     $(link)$(repo_url)/releases$(reset)
- 9. Wait for IGA to finish running its GitHub action at
+ 9. Wait for the IGA GitHub Action to finish uploading to InvenioRDM at 
     $(link)$(repo_url)/actions$(reset)
 10. Run $(color)make post-release$(reset).
 11. Run $(color)make test-pypi$(reset).
@@ -110,47 +110,59 @@ endef
 
 # These variables take longer to compute, and for some actions like "make help"
 # they are unnecessary and annoying to wait for.
-vars:;
-	$(eval url     := $(strip $(shell jq -r .url codemeta.json)))
-	$(eval license := $(strip $(shell jq -r .license codemeta.json)))
-	$(eval desc    := $(strip $(shell jq -r .description codemeta.json)))
-	$(eval author  := \
+vars: doi-vars
+	$(eval url	:= $(strip $(shell jq -r '.url // empty' codemeta.json)))
+	$(eval url	:= $(or $(url),$(repo_url)))
+	$(eval license	:= $(strip $(shell jq -r .license codemeta.json)))
+	$(eval desc	:= $(strip $(shell jq -r .description codemeta.json)))
+	$(eval author	:= \
 	  $(strip $(shell jq -r '.author[0].givenName + " " + .author[0].familyName' codemeta.json)))
-	$(eval email   := $(strip $(shell jq -r .author[0].email codemeta.json)))
-	$(eval related := \
+	$(eval email	:= $(strip $(shell jq -r .author[0].email codemeta.json)))
+
+# If this software isn't getting archived in InvenioRDM, the next rule will
+# leave rdm_id & new_doi undefined. Other rules in this makefile test for that.
+.SILENT: doi-vars
+doi-vars:
+	$(eval rdm_link	:= \
 	  $(strip $(shell jq -r '.relatedLink | if type == "array" then .[0] else . end' codemeta.json)))
-	$(eval rdm_url	  := $(shell cut -d'/' -f 1-3 <<< $(related)))
-	$(eval current_id := $(shell sed -r 's|.*/(.*)$$|\1|' <<< $(related)))
-	$(eval vers_url	  := $(rdm_url)/api/records/$(current_id)/versions)
-	$(eval latest_doi := $(shell curl -s $(vers_url) | jq -r .hits.hits[0].pids.doi.identifier))
+ifneq ($(rdm_link),null)
+	$(eval rdm_url	  := $(shell cut -d'/' -f 1-3 <<< $(rdm_link)))
+	$(eval rdm_id	  := $(shell sed -r 's|.*/(.*)$$|\1|' <<< $(rdm_link)))
+	$(eval vers_url   := $(rdm_url)/api/records/$(rdm_id)/versions/latest)
+	$(eval latest_doi := $(shell curl -L -s $(vers_url) | jq -r .pids.doi.identifier))
+endif
 
 #: Print variables set in this Makefile from various sources.
+.SILENT: report
 report: vars
-	@echo "$(color)name$(reset)	  = $(name)"	   | expand -t 20
-	@echo "$(color)progname$(reset)   = $(progname)"   | expand -t 20
-	@echo "$(color)desc$(reset)	  = $(desc)"	   | expand -t 20
-	@echo "$(color)version$(reset)	  = $(version)"	   | expand -t 20
-	@echo "$(color)author$(reset)	  = $(author)"	   | expand -t 20
-	@echo "$(color)email$(reset)	  = $(email)"	   | expand -t 20
-	@echo "$(color)license$(reset)	  = $(license)"	   | expand -t 20
-	@echo "$(color)main url$(reset)   = $(url)"	   | expand -t 20
-	@echo "$(color)repo url$(reset)   = $(repo_url)"   | expand -t 20
-	@echo "$(color)branch$(reset)	  = $(branch)"	   | expand -t 20
-	@echo "$(color)initfile$(reset)   = $(initfile)"   | expand -t 20
-	@echo "$(color)distdir$(reset)	  = $(distdir)"	   | expand -t 20
-	@echo "$(color)builddir$(reset)   = $(builddir)"   | expand -t 20
-	@echo "$(color)current_id$(reset) = $(current_id)" | expand -t 20
-	@echo "$(color)latest_doi$(reset) = $(latest_doi)" | expand -t 20
+	echo "$(color)name$(reset)	 = $(name)"	  | expand -t 21
+	echo "$(color)progname$(reset)	 = $(progname)"   | expand -t 21
+	echo "$(color)desc$(reset)	 = $(desc)"	  | expand -t 21
+	echo "$(color)version$(reset)	 = $(version)"	  | expand -t 21
+	echo "$(color)author$(reset)	 = $(author)"	  | expand -t 21
+	echo "$(color)email$(reset)	 = $(email)"	  | expand -t 21
+	echo "$(color)license$(reset)	 = $(license)"	  | expand -t 21
+	echo "$(color)url$(reset)	 = $(url)"	  | expand -t 21
+	echo "$(color)repo url$(reset)	 = $(repo_url)"   | expand -t 21
+	echo "$(color)branch$(reset)	 = $(branch)"	  | expand -t 21
+	echo "$(color)initfile$(reset)	 = $(initfile)"   | expand -t 21
+	echo "$(color)distdir$(reset)	 = $(distdir)"	  | expand -t 21
+	echo "$(color)builddir$(reset)	 = $(builddir)"   | expand -t 21
+	echo "$(color)rdm_id$(reset)	 = $(rdm_id)"	  | expand -t 21
+	echo "$(color)latest_doi$(reset) = $(latest_doi)" | expand -t 21
 
 
 # make lint & make test ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#: Run the code through Python linters like flake8.
+#: Run code and other files through linters.
 lint:
 	flake8 iga
+	markdownlint $(shell find . -name '*.md')
+	yamllint CITATION.cff $(shell find . -name '*.yml')
+	jsonlint -q codemeta.json
 
 #: Run unit tests and coverage tests.
-tests:;
+test tests:
 	pytest -v --cov=iga -l tests/
 
 
@@ -188,6 +200,7 @@ update-setup: vars
 	@sed -i .bak -e '/^author / s|= .*|= $(author)|'     setup.cfg
 	@sed -i .bak -e '/^author_email/ s|= .*|= $(email)|' setup.cfg
 	@sed -i .bak -e '/^license / s|= .*|= $(license)|'   setup.cfg
+	@echo setup.cfg updated ✨
 
 update-init: vars
 	@sed -i .bak -e "s|^\(__version__ *=\).*|\1 '$(version)'|"  $(initfile)
@@ -196,24 +209,27 @@ update-init: vars
 	@sed -i .bak -e "s|^\(__author__ *=\).*|\1 '$(author)'|"    $(initfile)
 	@sed -i .bak -e "s|^\(__email__ *=\).*|\1 '$(email)'|"	    $(initfile)
 	@sed -i .bak -e "s|^\(__license__ *=\).*|\1 '$(license)'|"  $(initfile)
+	@echo $(initfile) updated ✨
 
 # Note that this doesn't replace "version" in codemeta.json, because that's the
 # variable from which this makefile gets its version number in the first place.
 update-meta:
-	@sed -i .bak -e '/"softwareVersion"/ s|: ".*"|: "$(version)"|' codemeta.json
 	@sed -i .bak -e '/"datePublished"/ s|: ".*"|: "$(today)"|' codemeta.json
+	@echo codemeta.json updated ✨
 
 update-citation: vars
-	@sed -i .bak -e '/^url:/ s|".*"|"$(url)"|' CITATION.cff
-	@sed -i .bak -e '/^title:/ s|".*"|"$(name)"|' CITATION.cff
-	@sed -i .bak -e '/^version:/ s|".*"|"$(version)"|' CITATION.cff
-	@sed -i .bak -e '/^abstract:/ s|".*"|"$(desc)"|' CITATION.cff
-	@sed -i .bak -e '/^license-url:/ s|".*"|"$(license)"|' CITATION.cff
-	@sed -i .bak -e '/^date-released:/ s|".*"|"$(today)"|' CITATION.cff
-	@sed -i .bak -e '/^repository-code:/ s|".*"|"$(repo_url)"|' CITATION.cff
+	@sed -i .bak -e '/^url:/ s|:.*|: $(url)|' CITATION.cff
+	@sed -i .bak -e '/^title:/ s|:.*|: $(name)|' CITATION.cff
+	@sed -i .bak -e '/^version:/ s|:.*|: $(version)|' CITATION.cff
+	@sed -i .bak -e '/^abstract:/ s|:.*|: $(desc)|' CITATION.cff
+	@sed -i .bak -e '/^license-url:/ s|:.*|: $(license)|' CITATION.cff
+	@sed -i .bak -e '/^date-released:/ s|:.*|: $(today)|' CITATION.cff
+	@sed -i .bak -e '/^repository-code:/ s|:.*|: $(repo_url)|' CITATION.cff
+	@echo CITATION.cff updated ✨
 
 update-example:
 	@sed -i .bak -E -e "/.* version [0-9].[0-9]+.[0-9]+/ s/[0-9].[0-9]+.[0-9]+/$(version)/" sample-workflow.yml
+	@echo sample-workflow.yml updated ✨
 
 edited := setup.cfg codemeta.json $(initfile) CITATION.cff sample-workflow.yml
 
@@ -251,29 +267,40 @@ print-next-steps: vars
 	@$(info  Next steps:
 	@$(info  1. Check $(repo_url)/releases )
 	@$(info  2. Run "make post-release"
-	@$(info  4. Run "make test-pypi" to push to test.pypi.org
-	@$(info  5. Check https://test.pypi.org/project/$(progname) )
-	@$(info  6. Run "make pypi" to push to pypi for real
+	@$(info  3. Run "make test-pypi" to push to test.pypi.org
+	@$(info  4. Check https://test.pypi.org/project/$(progname) )
+	@$(info  5. Run "make pypi" to push to pypi for real
 
 #: Update values in CITATION.cff, codemeta.json, and README.md.
-post-release: update-doi update-relatedlink
+post-release: update-citation-doi update-codemeta-link push-updates
 
-update-doi: vars
-	$(eval doi_tail := $(shell cut -f'2' -d'/' <<< $(latest_doi)))
-	sed -i .bak -e '/doi:/ s|doi: .*|doi: $(latest_doi)|' CITATION.cff
-	sed -i .bak -E -e 's|records/[[:alnum:]]{5}-[[:alnum:]]{5}|records/$(doi_tail)|g' README.md
-	git add CITATION.cff README.md
-	git diff-index --quiet HEAD CITATION.cff README.md || \
-	  (git commit -m"chore: update DOI" CITATION.cff README.md && \
-	   git push -v --all)
+# The DOI badge in README.md uses a URL that gets redirected automatically by
+# InvenioRDM to the latest release. However, the DOI in CITATION.cff and the
+# field relatedLink in codemeta.json need to point to the release we just made.
 
-update-relatedlink: vars
-	$(eval new_id   := $(shell cut -f'2' -d'/' <<< $(latest_doi)))
-	$(eval new_link := $(rdm_url)/records/$(new_id))
-	@sed -i .bak -e '/"relatedLink"/ s|: ".*"|: "$(new_link)"|' codemeta.json
-	git add codemeta.json
-	git diff-index --quiet HEAD codemeta.json || \
-	  (git commit -m"chore: update links" codemeta.json && git push -v --all)
+update-citation-doi: vars
+	@if [ -n "$(latest_doi)" ]; then
+	  sed -i .bak -e '/doi:/ s|doi: .*|doi: $(latest_doi)|' CITATION.cff
+	  git add CITATION.cff
+	  git diff-index --quiet HEAD CITATION.cff || \
+	    git commit -m"chore: update DOI in CITATION.cff" CITATION.cff
+	fi
+
+update-codemeta-link: vars
+	@if [ -n "$(latest_doi)" ]; then
+	  $(eval new_id   := $(shell cut -f'2' -d'/' <<< $(latest_doi)))
+	  $(eval new_link := $(rdm_url)/records/$(new_id))
+	  @sed -i .bak -e '/"relatedLink"/ s|: ".*"|: "$(new_link)"|' codemeta.json
+	  git add codemeta.json
+	  git diff-index --quiet HEAD codemeta.json || \
+	    git commit -m"chore: update relatedLink in codemeta.json" codemeta.json
+	fi
+
+push-updates:
+ifdef latest_doi
+	git push -v --all
+endif
+
 
 #: Create the distribution files for PyPI.
 packages: | clean
@@ -313,7 +340,7 @@ pypi: packages
 
 #: Clean this directory of temporary and backup files.
 clean: clean-dist clean-build clean-release clean-other
-	@echo ✨ Cleaned! ✨
+	@echo 🧼 Cleaned! 🧽
 
 clean-release:;
 	rm -rf $(progname).egg-info codemeta.json.bak $(initfile).bak README.md.bak
@@ -346,7 +373,7 @@ reset  := $(shell tput sgr0)
 
 .PHONY: help vars report release test-branch test tests update-all \
 	update-init update-meta update-citation update-example commit-updates \
-	update-setup release-on-github print-instructions update-doi \
+	update-setup release-on-github print-instructions update-citation-doi \
 	packages test-pypi pypi clean really-clean completely-clean \
 	clean-dist really-clean-dist clean-build really-clean-build \
 	clean-release clean-other

@@ -1,14 +1,9 @@
-# -*- conf-toml -*-
-# @file    .flake8
-# @brief   Project-wide Flake8 configuration
-# @created 2022-12-08
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: project-wide Flake8 configuration.                 -*- conf-toml -*-
 #
 # Note: as of version 4.0, flake8 does NOT read global configuration files
-# from ~/.flake8 or ~/.config/flake8.  If you had such a config file of your
+# from ~/.flake8 or ~/.config/flake8. If you had such a config file of your
 # own, and you're looking at this config file and wondering how the two will
-# interaction, the answer is simple: they won't.  Only this file matters.
+# interaction, the answer is simple: they won't. Only this file matters.
 #
 # The following flake8 plugins are assumed to be installed:
 #   flake8-bugbear
@@ -18,6 +13,10 @@
 #   flake8-implicit-str-concat
 #   flake8-pie
 #   flake8_simplify
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 [flake8]
 ignore =
@@ -46,6 +45,7 @@ per-file-ignores =
     # keyword/parameter equals"). It would be better to disable E251 just for
     # that block in the file, BUT flake8 only recognizes per-line annotations,
     # so there's no way to tell it to ignore a rule only for a block of code.
+    iga/__init__.py: E221
     iga/__main__.py: E251
     tests/*: F403, W391, E202, E251
     vendor:*: A003, E301, E302, E305, W291, W293, W605, F821
