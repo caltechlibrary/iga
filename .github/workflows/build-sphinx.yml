@@ -1,11 +1,11 @@
-# @file    build-myst.yml
-# @brief   GitHub Actions workflow to build IGA docs using MyST 
-# @author  Michael Hucka <mhucka@caltech.edu>
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: GitHub Actions workflow to build IGA docs using MyST.
 #
 # This workflow file was originally based on work by GitHub user "peaceiris":
 # https://github.com/peaceiris/actions-gh-pages
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 name: Build docs for gh-pages
 

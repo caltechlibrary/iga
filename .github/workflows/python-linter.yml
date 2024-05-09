@@ -1,8 +1,8 @@
-# @file    python-linter.yml
-# @brief   GitHub Actions workflow to run flake8 on codebase
-# @author  Michael Hucka <mhucka@caltech.edu>
-# @license Please see the file named LICENSE in the repository
-# @repo    https://github.com/caltechlibrary/iga
+# Summary: GitHub Actions workflow to run flake8 on codebase.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/baler
 
 name: Lint Python files
 run-name: Lint code after ${{github.event_name}} by ${{github.actor}}
