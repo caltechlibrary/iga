@@ -30,7 +30,7 @@ Since the use of InvenioRDM is more about archiving repository code than about
 citing software, the code below looks for and uses codemeta.json first,
 followed by CITATION.cff if a CodeMeta file can't be found.
 
-Copyright (c) 2022-2023 by the California Institute of Technology.  This code
+Copyright (c) 2022-2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
