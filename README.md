@@ -10,8 +10,23 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitH
 
 * [Introduction](#introduction)
 * [Installation](#installation)
+  * [IGA as a standalone program](#iga-as-a-standalone-program)
+  * [IGA as a GitHub Actions workflow](#iga-as-a-github-actions-workflow)
 * [Quick start](#quick-start)
 * [Usage](#usage)
+  * [Identifying the InvenioRDM server](#identifying-the-inveniordm-server)
+  * [Providing an InvenioRDM access token](#providing-an-inveniordm-access-token)
+  * [Providing a GitHub access token](#providing-a-github-access-token)
+  * [Specifying a GitHub release](#specifying-a-github-release)
+  * [Gathering metadata for an InvenioRDM record](#gathering-metadata-for-an-inveniordm-record)
+  * [Specifying GitHub file assets](#specifying-github-file-assets)
+  * [Handling communities](#handling-communities)
+  * [Indicating draft versus published records](#indicating-draft-versus-published-records)
+  * [Versioning records](#versioning-records)
+  * [Other options recognized by IGA](#other-options-recognized-by-iga)
+  * [Summary of command-line options](#summary-of-command-line-options)
+  * [Return values](#return-values)
+  * [Adding a DOI badge to your GitHub repository](#adding-a-doi-badge-to-your-github-repository)
 * [Known issues and limitations](#known-issues-and-limitations)
 * [Getting help](#getting-help)
 * [Contributing](#contributing)
@@ -424,6 +439,34 @@ This program exits with a return status code of 0 if no problem is encountered. 
 | 5    | encountered a problem interacting with InvenioRDM        |
 | 6    | the personal access token was rejected                   |
 | 7    | an exception or fatal error occurred                     |
+
+### Adding a DOI badge to your GitHub repository
+
+Once you have set up the IGA workflow in your GitHub repository, you may wish to add a DOI badge to your repository's README file. It would be a chore to keep updating the DOI value in this badge every time a new release is made, and thankfully, it's not necessary: it's possible to make the badge get the current DOI value dynamically. Here is how:
+
+1. _After_ you have at least one release archived in your InvenioRDM server, find out the DOI of that release in InvenioRDM, and extract the tail end of that DOI. The DOI assigned by InvenioRDM will be a string such as `10.22002/zsmem-2pg20`; the tail end is the `zsmem-2pg20` part. (Your DOI and tail portion will be different.)
+2. Let <i><b><code>SERVERURL</code></b></i> stand for the URL for your InvenioRDM server, and let <i><b><code>IDENTIFIER</code></b></i> stand for the identifier portion of the DOI. In your `README.md` file, write the DOI badge as follows (without line breaks):
+
+    <pre><code>[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=<i><b><code>SERVERURL</code></b></i>/api/records/<i><b><code>IDENTIFIER</code></b></i>/versions/latest)](<i><b><code>SERVERURL</code></b></i>/records/<i><b><code>IDENTIFIER</code></b></i>/latest)</code></pre>
+
+For example, for CaltechDATA and the archived IGA releases there,
+
+* <i><b><code>SERVERURL</code></b></i> = `http://data.caltech.edu`
+* <i><b><code>IDENTIFIER</code></b></i> = `zsmem-2pg20`
+
+which leads to the following badge string for IGA's `README.md` file:
+
+```txt
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
+```
+
+<br>The result looks like this: <div align="center">
+
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
+
+</div>
+
+You can change the look of the badge by using style parameters. Please refer to the [Shields.io](https://shields.io/badges/static-badge) documentation for static badges.
 
 
 ## Known issues and limitations
