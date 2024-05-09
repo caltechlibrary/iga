@@ -3,7 +3,7 @@ cli.py: command-line interface for IGA
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-Copyright (c) 2022-2023 by the California Institute of Technology.  This code
+Copyright (c) 2022-2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''

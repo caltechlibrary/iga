@@ -2,7 +2,8 @@
 
 IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Actions](https://github.com/marketplace/actions/inveniordm-github-archiver) workflow that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
 
-[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases) [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/blob/develop/LICENSE) [![Python](https://img.shields.io/badge/Python-3.9+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-390/) [![PyPI](https://img.shields.io/pypi/v/iga.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/iga/) [![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&style=flat-square&colorA=gray&colorB=navy&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20)](https://data.caltech.edu/records/zsmem-2pg20)
+[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases) [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/blob/develop/LICENSE) [![Python](https://img.shields.io/badge/Python-3.9+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-390/) [![PyPI](https://img.shields.io/pypi/v/iga.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/iga/) 
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&style=flat-square&colorA=gray&colorB=navy&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
 
 
 ## Table of contents
@@ -150,28 +151,28 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
       workflow_dispatch:
         inputs:
           release_tag:
-            description: "The release tag (empty = latest):"
+            description: The release tag (empty = latest):
           parent_record:
-            description: "ID of parent record (for versioning):"
+            description: ID of parent record (for versioning):
           community:
-            description: "Name of InvenioRDM community (if any):"
+            description: Name of InvenioRDM community (if any):
           draft:
-            description: "Mark the record as a draft"
+            description: Mark the record as a draft
             type: boolean
           all_assets:
-            description: "Attach all GitHub assets"
+            description: Attach all GitHub assets
             type: boolean
           all_metadata:
-            description: "Include additional GitHub metadata"
+            description: Include additional GitHub metadata
             type: boolean
           debug:
-            description: "Print debug info in the GitHub log"
+            description: Print debug info in the GitHub log
             type: boolean
 
     run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
     jobs:
       run_iga:
-        name: "Send to ${{needs.get_repository.outputs.server}}"
+        name: Send to ${{needs.get_repository.outputs.server}}
         runs-on: ubuntu-latest
         needs: get_repository
         steps:
@@ -187,7 +188,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
               parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
       get_repository:
-        name: "Get repository name"
+        name: Get repository name
         runs-on: ubuntu-latest
         outputs:
           server: ${{steps.parse.outputs.host}}
@@ -447,7 +448,7 @@ Your help and participation in enhancing IGA is welcome!  Please visit the [guid
 
 ## License
 
-Software produced by the Caltech Library is Copyright © 2023 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
+Software produced by the Caltech Library is Copyright © 2022–2024 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
 
 ## Acknowledgments
 
