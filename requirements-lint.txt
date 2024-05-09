@@ -1,13 +1,13 @@
-# @file    requirements-lint.txt
-# @brief   Python dependencies for linting the codebase
-# @created 2023-07-24
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: Python dependencies for linting the codebase.
 #
 # This set of dependencies is split out from requirements-dev.txt so that
 # GitHub Actions can load just this subset and not all the other
 # requirements. (IGA has a huge list of requirements and they take a long
 # time to install -- a needless waste of time when only running flake8.)
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 flake8                     >= 4.0.1
 flake8-bugbear             >= 22.4.25

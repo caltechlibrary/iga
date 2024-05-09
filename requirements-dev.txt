@@ -1,8 +1,8 @@
-# @file    requirements-dev.txt
-# @brief   Python dependencies for iga for development & testing
-# @created 2022-12-08
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: Python dependencies for IGA for development & testing.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 -r requirements.txt
 -r requirements-lint.txt

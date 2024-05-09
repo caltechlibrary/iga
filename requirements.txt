@@ -1,8 +1,8 @@
-# @file    requirements.txt
-# @brief   Python dependencies for iga
-# @created 2023-03-24
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: Python dependencies for IGA.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 aenum               == 3.1.12
 arrow               == 1.2.3
