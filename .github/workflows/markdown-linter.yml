@@ -1,17 +1,21 @@
-# @file    markdown-linter.yml
-# @brief   GitHub Actions workflow to run a Markdown linter on .md files
-# @author  Michael Hucka <mhucka@caltech.edu>
-# @license Please see the file named LICENSE in the repository
-# @repo    https://github.com/caltechlibrary/iga
+# Summary: GitHub Actions workflow to run a Markdown linter on .md files.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
-name: Lint Markdown files
+name: Markdown file linter
 run-name: Lint Markdown files after ${{github.event_name}} by ${{github.actor}}
 
 on:
   push:
+    branches:
+      - main
     paths:
       - '*.md'
   pull_request:
+    branches:
+      - main
     paths:
       - '*.md'
   workflow_dispatch:
@@ -20,12 +24,15 @@ on:
 
 jobs:
   lint:
-    name: "Run Markdown linter"
+    name: Run Markdown linter
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: DavidAnson/markdownlint-cli2-action@v13
-      with:
-        config: '.markdownlint.json'
-        globs: |
-          *.md
+      - name: Check out copy of git repository.
+        uses: actions/checkout@v4
+
+      - name: Run Markdownlint on .md files.
+        uses: DavidAnson/markdownlint-cli2-action@v15
+        with:
+          config: .markdownlint.json
+          globs: |
+            *.md
