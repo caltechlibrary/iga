@@ -1,68 +1,68 @@
-# @file    action.yml
-# @brief   GitHub Action definition file for the InvenioRDM GitHub Archiver
-# @author  Michael Hucka <mhucka@caltech.edu>
-# @license Please see the file named LICENSE in the repository
-# @repo    https://github.com/caltechlibrary/iga
+# Summary: GitHub Action definition file for IGA – InvenioRDM GitHub Archiver
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
-name: "InvenioRDM GitHub Archiver"
-description: "Automatically archive GitHub releases in an InvenioRDM repository"
+name: InvenioRDM GitHub Archiver
+description: Automatically archive GitHub releases in an InvenioRDM repository
 
 inputs:
   INVENIO_SERVER:
-    description: "Address of destination InvenioRDM server."
+    description: Address of destination InvenioRDM server.
     required: true
     type: string
   INVENIO_TOKEN:
-    description: "Personal Access Token for InvenioRDM server."
+    description: Personal Access Token for InvenioRDM server.
     required: true
     type: string
   all_assets:
-    description: "Attach all GitHub assets, not just the source ZIP."
+    description: Attach all GitHub assets, not just the source ZIP.
     default: false
     required: false
     type: boolean
   all_metadata:
-    description: "Include additional metadata from GitHub."
+    description: Include additional metadata from GitHub.
     default: false
     required: false
     type: boolean
   debug:
     # Note that IGA has more modes than only debug on/off, but for
     # simplicity, this action workflow only offers a binary toggle.
-    description: "Print debugging info in the GitHub Action output."
+    description: Print debugging info in the GitHub Action output.
     default: false
     required: false
     type: boolean
   draft:
-    description: "Mark the InvenioRDM record as a draft."
+    description: Mark the InvenioRDM record as a draft.
     default: false
     required: false
     type: boolean
   community:
-    description: "Submit record to the designated RDM community."
-    default: 'none'
+    description: Submit record to the designated RDM community.
+    default: none
     required: false
     type: string
   parent_record:
-    description: "The record ID of a parent record (to make a new version)."
-    default: 'none'
+    description: The record ID of a parent record (to make a new version).
+    default: none
     required: false
     type: string
   release_tag:
-    description: "The tag of the release to archive."
-    default: 'latest'
+    description: The tag of the release to archive.
+    default: latest
     required: false
     type: string
 
   # The following input parameters are not exposed in the workflow recommended
   # for users, but can be added by developers when desired.
   iga_copy:
-    description: "(For developers only) Which copy of IGA to install."
-    default: 'iga'
+    description: (For developers only) Which copy of IGA to install.
+    default: iga
     required: false
     type: string
   no_cache:
-    description: "(For developers only) Don't cache Python dependencies."
+    description: (For developers only) Don't cache Python dependencies.
     default: false
     required: false
     type: boolean
