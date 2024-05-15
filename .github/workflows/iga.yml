@@ -43,11 +43,11 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: The release tag (empty = latest):
+        description: The release tag (empty = latest)
       parent_record:
-        description: ID of parent record (for versioning):
+        description: ID of parent record (for versioning)
       community:
-        description: Name of InvenioRDM community (if any):
+        description: Name of InvenioRDM community (if any)
       draft:
         description: Mark the record as a draft
         type: boolean
@@ -64,7 +64,7 @@ on:
 run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
 jobs:
   run_iga:
-    name: "Send to ${{needs.get_repository.outputs.server}}"
+    name: Send to ${{needs.get_repository.outputs.server}}
     runs-on: ubuntu-latest
     needs: get_repository
     steps:
@@ -79,9 +79,9 @@ jobs:
           community:      ${{github.event.inputs.community || env.community}}
           parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
           release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
-          iga_copy:       'git+https://github.com/caltechlibrary/iga@develop'
+          iga_copy:       git+https://github.com/caltechlibrary/iga@develop
   get_repository:
-    name: "Get repository name"
+    name: Get repository name
     runs-on: ubuntu-latest
     outputs:
       server: ${{steps.parse.outputs.host}}

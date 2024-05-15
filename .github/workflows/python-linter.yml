@@ -30,7 +30,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-          cache: 'pip'
+          cache: pip
 
       - name: Install dependencies
         run: |
@@ -41,5 +41,5 @@ jobs:
         uses: TrueBrain/actions-flake8@v2
         with:
           only_warn: 1
-          extra_arguments: "--show-source --config=./.flake8 --extend-exclude=iga/vendor/,dev/,docs/,tests/"
+          extra_arguments: --show-source --config=./.flake8 --extend-exclude=iga/vendor/,dev/,docs/,tests/
           plugins: flake8>=4.0.1 flake8-bugbear>=22.4.25 flake8-builtins>=1.5.3 flake8-comprehensions>=3.8.0 flake8-executable>=2.1.1 flake8_implicit_str_concat>=0.3.0 flake8-pie>=0.15.0 flake8-simplify>=0.19.2

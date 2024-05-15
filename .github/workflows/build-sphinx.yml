@@ -11,8 +11,8 @@ name: Build docs for gh-pages
 
 on:
   push:
-    branches: ['main']
-    paths: ['docs/**']
+    branches: [main]
+    paths: [docs/**]
 
 jobs:
   deploy:
