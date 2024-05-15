@@ -130,6 +130,11 @@ def invenio_server_name(server_url):
             log(f'we can reach {server_url} and it responds to {endpoint}')
             data = response.json()
             record = data.get('hits', {}).get('hits', {})[0]
+            if publisher := record.get('metadata', {}).get('publisher'):
+                return publisher
+            else:
+                # Fall back to the host name.
+                return server_host
             return record['metadata']['publisher']
     except KeyboardInterrupt:
         raise
