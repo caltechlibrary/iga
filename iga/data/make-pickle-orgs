@@ -18,13 +18,13 @@ parent = path.dirname(path.abspath(__file__))
 sys.path.append(path.dirname(parent))
 sys.path.append(path.dirname(path.dirname(parent)))
 
-from iga.name_utils import _stripped_name
+from iga.name_utils import _plain_name
 
 def names_from_file():
     print(f'Reading {input_file} and making a set')
     names = CaseFoldSet()
     with open(input_file, 'r') as f:
-        names.update(f.read().splitlines())
+        names.update(_plain_name(name) for name in f.read().splitlines())
     print(f'Read {len(names)} names from {input_file}')
     return names
 
