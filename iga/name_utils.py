@@ -369,7 +369,7 @@ def _load_organizations():
         _ORGANIZATIONS = pickle.load(f)
 
 
-def _load_spacy(lang = 'en'):
+def _load_spacy(lang='en'):
     global _SPACY
     import spacy
     model = _SPACY_MODELS[lang]
@@ -378,7 +378,7 @@ def _load_spacy(lang = 'en'):
         _SPACY[lang] = spacy.load(model)
     except KeyboardInterrupt:
         raise
-    except (OSError, ValueError) as ex:
+    except (OSError, ValueError):
         log(f'spaCy {model} not yet installed, so doing one-time download')
         if _successful_spacy_download(model):
             log('spaCy model has been successfully downloaded')
@@ -443,13 +443,13 @@ def detected_language(text):
 
     # Text containing Hiragana and/or Katakana is almost certainly Japanese.
     if _HIRAGANA_KATAKANA_REGEX.search(text):
-        log(f'detected hiragana or katakana characters => language is ja')
+        log('detected hiragana or katakana characters => language is ja')
         return 'ja'
 
     # Text containing Hangul characters is almost certainly Korean.
     from jamo import is_hangul_char
     if any(is_hangul_char(c) for c in text):
-        log(f'detected hangul characters => language is ko')
+        log('detected hangul characters => language is ko')
         return 'ko'
 
     # OK, the easy tests failed. The name could still be in any of the CJK
