@@ -3,7 +3,7 @@ invenio.py: Code for interacting with InvenioRDM
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-Copyright (c) 2022-2023 by the California Institute of Technology.  This code
+Copyright (c) 2022-2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
@@ -130,6 +130,11 @@ def invenio_server_name(server_url):
             log(f'we can reach {server_url} and it responds to {endpoint}')
             data = response.json()
             record = data.get('hits', {}).get('hits', {})[0]
+            if publisher := record.get('metadata', {}).get('publisher'):
+                return publisher
+            else:
+                # Fall back to the host name.
+                return server_host
             return record['metadata']['publisher']
     except KeyboardInterrupt:
         raise

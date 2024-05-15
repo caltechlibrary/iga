@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+
+import sys
+
+if len(sys.argv) < 3:
+    print('Usage: make-pickle INPUTTEXTFILE.txt PICKLEOUTPUT.p')
+    exit(1)
+
+input_file = sys.argv[1]
+output_file = sys.argv[2]
+
+from   commonpy.data_structures import CaseFoldSet
+import gzip
+from   os import path
+import pickle
+
+parent = path.dirname(path.abspath(__file__))
+sys.path.append(path.dirname(parent))
+sys.path.append(path.dirname(path.dirname(parent)))
+
+from iga.name_utils import _plain_name
+
+def names_from_file():
+    print(f'Reading {input_file} and making a set')
+    names = CaseFoldSet()
+    with open(input_file, 'r') as f:
+        names.update(_plain_name(name) for name in f.read().splitlines())
+    print(f'Read {len(names)} names from {input_file}')
+    return names
+
+print(f'Writing {output_file}')
+names = names_from_file()
+with open(output_file, 'wb') as f:
+    pickle.dump(names, f)
+
+print(f'Wrote {len(names)} names to {output_file}')

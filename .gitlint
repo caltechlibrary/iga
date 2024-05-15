@@ -1,0 +1,18 @@
+# Summary: project config file for gitlint.                 -*- mode: confg -*-
+#
+# Copyright 2024 by the California Institute of Technology.
+# License: BSD-type license – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
+
+[general]
+verbosity=2
+ignore=title-trailing-punctuation,body-is-missing
+regex-style-search=True
+
+[title-max-length]
+line-length=72
+
+# Dependabot tends to generate lines that exceed the char limit.
+[ignore-by-author-name]
+regex=dependabot
+ignore=all

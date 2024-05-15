@@ -1,8 +1,25 @@
 # Change log for IGA
 
+## Version 1.3.0
+
+Changes in this release:
+
+* Fix issue: when we have a parent id for a record,  records should not go through the community review workflow. (Fix implemented by @tmorrell.)
+* Fix issue #14: try to make better guesses at person names containing CJK characters.
+* Updated the IGA workflow to use the latest versions of GitHub Actions dependencies; this avoids runtime warnings about the version of Node being used by GitHub runners.
+* Updated Python dependencies.
+* Added a new GitHub Actions workflow for linting the Markdown files.
+* Added a new GitHub Actions workflow to check URLs in Markdown files and reports invalid or broken links.
+* Edited the README file to follow the Markdown lint rules and to add alt text to images.
+* Minor other internal code changes have been made.
+* Updated copyright year.
+* Updated miscellaenous repository files to match current Library template versions of those files.
+
+
 ## Version 1.2.2 (2023-11-08)
 
 Changes in this release:
+
 * Fixed [issue #28](https://github.com/caltechlibrary/iga/issues/28): catch and report the case where a repo has no releases.
 * Fixed a bug that manifested when the GitHub access token was invalid.
 * Fixed a syntax bug in the Makefile.
@@ -14,6 +31,7 @@ Changes in this release:
 ## Version 1.2.1 (2023-07-24)
 
 Changes in this release:
+
 * Fixed `setup.cfg`, which had some garbled content.
 * Fixed the GitHub Action for building the IGA documentation pages to avoid needlessly running it on every push.
 * The GitHub Actions workflow (`action.yml`) for IGA now caches Python package dependencies for a slight speed up in run times on GitHub.
@@ -25,6 +43,7 @@ Changes in this release:
 This version fixes problems with handling Invenio Communities. First, an internal bug in IGA would cause an exception if the user attempted to list communities in an InvenioRDM server that defined more than one community. Second, a bug in InvenioRDM itself meant that community links were broken. (Thanks to @tmorrell for a fix via PR #23.)
 
 Additional changes in this version:
+
 * Switched to using `codemeta.json` as the main source of truth for version info. The `setup.cfg` file is now updated from `codemeta.json`, not the other way around.
 * With respect to how the InvenioRDM metadata field `related_identifiers` is handled, the IGA [documentation](https://caltechlibrary.github.io/iga/appendix.html#record-metadata) and the [Google spreadsheet describing how IGA maps fields](https://docs.google.com/spreadsheets/d/1QgFrZIhip1qKA_M45QkeYe9SH238XL1K/edit?usp=sharing&ouid=111701691832013929970&rtpof=true&sd=true) both omitted the use of CodeMeta fields `downloadUrl` and `installUrl` and CFF field `repository-artifact`. These fields are now in the documentation.
 * The Makefile has been updated in various ways based on experiences with other projects.
@@ -33,9 +52,11 @@ Additional changes in this version:
 ## Version 1.1.0 (2023-05-31)
 
 New features:
+
 * New option `--print-doi` makes IGA print the DOI of a published record in addition to printing the URL. (Without the option, IGA only prints the URL.)
 
 Changes:
+
 * The color of text messages printed to the terminal has been changed slightly in an effort to improve readability.
 * The versions of some dependencies in `requirements.txt` have been updated.
 * Documentation has been updated and expanded.
@@ -44,18 +65,21 @@ Changes:
 ## Version 1.0.3 (2023-05-24)
 
 Changes in this release:
+
 * The sample workflow has been revised to be slightly more informative about where it's sending the release for archiving.
 
 
 ## Version 1.0.2 (2023-05-23)
 
 Changes in this release:
+
 * Fix issue #21: the copyright year put in the metadata `dates` field can could up being a completely bogus value in some cases.
 
 
 ## Version 1.0.1 (2023-05-22)
 
 Changes in this release:
+
 * Fix issue #8: org parsing some results in error.
 
 
@@ -67,6 +91,7 @@ This is the first full release of IGA, the _InvenioRDM GitHub Archiver_. This re
 ## Version 0.0.16 (2023-05-17)
 
 Changes in this release:
+
 * Fixed another problem with logging, in part by reverting a previous change but also by modifying the code that writes error messages.
 * Expanded the error catches in the GitHub Action workflow to detect and report problems with invalid tokens.
 * Merge PR #7: doc improvements.
@@ -75,18 +100,21 @@ Changes in this release:
 ## Version 0.0.15 (2023-05-17)
 
 Changes in this version:
+
 * IGA now tests the InvenioRDM token explicitly and returns a new exit code if the token is rejected. This makes it possible for the GitHub Action to report this situation more clearly.
 
 
 ## Version 0.0.14 (2023-05-16)
 
 Changes in this release:
+
 * Fixed bug where setting `verbose` mode or higher caused output to go to the terminal and was not properly sent to the log destination.
 
 
 ## Version 0.0.13 (2023-05-16)
 
 Changes in this release:
+
 * IGA detects the case where InvenioRDM refuses the token, and reports the error more explicitly.
 * More documentation updates.
 * Fixes to test cases.
@@ -95,6 +123,7 @@ Changes in this release:
 ## Version 0.0.12 (2023-05-12)
 
 Changes in this release:
+
 * A preliminary GitHub Action workflow is available.
 * Documentation is more complete.
 
@@ -102,6 +131,7 @@ Changes in this release:
 ## Version 0.0.11 (2023-05-10)
 
 Changes in this release:
+
 * Fixed behavior of `--mode quiet`: it was not completely quiet after all, but now it is.
 * Fixed behavior when `--log-dest` is used; not all output was going to the log destination, but now it is.
 * Fixed additional minor issues.
@@ -110,6 +140,7 @@ Changes in this release:
 ## Version 0.0.10 (2023-05-09)
 
 Changes in this release:
+
 * IGA won't fail if the GitHub release description is empty and the repo doesn't have a `codemeta.json` nor a `CITATION.cff` file.
 * IGA won't fail if the GitHub repo doesn't have a license and there are no `codemeta.json` or `CITATION.cff` files.
 * IGA will properly get release assets from private repos (assuming the user has access to the private repo). Previously, it would erroneously think the repo had no assets.
@@ -118,6 +149,7 @@ Changes in this release:
 ## Version 0.0.9 (2023-05-08)
 
 Changes in this release:
+
 * `IGA` and `GitHub` are now added automatically to the list of subject tags in the InvenioRDM record created by IGA.
 * Debug mode will not cause `pdb` to be invoked upon an exception if IGA is running as a GitHub Action.
 * Documentation has been further expanded and improved.
@@ -148,6 +180,7 @@ This release fixes some bugs and adds a few more features.
 This release fixes some bugs and adds a few more features.
 
 ### What's new
+
 * CodeMeta's `downloadUrl` and `installUrl` as well as CITATION.cff's `repository-artifact` fields are now supported.
 * A new repository branch `develop` is where new development now takes place on GitHub. Previously, the lazy repository maintainer didn't create a branch and instead worked out of `main`.
 
@@ -168,10 +201,12 @@ This release improves IGA's detection of ROR identifiers if provided for people'
 ## Version 0.0.4 (2023-04-07)
 
 This release works around the problem that PyPI rejects packages that have `requirements.txt` containing direct references to packages outside of PyPI. Two of our dependencies are directly affected by this:
+
 * It prevents us from having our `requirements.txt` install our [patched version of `pybtex-apa7-style`](https://github.com/caltechlibrary/pybtex-apa7-style) unless we also release that package on PyPI. Doing so is undesirable, so we have to vendor the package within IGA's codebase. (A detailed explanation of the problem can be found in the [README file in `iga/vendor`](./iga/vendor/README.md).
 * SpaCy models are only available from spaCy's GitHub repository and not as packages installable using `pip`. Since we can't have them as direct references in our `requirements.txt` file, IGA has to download spaCy models it needs at run-time the first time it needs them. The change to IGA means that we take a huge (but thankfully one-time) performance hit the first time spaCy is needed, but at least it'll happen only once and not again on subsequent runs of IGA.
 
 Other changes in this release:
+
 * Update the versions of some dependencies in `requirements.txt`.
 * Improve trapping and reporting of internal errors during network calls.
 
@@ -184,6 +219,7 @@ This release fixes a problem with the syntax of `setup.py` that prevented instal
 ## Version 0.0.2 (2023-04-06)
 
 Fixes:
+
 * Fix issue #1: error if `--mode` option is not given.
 * Fix missing dependencies in `requirements-dev.txt`.
 * Fix parsing of https dependencies in `setup.py`.
@@ -193,6 +229,7 @@ Fixes:
 * Fix tests that had gotten out of sync with the codebase.
 
 Changes:
+
 * (Hopefully) improve colors and readability of help text printed with `--help`.
 * More documentation (still a work in progress).
 
@@ -204,5 +241,5 @@ Alpha release created on PyPI. Fully functional but still needs testing, documen
 
 ## Version 0.0.0 (2022-12-08)
 
-Project repository created at https://github.com/caltechlibrary/iga
+Project repository created at [https://github.com/caltechlibrary/iga](https://github.com/caltechlibrary/iga)
 by Mike Hucka.

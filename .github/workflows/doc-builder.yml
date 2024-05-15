@@ -1,0 +1,53 @@
+# Summary: GitHub Actions workflow to build IGA docs using MyST.
+#
+# This workflow file was originally based on work by GitHub user "peaceiris":
+# https://github.com/peaceiris/actions-gh-pages
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
+
+name: GitHub Pages builder & deployer
+
+on:
+  push:
+    branches: [main]
+    paths: [docs/**]
+
+jobs:
+  deploy:
+    name: Build and deploy docs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Check out copy of git repository.
+        uses: actions/checkout@v4
+
+      - name: Set up Python.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: pip
+
+      - name: Upgrade pip.
+        run: |
+          # install pip=>20.1 to use "pip cache dir"
+          python3 -m pip install --upgrade pip
+
+      - name: Install dependencies.
+        run: |
+          python3 -m pip install "myst-parser[linkify]"
+          python3 -m pip install sphinx-material
+          python3 -m pip install sphinxcontrib-mermaid
+
+      - name: Build Sphinx docs.
+        run: |
+          cd docs
+          make html
+
+      - name: Deploy.
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html

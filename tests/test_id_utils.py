@@ -11,7 +11,7 @@ from iga.id_utils import (
     detected_id,
     normalize_pmcid,
     recognized_scheme,
-    is_invenio_rdm,
+    is_inveniordm_id,
 )
 
 sample_ids = [
@@ -79,5 +79,5 @@ def test_detected_id():
 
 
 def test_is_invenio_rdm():
-    assert is_invenio_rdm('https://a.b/records/ry4vm-wny44')
-    assert not is_invenio_rdm('https://a.b/something/ry4vm-wny44')
+    assert is_inveniordm_id('https://a.b/records/ry4vm-wny44')
+    assert not is_inveniordm_id('https://a.b/something/ry4vm-wny44')

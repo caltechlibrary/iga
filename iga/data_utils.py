@@ -3,7 +3,7 @@ data_utils.py: miscellaneous data-handling utilities.
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-Copyright (c) 2023 by the California Institute of Technology.  This code
+Copyright (c) 2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
@@ -82,3 +82,8 @@ def similar_urls(url1, url2):
         or url1.replace('https://', 'http://').removesuffix('/') == url2
         or url1.replace('https://', 'http://') == url2.removesuffix('/')
     )
+
+
+def constant_factory(value):
+    '''Helper for use with defaultdict to set a default value.'''
+    return lambda: value

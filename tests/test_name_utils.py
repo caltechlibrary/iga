@@ -7,7 +7,7 @@
 # =============================================================================
 
 from iga.name_utils import (
-    _cleaned_name,
+    _plain_name,
     _plain_word,
     _first_letters_upcased,
     contains_cjk,
@@ -19,7 +19,12 @@ RAW_NAMES = [
     ('王爵nice', 'nice'),
     ('勾三股四', ''),
     ('TZ | 天猪', 'TZ'),
+    ("Maciej Małecki", "Maciej Małecki"),
+    ("Gabriel Falcão", "Gabriel Falcão"),
     ('Mu-An ✌️ Chiou', 'Mu-An Chiou'),
+    ('Zip J. Zippy', 'Zip J. Zippy'),
+    ('Zip J. Zippy [the Zip]', 'Zip J. Zippy'),
+    ('Zip J. Zippy-Zip', 'Zip J. Zippy-Zip'),
 ]
 
 
@@ -37,9 +42,9 @@ def test_flattened_name():
     assert flattened_name(['Foo', 'J.', 'Bar']) == 'Foo J. Bar'
 
 
-def test_cleaned_name():
+def test_plain_name():
     for original, cleaned in RAW_NAMES:
-        assert _cleaned_name(original) == cleaned
+        assert _plain_name(original) == cleaned
 
 
 def test_plain_word():

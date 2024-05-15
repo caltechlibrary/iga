@@ -3,7 +3,7 @@ __init__.py for iga
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-Copyright (c) 2022-2023 by the California Institute of Technology.  This code
+Copyright (c) 2022-2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
@@ -16,7 +16,7 @@ file "LICENSE" for more information.
 #  │    by the Makefile. Manual changes to these values will be lost.      │
 #  ╰────────────────────── Notice ── Notice ── Notice ─────────────────────╯
 
-__version__     = '1.2.2'
+__version__     = '1.3.0'
 __description__ = 'The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.'
 __url__         = 'https://caltechlibrary.github.io/iga'
 __author__      = 'Michael Hucka'

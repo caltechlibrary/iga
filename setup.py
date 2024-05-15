@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-# @file    setup.py
-# @brief   Installation setup file
-# @created 2022-12-08
-# @license Please see the file named LICENSE in the project directory
-# @website https://github.com/caltechlibrary/iga
+# Summary: IGA installation setup.py file.
 #
 # Note: the full configuration metadata is maintained in setup.cfg, not here.
 # This file exists to hook in setup.cfg and requirements.txt, so that the
 # requirements don't have to be repeated and so that "python3 setup.py" works.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/iga
 
 from setuptools import setup
 

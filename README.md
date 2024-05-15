@@ -1,25 +1,36 @@
-# IGA<img width="12%" align="right" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/cloud-upload.png">
+# IGA<img alt="IGA logo" width="12%" align="right" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/cloud-upload.png">
 
-IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Actions](https://github.com/marketplace/actions/iga) workflow that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
+IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitHub Actions](https://github.com/marketplace/actions/inveniordm-github-archiver) workflow that lets you automatically archive GitHub software releases in an [InvenioRDM](https://inveniosoftware.org/products/rdm/) repository.
 
-[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases)
-[![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/LICENSE)
-[![Python](https://img.shields.io/badge/Python-3.9+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-390/)
-[![PyPI](https://img.shields.io/pypi/v/iga.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/iga/)
-[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&style=flat-square&colorA=gray&colorB=navy&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/62htz-vpt80)](https://data.caltech.edu/records/62htz-vpt80)
+[![Latest release](https://img.shields.io/github/v/release/caltechlibrary/iga.svg?style=flat-square&color=b44e88&label=Latest%20release)](https://github.com/caltechlibrary/iga/releases) [![License](https://img.shields.io/badge/License-BSD--like-lightgrey.svg?style=flat-square)](https://github.com/caltechlibrary/iga/blob/develop/LICENSE) [![Python](https://img.shields.io/badge/Python-3.9+-brightgreen.svg?style=flat-square)](https://www.python.org/downloads/release/python-390/) [![PyPI](https://img.shields.io/pypi/v/iga.svg?style=flat-square&color=orange&label=PyPI)](https://pypi.org/project/iga/) [![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&style=flat-square&colorA=gray&colorB=navy&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
 
 
 ## Table of contents
 
 * [Introduction](#introduction)
 * [Installation](#installation)
+  * [IGA as a standalone program](#iga-as-a-standalone-program)
+  * [IGA as a GitHub Actions workflow](#iga-as-a-github-actions-workflow)
 * [Quick start](#quick-start)
 * [Usage](#usage)
+  * [Identifying the InvenioRDM server](#identifying-the-inveniordm-server)
+  * [Providing an InvenioRDM access token](#providing-an-inveniordm-access-token)
+  * [Providing a GitHub access token](#providing-a-github-access-token)
+  * [Specifying a GitHub release](#specifying-a-github-release)
+  * [Gathering metadata for an InvenioRDM record](#gathering-metadata-for-an-inveniordm-record)
+  * [Specifying GitHub file assets](#specifying-github-file-assets)
+  * [Handling communities](#handling-communities)
+  * [Indicating draft versus published records](#indicating-draft-versus-published-records)
+  * [Versioning records](#versioning-records)
+  * [Other options recognized by IGA](#other-options-recognized-by-iga)
+  * [Summary of command-line options](#summary-of-command-line-options)
+  * [Return values](#return-values)
+  * [Adding a DOI badge to your GitHub repository](#adding-a-doi-badge-to-your-github-repository)
 * [Known issues and limitations](#known-issues-and-limitations)
 * [Getting help](#getting-help)
 * [Contributing](#contributing)
 * [License](#license)
-* [Acknowledgments](#authors-and-acknowledgments)
+* [Acknowledgments](#acknowledgments)
 
 
 ## Introduction
@@ -29,16 +40,17 @@ IGA is the _InvenioRDM GitHub Archiver_, a standalone program as well as a [GitH
 IGA creates metadata records and sends releases from GitHub to an InvenioRDM-based repository server. IGA can be invoked from the command line; it also can be set up as a [GitHub Actions](https://docs.github.com/en/actions) workflow to archive GitHub releases automatically for a repository each time they are made.
 
 <p align=center>
-<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" width="40%">
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-github-release.jpg" alt="Screenshot of a software release in GitHub" width="40%">
 <span style="font-size: 150%">➜</span>
-<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" width="40%">
+<img align="middle" src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/example-record-landing-page.jpg" alt="Screenshot of the corresponding entry in InvenioRDM" width="40%">
 </p>
 
 IGA offers many notable features:
+
 * Automatic metadata extraction from GitHub plus [`codemeta.json`](https://codemeta.github.io) and [`CITATION.cff`](https://citation-file-format.github.io) files
 * Thorough coverage of [InvenioRDM record metadata](https://inveniordm.docs.cern.ch/reference/metadata) using painstaking procedures
 * Recognition of identifiers in CodeMeta & CFF files: [ORCID](https://orcid.org), [DOI](https://www.doi.org),  [PMCID](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), and more
-* Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed]((https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/)), Google, and other sources
+* Automatic lookup of publication data in [DOI.org](https://www.doi.org), [PubMed](https://www.ncbi.nlm.nih.gov/pmc/about/public-access-info/), Google, and other sources
 * Automatic lookup of organization names in [ROR](https://ror.org) (assuming ROR id's are provided)
 * Automatic lookup of human names in [ORCID.org](https://orcid.org) (assuming ORCID id's are provided)
 * Automatic splitting of human names into family & given names using [ML](https://en.wikipedia.org/wiki/Machine_learning) methods
@@ -58,25 +70,30 @@ Please choose an approach that suits your situation and preferences.
 
 <details><summary><h4><i>Alternative 1: using <code>pipx</code></i></h4></summary>
 
-[Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
+[Pipx](https://github.com/pypa/pipx) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
+
 ```sh
 pipx install iga
 ```
 
 After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
+
 ```shell
 iga --help
 ```
+
 </details>
 
 <details><summary><h4><i>Alternative 2: using <code>pip</code></i></h4></summary>
 
 IGA is available from the [Python package repository PyPI](https://pypi.org) and can be installed using [`pip`](https://pip.pypa.io/en/stable/installing/):
+
 ```sh
 python3 -m pip install iga
 ```
 
 As an alternative to getting it from [PyPI](https://pypi.org), you can install `iga` directly from GitHub:
+
 ```sh
 python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 ```
@@ -84,23 +101,28 @@ python3 -m pip install git+https://github.com/caltechlibrary/iga.git
 _If you already installed IGA once before_, and want to update to the latest version, add `--upgrade` to the end of either command line above.
 
 After installation, a program named `iga` should end up in a location where other command-line programs are installed on your computer.  Test it by running the following command in a shell:
+
 ```shell
 iga --help
 ```
+
 </details>
 
 <details><summary><h4><i>Alternative 3: from sources</i></h4></summary>
 
 If  you prefer to install IGA directly from the source code, first obtain a copy by either downloading the source archive from the [IGA releases page on GitHub](https://github.com/caltechlibrary/iga/releases), or by using `git` to clone the repository to a location on your computer. For example,
+
 ```sh
 git clone https://github.com/caltechlibrary/iga
 ```
 
 Next, after getting a copy of the files,  run `setup.py` inside the code directory:
+
 ```sh
 cd iga
 python3 setup.py install
 ```
+
 </details>
 
 Once you have installed `iga`, the next steps are (1) [get an InvenioRDM token](#getting-an-inveniordm-token) and (2) [configure `iga` for running locally](#configuring-and-running-iga-locally).
@@ -112,6 +134,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
 2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/main/sample-workflow.yml) into it:
+
     ```yaml
     # ╭────────────────────────────────────────────╮
     # │ Configure this section                     │
@@ -142,32 +165,32 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
       workflow_dispatch:
         inputs:
           release_tag:
-            description: "The release tag (empty = latest):"
+            description: The release tag (empty = latest)
           parent_record:
-            description: "ID of parent record (for versioning):"
+            description: ID of parent record (for versioning)
           community:
-            description: "Name of InvenioRDM community (if any):"
+            description: Name of InvenioRDM community (if any)
           draft:
-            description: "Mark the record as a draft"
+            description: Mark the record as a draft
             type: boolean
           all_assets:
-            description: "Attach all GitHub assets"
+            description: Attach all GitHub assets
             type: boolean
           all_metadata:
-            description: "Include additional GitHub metadata"
+            description: Include additional GitHub metadata
             type: boolean
           debug:
-            description: "Print debug info in the GitHub log"
+            description: Print debug info in the GitHub log
             type: boolean
 
     run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
     jobs:
       run_iga:
-        name: "Send to ${{needs.get_repository.outputs.server}}"
+        name: Send to ${{needs.get_repository.outputs.server}}
         runs-on: ubuntu-latest
         needs: get_repository
         steps:
-          - uses: caltechlibrary/iga@main
+          - uses: caltechlibrary/iga@v1
             with:
               INVENIO_SERVER: ${{env.INVENIO_SERVER}}
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
@@ -179,7 +202,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
               parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
               release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
       get_repository:
-        name: "Get repository name"
+        name: Get repository name
         runs-on: ubuntu-latest
         outputs:
           server: ${{steps.parse.outputs.host}}
@@ -188,6 +211,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
             id: parse
             run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
     ```
+
 3. **Edit the value of the `INVENIO_SERVER` variable (line 7 above)** ↑
 4. Optionally, change the values of other options (`parent_record`, `community`, etc.)
 5. Save the file, commit the changes to git, and push your changes to GitHub
@@ -197,12 +221,11 @@ Once you have installed the GitHub Action workflow for IGA, the next steps are (
 
 ## Quick start
 
-No matter whether IGA is run locally on your computer or as a GitHub Actions workflow, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one 
-is the first step.
+No matter whether IGA is run locally on your computer or as a GitHub Actions workflow, in both cases it must be provided with a personal access token (PAT) for your InvenioRDM server. Getting one is the first step.
 
 ### Getting an InvenioRDM token
 
-<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" width="60%" align="right">
+<img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/get-invenio-pat.png" alt="Screenshot of InvenioRDM PAT menu" width="60%" align="right">
 
 1. Log in to your InvenioRDM account
 2. Go to the _Applications_ page in your account profile
@@ -213,12 +236,14 @@ is the first step.
 ### Configuring and running IGA locally
 
 To send a GitHub release to your InvenioRDM server, IGA needs this information:
+
 1. (Required) The identity of the GitHub release to be archived
 2. (Required) The address of the destination InvenioRDM server
 3. (Required) A personal access token for InvenioRDM (from [above](#getting-an-inveniordm-token))
 4. (Optional) A [personal access token for GitHub](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 
 The identity of the GitHub release is always given as an argument to IGA on the command line; the remaining values can be provided either via command-line options or environment variables. One approach is to set environment variables in shell scripts or your interactive shell. Here is an example using Bash shell syntax, with fake token values:
+
 ```shell
 export INVENIO_SERVER=https://data.caltech.edu
 export INVENIO_TOKEN=qKLoOH0KYf4D98PGYQGnC09hiuqw3Y1SZllYnonRVzGJbWz2
@@ -226,6 +251,7 @@ export GITHUB_TOKEN=ghp_wQXp6sy3AsKyyEo4l9esHNxOdo6T34Zsthz
 ```
 
 Once these are set, use of IGA can be as simple as providing a URL for a release in GitHub. For example, the following command creates a draft record (the `-d` option is short for `--draft`) for another project in GitHub and tells IGA to open (the `-o` option is short for `--open`) the newly-created InvenioRDM entry in a web browser:
+
 ```shell
 iga -d -o https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
@@ -235,11 +261,11 @@ More options are described in the section on [detailed usage information](#usage
 
 ### Configuring and running IGA as a GitHub Actions workflow
 
-After doing the [GitHub Actions installation](#as-a-github-action) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
+After doing the [GitHub Actions installation](#configuring-and-running-iga-as-a-github-actions-workflow) steps and [obtaining an InvenioRDM token](#getting-an-inveniordm-token), one more step is needed: the token must be stored as a "secret" in your GitHub repository.
 
-1. Go to the _Settings_ page of your GitHub repository<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-tabs.png" width="85%"></p>
-2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" width="40%"></p>
-3. In the next page, click the green <kbd>New repository secret</kbd> button<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-secrets.png" width="60%"></p>
+1. Go to the _Settings_ page of your GitHub repository<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-tabs.png" alt="Screenshot of repository tabs in GitHub" width="85%"></p>
+2. In the left-hand sidebar, find _Secrets and variables_ in the Security section, click on it to reveal _Actions_ underneath, then click on _Actions_<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-sidebar-secrets.png" alt="Screenshot of GitHub secrets sidebar item" width="40%"></p>
+3. In the next page, click the green <kbd>New repository secret</kbd> button<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-secrets.png" alt="Screenshot of GitHub secrets interface" width="60%"></p>
 4. Name the variable `INVENIO_TOKEN` and paste in your InvenioRDM token
 5. Finish by clicking the green <kbd>Add secret</kbd> button
 
@@ -247,11 +273,11 @@ After doing the [GitHub Actions installation](#as-a-github-action) steps and [ob
 
 After setting up the workflow and storing the InvenioRDM token in your repository on GitHub, it's a good idea to run the workflow manually to test that it works as expected.
 
-1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" width="90%"></p>
+1. Go to the _Actions_ tab in your repository and click on the name of the workflow in the sidebar on the left<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-run-workflow.png" alt="Screenshot of GitHub actions workflow list" width="90%"></p>
 2. Click the <kbd>Run workflow</kbd> button in the right-hand side of the blue strip
-3. In the pull-down, change the value of "Mark the record as a draft" to `true`<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options-circled.png" width="40%"></p>
+3. In the pull-down, change the value of "Mark the record as a draft" to `true`<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-workflow-options-circled.png" alt="Screenshot of GitHub Actions workflow menu" width="40%"></p>
 4. Click the green <kbd>Run workflow</kbd> button near the bottom
-5. Refresh the web page and a new line will be shown named after your workflow file<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" width="90%"></p>
+5. Refresh the web page and a new line will be shown named after your workflow file<p align="center"><img src="https://github.com/caltechlibrary/iga/raw/main/docs/_static/media/github-running-workflow.png" alt="Screenshot of a running workflow in GitHub Actions" width="90%"></p>
 6. Click the title of the workflow to see the IGA workflow progress and results
 
 
@@ -276,44 +302,50 @@ To obtain a PAT from an InvenioRDM server, first log in to the server, then visi
 
 ### Providing a GitHub access token
 
-It _may_ be possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for some public repositories IGA will not hit the limit. However, if you are archiving a private repository, run IGA multiple times in a row, or the repository has many contributors, then you will need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use the option `--github-token` to pass the token on the command line, but **you are strongly advised to avoid this practice because it is insecure**.  To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication and follow the instructions for creating a "classic" personal access token.
+It _may_ be possible to run IGA without providing a GitHub access token. GitHub allows up to 60 API calls per minute when running without credentials, and though IGA makes several API calls to GitHub each time it runs, for some public repositories IGA will not hit the limit. However, if you are archiving a private repository, run IGA multiple times in a row, or the repository has many contributors, then you will need to supply a GitHub access token. The preferred way of doing that is to set the value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use the option `--github-token` to pass the token on the command line, but **you are strongly advised to avoid this practice because it is insecure**.  To obtain a PAT from GitHub, visit [https://docs.github.com/en/authentication](https://docs.github.com/en/authentication) and follow the instructions for creating a "classic" personal access token.
 
 Note that when you run IGA as a GitHub Actions workflow, you do not need to create or set a GitHub token because it is obtained automatically by the GitHub Actions workflow.
 
 ### Specifying a GitHub release
 
 A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
- 1. The full URL of the web page on GitHub of a tagged release. In this case,
+
+1. The full URL of the web page on GitHub of a tagged release. In this case,
     the URL must be the final argument on the command line invocation of IGA
     and the options `--account` and `--repo` must be omitted.
- 2. A combination of _account name_, _repository name_, and _tag_. In this
+2. A combination of _account name_, _repository name_, and _tag_. In this
     case, the final argument on the command line must be the _tag_, and in
     addition, values for the options `--account` and `--repo` must be provided.
 
 Here's an example using approach #1 (assuming environment variables `INVENIO_SERVER`, `INVENIO_TOKEN`, and `GITHUB_TOKEN` have all been set):
+
 ```shell
 iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
+
 and here's the equivalent using approach #2:
+
 ```shell
 iga --github-account mhucka --github-repo taupe v1.2.0
 ```
+
 Note that when using this form of the command, the release tag (`v1.2.0` above) must be the last item given on the command line.
 
 ### Gathering metadata for an InvenioRDM record
 
 The record created in InvenioRDM is constructed using information obtained using GitHub's API as well as several other APIs as needed. The information includes the following:
- * (if one exists) a `codemeta.json` file in the GitHub repository
- * (if one exists) a `CITATION.cff` file in the GitHub repository
- * data available from GitHub for the release
- * data available from GitHub for the repository
- * data available from GitHub for the account of the owner
- * data available from GitHub for the accounts of repository contributors
- * file assets associated with the GitHub release
- * data available from ORCID.org for ORCID identifiers
- * data available from ROR.org for Research Organization Registry identifiers
- * data available from DOI.org, NCBI, Google Books, & others for publications
- * data available from spdx.org for software licenses
+
+* (if one exists) a `codemeta.json` file in the GitHub repository
+* (if one exists) a `CITATION.cff` file in the GitHub repository
+* data available from GitHub for the release
+* data available from GitHub for the repository
+* data available from GitHub for the account of the owner
+* data available from GitHub for the accounts of repository contributors
+* file assets associated with the GitHub release
+* data available from ORCID.org for ORCID identifiers
+* data available from ROR.org for Research Organization Registry identifiers
+* data available from DOI.org, NCBI, Google Books, & others for publications
+* data available from spdx.org for software licenses
 
 IGA tries to use [`CodeMeta.json`](https://codemeta.github.io) first and [`CITATION.cff`](https://citation-file-format.github.io) second to fill out the fields of the InvenioRDM record. If neither of those files are present, IGA uses values from the GitHub repository instead. You can make it always use all sources of info with the option `--all-metadata`. Depending on how complete and up-to-date your `CodeMeta.json` and `CITATION.cff` are, this may or may not make the record more comprehensive and may or may not introduce redundancies or unwanted values.
 
@@ -338,7 +370,8 @@ If the `--community` option is not used, then by default, IGA will finalize and 
 ### Versioning records
 
 The option `--parent-record` can be used to indicate that the record being constructed is a new version of an existing record. This will make IGA use the InvenioRDM API for [record versioning](https://inveniordm.docs.cern.ch/releases/versions/version-v2.0.0/#versioning-support). The newly-created record will be linked to a parent record identified by the value passed to `--parent-record`. The value must be either an InvenioRDM record identifier (which is a sequence of alphanumeric characters of the form _XXXXX-XXXXX_, such as `bknz4-bch35`, generated by the InvenioRDM server), or a URL to the landing page of the record in the InvenioRDM server. (Note that such URLs end in the record identifier.) Here is an example of using this option:
-```
+
+```shell
 iga --parent-record xbcd4-efgh5 https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 
@@ -366,15 +399,15 @@ As explain above, IGA takes one required argument on the command line: either (1
 |------------------------|----------|--------------------------------------|---------|---|
 | `--all-assets`         | `-A`     | Attach all GitHub assets | Attach only the release source ZIP| |
 | `--all-metadata`       | `-M`     | Include additional metadata from GitHub | Favor CodeMeta & CFF | |
-| `--community` _C_      | `-c` _C_ | Submit record to RDM community _C_ | Don't submit record to any community | | 
+| `--community` _C_      | `-c` _C_ | Submit record to RDM community _C_ | Don't submit record to any community | |
 | `--draft`              | `-d`     | Mark the RDM record as a draft | Publish record when done | |
 | `--file` _F_           | `-f` _F_ | Upload local file _F_ instead of GitHub assets | Upload only GitHub assets | ⚑ |
-| `--github-account` _A_ | `-a` _A_ | Look in GitHub account _A_ | Get account name from release URL | ✯ | 
+| `--github-account` _A_ | `-a` _A_ | Look in GitHub account _A_ | Get account name from release URL | ✯ |
 | `--github-repo` _R_    | `-r` _R_ | Look in GitHub repository _R_ of account _A_ | Get repo name from release URL | ✯ |
 | `--github-token` _T_   | `-t` _T_ | Use GitHub access token _T_| Use value in env. var. `GITHUB_TOKEN` | |
 | `--help`               | `-h`     | Print help info and exit | | |
-| `--invenio-server` _S_ | `-s` _S_ | Send record to InvenioRDM server at address _S_ | Use value in env. var. `INVENIO_SERVER` | | 
-| `--invenio-token` _K_  | `-k` _K_ | Use InvenioRDM access token _K_ | Use value in env. var. `INVENIO_TOKEN` | | 
+| `--invenio-server` _S_ | `-s` _S_ | Send record to InvenioRDM server at address _S_ | Use value in env. var. `INVENIO_SERVER` | |
+| `--invenio-token` _K_  | `-k` _K_ | Use InvenioRDM access token _K_ | Use value in env. var. `INVENIO_TOKEN` | |
 | `--list-communities`   | `-L`     | List communities available for use with `--community` | | |
 | `--log-dest` _L_       | `-l` _L_ | Write log output to destination _L_ | Write to terminal | ⚐ |
 | `--mode` _M_           | `-m` _M_ | Run in mode `quiet`, `normal`, `verbose`, or `debug` | `normal` | |
@@ -406,10 +439,39 @@ This program exits with a return status code of 0 if no problem is encountered. 
 | 6    | the personal access token was rejected                   |
 | 7    | an exception or fatal error occurred                     |
 
+### Adding a DOI badge to your GitHub repository
+
+Once you have set up the IGA workflow in your GitHub repository, you may wish to add a DOI badge to your repository's README file. It would be a chore to keep updating the DOI value in this badge every time a new release is made, and thankfully, it's not necessary: it's possible to make the badge get the current DOI value dynamically. Here is how:
+
+1. _After_ you have at least one release archived in your InvenioRDM server, find out the DOI of that release in InvenioRDM, and extract the tail end of that DOI. The DOI assigned by InvenioRDM will be a string such as `10.22002/zsmem-2pg20`; the tail end is the `zsmem-2pg20` part. (Your DOI and tail portion will be different.)
+2. Let <i><b><code>SERVERURL</code></b></i> stand for the URL for your InvenioRDM server, and let <i><b><code>IDENTIFIER</code></b></i> stand for the identifier portion of the DOI. In your `README.md` file, write the DOI badge as follows (without line breaks):
+
+    <pre><code>[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=<i><b><code>SERVERURL</code></b></i>/api/records/<i><b><code>IDENTIFIER</code></b></i>/versions/latest)](<i><b><code>SERVERURL</code></b></i>/records/<i><b><code>IDENTIFIER</code></b></i>/latest)</code></pre>
+
+For example, for CaltechDATA and the archived IGA releases there,
+
+* <i><b><code>SERVERURL</code></b></i> = `http://data.caltech.edu`
+* <i><b><code>IDENTIFIER</code></b></i> = `zsmem-2pg20`
+
+which leads to the following badge string for IGA's `README.md` file:
+
+```txt
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
+```
+
+<br>The result looks like this: <div align="center">
+
+[![DOI](https://img.shields.io/badge/dynamic/json.svg?label=DOI&query=$.pids.doi.identifier&uri=https://data.caltech.edu/api/records/zsmem-2pg20/versions/latest)](https://data.caltech.edu/records/zsmem-2pg20/latest)
+
+</div>
+
+You can change the look of the badge by using style parameters. Please refer to the [Shields.io](https://shields.io/badges/static-badge) documentation for static badges.
+
 
 ## Known issues and limitations
 
 The following are known issues and limitations.
+
 * As of mid-2023, InvenioRDM requires names of record creators and other contributors to be split into given (first) and family (surname). This is problematic for multiple reasons. The first is that mononyms are common in many countries: a person's name may legitimately be only a single word which is not conceptually a "given" or "family" name.  To compound the difficulty for IGA, names are stored as single fields in GitHub account metadata, so unless a repository has a `codemeta.json` or `CITATION.cff` file (which allow authors more control over how they want their names represented), IGA is forced to try to split the single GitHub name string into two parts. _A foolproof algorithm for doing this does not exist_, so IGA will sometimes get it wrong. (That said, IGA goes to extraordinary lengths to try to do a good job.)
 * InvenioRDM requires that identities (creators, contributors, etc.) to be labeled as personal or organizational. The nature of identities is usually made clear in `codemeta.json` and `CITATION.cff` files. GitHub also provides a flag that is meant to be used to label organizational accounts, but sometimes people don't set the GitHub account information correctly. Consequently, if IGA has to use GitHub data to get (e.g.) the list of contributors on a project, it may mislabel identities in the InvenioRDM record it produces.
 * Some accounts on GitHub are software automation or "bot" accounts, but are not labeled as such. These accounts are generally indistinguishable from human accounts on GitHub, so if they're not labeled as bot or organizational accounts in GitHub, IGA can't recognize that they're humans. If such an account is the creator of a release in GitHub, and IGA tries to use its name-splitting algorithm on the name of the account, it may produce a nonsensical result. For example, it might turn "Travis CI" into an entry with a first name of "Travis" and last name of "CI".
@@ -428,29 +490,32 @@ Your help and participation in enhancing IGA is welcome!  Please visit the [guid
 
 ## License
 
-Software produced by the Caltech Library is Copyright © 2023 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
+Software produced by the Caltech Library is Copyright © 2022–2024 California Institute of Technology.  This software is freely distributed under a BSD-style license.  Please see the [LICENSE](LICENSE) file for more information.
 
 ## Acknowledgments
 
 This work was funded by the California Institute of Technology Library.
 
 IGA uses multiple other open-source packages, without which it would have taken much longer to write the software. I want to acknowledge this debt. In alphabetical order, the packages are:
+
 * [Aenum](https://github.com/ethanfurman/aenum) &ndash; package for advanced enumerations
 * [Arrow](https://pypi.org/project/arrow/) &ndash; a library for creating & manipulating dates
 * [Boltons](https://github.com/mahmoud/boltons/) &ndash; package of miscellaneous Python utilities
 * [caltechdata_api](https://github.com/caltechlibrary/caltechdata_api) &ndash; package for using the CaltechDATA API
 * [CommonPy](https://github.com/caltechlibrary/commonpy) &ndash; a collection of commonly-useful Python functions
-* [demoji](https://github.com/bsolomon1124/demoji) &ndash; find or remove emojis from text
 * [dirtyjson](https://github.com/codecobblers/dirtyjson) &ndash; JSON decoder that copes with problematic JSON files and reports useful error messages
 * [flake8](https://github.com/pycqa/flake8) &ndash; Python code linter and style analyzer
+* [Ginza](https://github.com/megagonlabs/ginza) &ndash; Japanese NLP Library
 * [httpx](https://www.python-httpx.org) &ndash; HTTP client library that supports HTTP/2
 * [humanize](https://github.com/jmoiron/humanize) &ndash; make numbers more easily readable by humans
 * [idutils](https://github.com/inveniosoftware/idutils) &ndash; package for validating and normalizing various kinds of persistent identifiers
 * [ipdb](https://github.com/gotcha/ipdb) &ndash; the IPython debugger
 * [iptools](https://github.com/bd808/python-iptools) &ndash; utilities for dealing with IP addresses
 * [isbnlib](https://github.com/xlcnd/isbnlib) &ndash; utilities for dealing with ISBNs
+* [Jamo](https://github.com/JDongian/python-jamo) &ndash; Hangul character analysis
 * [json5](https://github.com/dpranke/pyjson5) &ndash; extended JSON format parser
 * [latexcodec](https://github.com/mcmtroffaes/latexcodec) &ndash; lexer and codec to work with LaTeX code in Python
+* [Lingua](https://github.com/pemistahl/lingua) &ndash; language detection library
 * [linkify-it-py](https://github.com/tsutsu3/linkify-it-py) &ndash; a link recognition library with full unicode support
 * [lxml](https://lxml.de) &ndash; an XML parsing library
 * [Markdown](https://python-markdown.github.io) &ndash; Python package for working with Markdown
@@ -461,7 +526,7 @@ IGA uses multiple other open-source packages, without which it would have taken 
 * [nameparser](https://github.com/derek73/python-nameparser) &ndash; package for parsing human names into their individual components
 * [probablepeople](https://github.com/datamade/probablepeople) &ndash; package for parsing names into components using ML-based techniques
 * [pybtex](https://pybtex.org) &ndash; BibTeX parser and formatter
-* [pybtex-apa7-style]() &ndash; plugin for [pybtex](https://pybtex.org) that provides APA7 style formatting
+* [pybtex-apa7-style](https://pypi.org/project/pybtex-apa7-style/) &ndash; plugin for [pybtex](https://pybtex.org) that provides APA7 style formatting
 * [pymdown-extensions](https://github.com/facelessuser/pymdown-extensions) &ndash; extensions for Python Markdown
 * [pytest](https://docs.pytest.org/en/stable/) &ndash; testing framework
 * [pytest-cov](https://github.com/pytest-dev/pytest-cov) &ndash; coverage reports for use with `pytest`
@@ -490,6 +555,6 @@ IGA uses multiple other open-source packages, without which it would have taken 
 <div align="center">
   <br>
   <a href="https://www.caltech.edu">
-    <img width="100" height="100" src="https://github.com/caltechlibrary/iga/raw/main/.graphics/caltech-round.png">
+    <img width="100" height="100" alt="Caltech logo" src="https://github.com/caltechlibrary/iga/raw/main/.graphics/caltech-round.png">
   </a>
 </div>

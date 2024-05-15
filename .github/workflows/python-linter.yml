@@ -1,0 +1,45 @@
+# Summary: GitHub Actions workflow to run flake8 on codebase.
+#
+# Copyright 2024 California Institute of Technology.
+# License: Modified BSD 3-clause – see file "LICENSE" in the project website.
+# Website: https://github.com/caltechlibrary/baler
+
+name: Python file linter
+run-name: Lint code after ${{github.event_name}} by ${{github.actor}}
+
+on:
+  push:
+    paths:
+      - '**.py'
+  pull_request:
+    paths:
+      - '**.py'
+  workflow_dispatch:
+    paths:
+      - '**.py'
+
+jobs:
+  flake8-lint:
+    name: Run flake8
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-lint.txt
+
+      - name: Run flake8
+        uses: TrueBrain/actions-flake8@v2
+        with:
+          only_warn: 1
+          extra_arguments: --show-source --config=./.flake8 --extend-exclude=iga/vendor/,dev/,docs/,tests/
+          plugins: flake8>=4.0.1 flake8-bugbear>=22.4.25 flake8-builtins>=1.5.3 flake8-comprehensions>=3.8.0 flake8-executable>=2.1.1 flake8_implicit_str_concat>=0.3.0 flake8-pie>=0.15.0 flake8-simplify>=0.19.2

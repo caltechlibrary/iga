@@ -3,7 +3,7 @@ cli.py: command-line interface for IGA
 
 This file is part of https://github.com/caltechlibrary/iga/.
 
-Copyright (c) 2022-2023 by the California Institute of Technology.  This code
+Copyright (c) 2022-2024 by the California Institute of Technology.  This code
 is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
@@ -18,6 +18,7 @@ from   rich_click import File, Path, INT, Choice
 import sys
 from   sidetrack import set_debug, log
 
+from iga import __version__
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
 from iga.github import (
@@ -26,7 +27,7 @@ from iga.github import (
     github_release_assets,
     valid_github_release_url,
 )
-from iga.id_utils import is_invenio_rdm
+from iga.id_utils import is_inveniordm_id
 from iga.invenio import (
     invenio_api_available,
     invenio_communities,
@@ -107,6 +108,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
     If the value is "help", this function prints help text and causes the
     program to exit.
     '''
+    log(f'>>> This is IGA version {__version__} <<<')
     if ctx.params.get('url_or_tag') == 'help':
         _print_help_and_exit(ctx)
     elif value:
@@ -666,7 +668,7 @@ possible values:
                ' by using the option `--list-communities`.')
         sys.exit(int(ExitCode.file_error))
 
-    if parent_id and not is_invenio_rdm(parent_id):
+    if parent_id and not is_inveniordm_id(parent_id):
         _alert(ctx, f'"{parent_id}" does not appear to be an InvenioRDM'
                ' record identifier.')
         sys.exit(int(ExitCode.file_error))
@@ -715,7 +717,8 @@ possible values:
 
             if draft:
                 _inform(f'The draft record is available at {record.draft_url}')
-            elif community:
+            elif community and not parent_id:
+                # Record versions (when we have a parent_id) do not go through review workflow
                 invenio_community_send(record, community)
                 _inform(f'The record has been submitted to community "{community}"'
                         f' and the draft is available at {record.draft_url}')
