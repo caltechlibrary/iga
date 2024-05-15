@@ -8,6 +8,6 @@ This directory contains common surnames gather from different sources:
 
 * [`korean-surnames.txt`](korean-surnames.txt): the first two columns of <https://simple.wikipedia.org/wiki/List_of_Korean_surnames>, after removing the ones corresponding to North Korea.
 * [`japanese-surnames.txt`](japanese-surnames.txt): the unique surnames found in the [ENAMDICT/JMnedict Japanese Proper Names Dictionary Files](https://www.edrdg.org/enamdict/enamdict_doc.html). The dictionary files are licensed under a Creative Commons Attribution-ShareAlike Licence (V4.0). A copy of the XML file can be found in the [enamdict](enamdict) subdirectory.
-* [`chinese-surnames.txt`](chinese-surnames.txt): the contents of the relevant columns of most of the tables in <https://simple.wikipedia.org/wiki/List_of_common_Chinese_surnames>. The script is the file [`parse-common-names.py`](wikipedia/parse-common-names.py).
+* [`chinese-surnames.txt`](chinese-surnames.txt): the contents of the relevant columns of most of the tables in <https://en.wikipedia.org/wiki/List_of_common_Chinese_surnames>. The script is the file [`parse-common-names.py`](wikipedia/parse-common-names.py).
 
 These surnames were combined into a single file and used to create the [`surnames.p`] pickle file in the IGA [`iga/data`](../../iga/data) subdirectory.
