@@ -165,11 +165,11 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
       workflow_dispatch:
         inputs:
           release_tag:
-            description: The release tag (empty = latest):
+            description: The release tag (empty = latest)
           parent_record:
-            description: ID of parent record (for versioning):
+            description: ID of parent record (for versioning)
           community:
-            description: Name of InvenioRDM community (if any):
+            description: Name of InvenioRDM community (if any)
           draft:
             description: Mark the record as a draft
             type: boolean
@@ -190,7 +190,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
         runs-on: ubuntu-latest
         needs: get_repository
         steps:
-          - uses: caltechlibrary/iga@main
+          - uses: caltechlibrary/iga@v1
             with:
               INVENIO_SERVER: ${{env.INVENIO_SERVER}}
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
