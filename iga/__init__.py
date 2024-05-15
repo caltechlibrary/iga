@@ -1,4 +1,4 @@
-'
+'''
 __init__.py for iga
 
 This file is part of https://github.com/caltechlibrary/iga/.
