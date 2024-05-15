@@ -31,11 +31,11 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: The release tag (empty = latest):
+        description: The release tag (empty = latest)
       parent_record:
-        description: ID of parent record (for versioning):
+        description: ID of parent record (for versioning)
       community:
-        description: Name of InvenioRDM community (if any):
+        description: Name of InvenioRDM community (if any)
       draft:
         description: Mark the record as a draft
         type: boolean
