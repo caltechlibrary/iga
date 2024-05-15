@@ -36,7 +36,7 @@ env:
   all_metadata:  false
   debug:         true
 
-name: Archive release in InvenioRDM
+name: Software release archiver
 on:
   release:
     types: [published]

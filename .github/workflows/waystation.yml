@@ -2,7 +2,7 @@
 # Available as the file "sample-workflow.yml" from the software
 # repository at https://github.com/caltechlibrary/waystation
 
-name: Archive GitHub Pages
+name: GitHub Pages archiver
 run-name: Archive GitHub Pages in the Wayback Machine
 
 on:

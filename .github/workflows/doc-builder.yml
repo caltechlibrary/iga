@@ -7,7 +7,7 @@
 # License: Modified BSD 3-clause – see file "LICENSE" in the project website.
 # Website: https://github.com/caltechlibrary/iga
 
-name: Doc builder & deployer
+name: GitHub Pages builder & deployer
 
 on:
   push:
