@@ -29,7 +29,7 @@
     "line_length": 10000
   },
   "no-alt-text": true,
-  "no-duplicate-heading": {
+  "no-duplicate-header": {
     "allow_different_nesting": true
   }
 }
