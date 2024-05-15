@@ -1224,6 +1224,11 @@ def version(repo, release, include_all):
 # or InvenioRDM will reject the record.
 
 def _entity(data, role=None):
+    '''Try to extract person or org from the given data object.
+    The "data" can be either a dict or a string. (When data comes from a
+    CodeMeta field or CITATION.cff file, it will be a dict; it comes from
+    elsewhere, it is more likely to be a string.)
+    '''
     if isinstance(data, dict):          # Correct data type.
         return _entity_from_dict(data, role)
     elif isinstance(data, str):         # Wrong data type, but we try anyway.
@@ -1267,7 +1272,9 @@ def _entity_from_string(data, role):
         # It's the name of an account in GitHub.
         result = _identity_from_github(account)
     else:
-        # We're getting into expensive heuristic guesswork now.
+        # We have to parse a single string to guess whether it's the name of
+        # a person or org, and if a person, to split the string into family
+        # and give name. We're getting into expensive heuristic guesswork now.
         from iga.name_utils import is_person
         if is_person(data):
             (given, family) = split_name(data)
