@@ -504,17 +504,19 @@ IGA uses multiple other open-source packages, without which it would have taken 
 * [Boltons](https://github.com/mahmoud/boltons/) &ndash; package of miscellaneous Python utilities
 * [caltechdata_api](https://github.com/caltechlibrary/caltechdata_api) &ndash; package for using the CaltechDATA API
 * [CommonPy](https://github.com/caltechlibrary/commonpy) &ndash; a collection of commonly-useful Python functions
-* [demoji](https://github.com/bsolomon1124/demoji) &ndash; find or remove emojis from text
 * [dirtyjson](https://github.com/codecobblers/dirtyjson) &ndash; JSON decoder that copes with problematic JSON files and reports useful error messages
 * [flake8](https://github.com/pycqa/flake8) &ndash; Python code linter and style analyzer
+* [Ginza](https://github.com/megagonlabs/ginza) &ndash; Japanese NLP Library
 * [httpx](https://www.python-httpx.org) &ndash; HTTP client library that supports HTTP/2
 * [humanize](https://github.com/jmoiron/humanize) &ndash; make numbers more easily readable by humans
 * [idutils](https://github.com/inveniosoftware/idutils) &ndash; package for validating and normalizing various kinds of persistent identifiers
 * [ipdb](https://github.com/gotcha/ipdb) &ndash; the IPython debugger
 * [iptools](https://github.com/bd808/python-iptools) &ndash; utilities for dealing with IP addresses
 * [isbnlib](https://github.com/xlcnd/isbnlib) &ndash; utilities for dealing with ISBNs
+* [Jamo](https://github.com/JDongian/python-jamo) &ndash; Hangul character analysis
 * [json5](https://github.com/dpranke/pyjson5) &ndash; extended JSON format parser
 * [latexcodec](https://github.com/mcmtroffaes/latexcodec) &ndash; lexer and codec to work with LaTeX code in Python
+* [Lingua](https://github.com/pemistahl/lingua) &ndash; language detection library
 * [linkify-it-py](https://github.com/tsutsu3/linkify-it-py) &ndash; a link recognition library with full unicode support
 * [lxml](https://lxml.de) &ndash; an XML parsing library
 * [Markdown](https://python-markdown.github.io) &ndash; Python package for working with Markdown
