@@ -39,11 +39,11 @@ _HIRAGANA_KATAKANA_REGEX = regex.compile(r'[ぁ-ゖ゛-ゟ゠-ヿ]')
 _CJK_CHARACTERS_REGEX = regex.compile(r'[\p{IsHani}\p{IsHira}\p{IsKana}\p{IsBopo}\p{IsHang}]')
 '''Regular expression matching Unicode ranges for all CJK characters.'''
 
-_CJK_NAMES_REGEX = None
+_CJK_SURNAMES_REGEX = None
 '''Cache for common person names in CJK scripts, so that we don't have to load
 them more than once.'''
 
-_CJK_NAMES_FILENAME = 'surnames.p'
+_CJK_SURNAMES_FILENAME = 'surnames.p'
 '''Pickled CaseFoldSet in iga/data containing common Chinese, Japanese, and
 Korean person names.'''
 
@@ -179,14 +179,14 @@ def is_cjk_name(name):
     string is assumed to contain only CJK characters.
     '''
     # As is the case for Western names, there is no perfect discriminator for
-    # names written in Chinese, Japanese, or Korean scripts. The situation
-    # here is slightly helped, however, by naming traditions in China, Japan,
-    # and Korea: a large fraction of the population shares common last names.
-    # We start by testing the string for a match against these common names.
-    global _CJK_NAMES_REGEX
-    if not _CJK_NAMES_REGEX:
+    # Chinese, Japanese, or Korean names. The situation here is slightly
+    # helped, however, by naming traditions in China, Japan, and Korea: a
+    # large fraction of the population shares common last names. So, we start
+    # by testing the string for a match against these common names.
+    global _CJK_SURNAMES_REGEX
+    if not _CJK_SURNAMES_REGEX:
         _load_cjk_names()
-    if _CJK_NAMES_REGEX.search(name):
+    if _CJK_SURNAMES_REGEX.search(name):
         log(f'final decision: is_person({name}) = True (contains known surname)')
         return True
 
@@ -341,21 +341,21 @@ def _plain_word(name):
 
 def _first_letters_upcased(name):
     # Python's .title() will downcase the letters after the 1st letter, which
-    # is undesired behavior for the situation where we need this.
+    # is undesired behavior for our purposes.
     return ' '.join(word[0].upper() + word[1:] for word in name.split())
 
 
 def _load_cjk_names():
-    global _CJK_NAMES_REGEX
+    global _CJK_SURNAMES_REGEX
     from os.path import dirname, abspath, join
     import pickle
     here = dirname(abspath(__file__))
-    name_file = join(here, f'data/{_CJK_NAMES_FILENAME}')
+    name_file = join(here, f'data/{_CJK_SURNAMES_FILENAME}')
     log(f'loading {name_file} – this may take some time')
     names_set = None
     with open(name_file, 'rb') as f:
         names_set = pickle.load(f)
-    _CJK_NAMES_REGEX = regex.compile(r'\L<alternatives>', alternatives=names_set)
+    _CJK_SURNAMES_REGEX = regex.compile(r'\L<alternatives>', alternatives=names_set)
 
 
 def _load_organizations():
@@ -436,7 +436,7 @@ def person_according_to_pp(name):
 
 
 def detected_language(text):
-    '''Guess the language used in the given text.'''
+    '''Guess whether the language is Chinese, Japanese, or Korean.'''
     # Names in CJK languages can be as short as a single character. Most
     # language-detection methods fail on such short strings. The best we can
     # do is apply a combination of heuristics.
@@ -453,11 +453,11 @@ def detected_language(text):
         return 'ko'
 
     # OK, the easy tests failed. The name could still be in any of the CJK
-    # languages b/c they all can use characters from the Chinese script.
-    # Guessing the language is very difficult & error-prone. In my testing,
-    # Lingua was more accurate than GCLD3, FastText, langdetect, Polyglot, &
-    # spaCy. If it reports anything but CJK, we default to Chinese, because
-    # this function only gets called on text containing CJK characters.
+    # languages b/c they all can use Han characters. Guessing the language
+    # based on a couple of characters is known to be impossible to do 100%
+    # reliably. In my testing, Lingua was more accurate than GCLD3, FastText,
+    # langdetect, Polyglot, & spaCy overall, but it's far from perfect. The
+    # approach here is: if Lingua reports anything but CJK, default to Chinese.
     from lingua import Language
     from lingua import LanguageDetectorBuilder as LDB
     lg = LDB.from_all_languages().with_preloaded_language_models().build()
