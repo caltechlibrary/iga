@@ -31,5 +31,8 @@
   "no-alt-text": true,
   "no-duplicate-header": {
     "allow_different_nesting": true
+  },
+  "MD024": {
+    "siblings_only": true
   }
 }
