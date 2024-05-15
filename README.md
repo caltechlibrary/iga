@@ -71,7 +71,7 @@ Please choose an approach that suits your situation and preferences.
 
 <details><summary><h4><i>Alternative 1: using <code>pipx</code></i></h4></summary>
 
-[Pipx](https://pypa.github.io/pipx/) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
+[Pipx](https://github.com/pypa/pipx) lets you install Python programs in a way that isolates Python dependencies from other Python programs on your system, and yet the resulting `iga` command can be run from any shell and directory &ndash; like any normal program on your computer. If you use `pipx` on your system, you can install IGA with the following command:
 
 ```sh
 pipx install iga
