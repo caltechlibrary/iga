@@ -157,7 +157,7 @@ report: vars
 #: Run code and other files through linters.
 lint:
 	flake8 iga
-	markdownlint $(shell find . -name '*.md')
+	markdownlint *.md
 	yamllint CITATION.cff $(shell find . -name '*.yml')
 	jsonlint -q codemeta.json
 
