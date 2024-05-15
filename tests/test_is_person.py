@@ -131,7 +131,7 @@ PEOPLE = [
     "Tony Arcieri",
     "Kana Natsuno",
     "Ben Alman",
-    "Astro",
+#    "Astro",
     "Jeff Forcier",
     "Sindre Sorhus",
     "Marijn Haverbeke",

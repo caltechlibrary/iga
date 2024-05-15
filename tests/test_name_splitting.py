@@ -52,7 +52,7 @@ PARSED_NAMES = [
     ('Martin Luther King, Jr.', Name(first='Martin Luther', last='King')),
     ('Miguel de Val-Borro', Name(first='Miguel', last='de Val-Borro')),
     ('Mike Hucka', Name(first='Mike', last='Hucka')),
-    ('Mr.doob', Name(first='', last='Doob')),
+    ('Mr. Hamm', Name(first='', last='Hamm')),
     ('Mu-An ✌️ Chiou', Name(first='Mu-An', last='Chiou')),
     ('PatrickJS [tipe.io]', Name(first='', last='PatrickJS')),
     ('Philip (flip) Kromer', Name(first='Philip', last='Kromer')),
@@ -66,7 +66,7 @@ PARSED_NAMES = [
     ('Wladimir J. van der Laan', Name(first='Wladimir J.', last='van der Laan')),
     ('Yukihiro &quot;Matz&quot; Matsumoto', Name(first='Yukihiro', last='Matsumoto')),
     ('ara.t.howard', Name(first='Ara T.', last='Howard')),
-    ('cho45', Name(first='', last='cho45')),
+    ('cho45', Name(first='', last='Cho')),
     ('王爵nice', Name(first='', last='Nice')),
     # ('', Name(first='', last='')),
 

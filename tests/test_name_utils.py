@@ -7,7 +7,7 @@
 # =============================================================================
 
 from iga.name_utils import (
-    _stripped_name,
+    _plain_name,
     _plain_word,
     _first_letters_upcased,
     contains_cjk,
@@ -42,9 +42,9 @@ def test_flattened_name():
     assert flattened_name(['Foo', 'J.', 'Bar']) == 'Foo J. Bar'
 
 
-def test_stripped_name():
+def test_plain_name():
     for original, cleaned in RAW_NAMES:
-        assert _stripped_name(original) == cleaned
+        assert _plain_name(original) == cleaned
 
 
 def test_plain_word():
