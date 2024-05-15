@@ -18,6 +18,7 @@ from   rich_click import File, Path, INT, Choice
 import sys
 from   sidetrack import set_debug, log
 
+from iga import __version__
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
 from iga.github import (
@@ -107,6 +108,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
     If the value is "help", this function prints help text and causes the
     program to exit.
     '''
+    log(f'>>> This is IGA version {__version__} <<<')
     if ctx.params.get('url_or_tag') == 'help':
         _print_help_and_exit(ctx)
     elif value:
