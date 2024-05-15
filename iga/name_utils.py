@@ -117,19 +117,9 @@ def is_person(name):
         log(f'{name} consists of just numbers => not a person')
         return False
 
-    # The ML-based NER systems sometimes mislabel company names, so we start
-    # by checking against a list of known organization names. If we recognize
-    # a known org name, then it's not a person's name.
-    global _ORGANIZATIONS
-    if not _ORGANIZATIONS:
-        _load_organizations()
-    if name in _ORGANIZATIONS:
-        log(f'recognized {name} as a known organization => not a person')
-        return False
-
     # The NLP approaches use different trained models for different languages.
     # We switch depending on the script used in the name.
-    plain_text_part = _stripped_name(name)
+    plain_text_part = _plain_name(name)
     if len(plain_text_part) > 0:
         # Either it's all Latin script, or mix of Latin & CJK characters. If a
         # mix, it's likely both an English and CJK version of the same thing.
@@ -155,7 +145,17 @@ def is_western_name(name):
         log(f'{name} contains non-person elements => not a person')
         return False
 
-    # Delay loading the ML systems until needed because they take long to load.
+    # The ML-based NER systems sometimes mislabel company names, so we start
+    # by checking against a list of known organization names. If we recognize
+    # a known org name, then it's not a person's name.
+    global _ORGANIZATIONS
+    if not _ORGANIZATIONS:
+        _load_organizations()
+    if name in _ORGANIZATIONS:
+        log(f'recognized {name} as a known organization => not a person')
+        return False
+
+    # The easy checks failed, so looks like we have to load the NLP systems.
     global _SPACY
     if 'en' not in _SPACY:
         _load_spacy('en')
@@ -225,7 +225,7 @@ def split_name(name):
     #     quite as correctly as PP, but is better than nothing.
 
     log('splitting name ' + name)
-    name = _stripped_name(name)
+    name = _plain_name(name)
     if len(name.split(' ')) == 1:
         # Only one word in the name. Either it is really a single name (e.g.,
         # in cultures where people have single names) or someone is being cute.
@@ -243,14 +243,16 @@ def split_name(name):
             from_pp = pp.tag(name)
             log(f'probablepeople initial result: {str(from_pp)}')
             guessed_type = from_pp[1]
-            guessed_prefix = from_pp[0].get('PrefixOther', '')
-            has_bad_prefix = guessed_prefix not in _COMMON_PREFIXES
+            guessed_prefix = (from_pp[0].get('PrefixOther', '')
+                              or from_pp[0].get('PrefixMarital', ''))
+            has_bad_prefix = guessed_prefix.replace('.', '') not in _COMMON_PREFIXES
             has_corp_key = any(key.startswith('Corp') for key in from_pp[0].keys())
             if guessed_type != 'Person' or has_bad_prefix or has_corp_key:
                 from_pp = pp.tag(name, type='person')
                 log(f'probablepeople 2nd result: {str(from_pp)}')
-                guessed_prefix = from_pp[0].get('PrefixOther', '')
-                if guessed_prefix not in _COMMON_PREFIXES:
+                guessed_prefix = (from_pp[0].get('PrefixOther', '')
+                                  or from_pp[0].get('PrefixMarital', ''))
+                if guessed_prefix.replace('.', '') not in _COMMON_PREFIXES:
                     # This is a sign something is still wrong. Give up on PP.
                     raise Exception
             parsed = from_pp[0]
@@ -310,18 +312,21 @@ def contains_cjk(text):
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-def _stripped_name(name):
+def _plain_name(name):
     from iga.text_utils import without_html
     # Remove any HTML tags there might be left.
     name = without_html(name)
     # Remove parenthetical text like "Somedude [somedomain.io]".
     name = re.sub(r"\(.*?\)|\[.*?\]", "", name)
-    # Replace typographical quotes with regular quotes (for posessives).
-    name = re.sub(r'’', "'", name)
-    # Remove most non-Latin characters.
-    name = regex.sub(r"[^-&+ ,.'–—\p{IsLatn}]", '', name)
+    # Replace typographical quotes with regular quotes.
+    name = name.replace('‘', "'")
+    name = name.replace('’', "'")
+    name = name.replace('“', '"')
+    name = name.replace('”', '"')
     # Make sure periods are followed by spaces.
-    #name = name.replace('.', '. ')
+    name = name.replace('.', '. ')
+    # Remove most non-Latin characters.
+    name = regex.sub(r"[^-&+ .'\"–—\p{IsLatn}]", '', name)
     # Normalize runs of multiple spaces to one.
     name = re.sub(r' +', ' ', name)
     return name.strip()                 # noqa PIE781
