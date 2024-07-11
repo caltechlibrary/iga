@@ -132,6 +132,10 @@ def _read_github_token(ctx, param, value):
     return _read_param_value(ctx, param, value, 'GITHUB_TOKEN',
                              'GitHub personal access token', required=False)
 
+def _read_gitlab_token(ctx, param, value):
+    '''Read the file and set the environment variable GITLAB_TOKEN.'''
+    return _read_param_value(ctx, param, value, 'GITLAB_TOKEN',
+                             'GitLab personal access token', required=False)
 
 def _read_invenio_token(ctx, param, value):
     '''Read the file and set the environment variable INVENIO_TOKEN.'''
@@ -377,6 +381,19 @@ def _list_communities(ctx, param, value):
 #
 @click.option('--github-token', '-t', metavar='STR', callback=_read_github_token,
               help="GitHub acccess token (**avoid – use variable**)")
+
+#
+@click.option('--gitlab-projectid', '-gp', metavar='STR',
+              help='Gilab project ID (The ID or NAMESPACE/PROJECT_PATH)')
+
+#
+@click.option('--gitlab-repo', '-gr', 'grepo', metavar='STR',
+              help='GitLab repository name, if not using release URL')
+
+#
+@click.option('--github-token', '-gt', metavar='STR', callback=_read_gitlab_token,
+              help="GitHub acccess token (**avoid – use variable**)")
+
 #
 @click.help_option('--help', '-h', help='Show this help message and exit')
 #
