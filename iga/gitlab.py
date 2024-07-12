@@ -99,8 +99,6 @@ class GitLabRelease(SimpleNamespace):
         self.assets = [GitLabAsset(asset) for asset in self.assets]
         # Save the original data for debugging purposes.
         self._json_dict = release_dict
-#?license=true
-
 class GitLabRepo(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub repository JSON object.
     This object is enhanced with a "files" property that contains a list of
@@ -128,16 +126,12 @@ class GitLabFile(SimpleNamespace):
     def __init__(self, file_dict):
         super().__init__(**file_dict)
 
-
-# Exported module functions.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 def gitlab_release(repo_name, tag, test_only=False):
     '''Return a Release object corresponding to the tagged release in GitHub.
 
     If test_only is True, only check existence; don't create a Release object.
     '''
-    endpoint = f'{API_URL}/projects/{repo_name}/releases/{tag}'  # Assuming project_url points to the release endpoint
+    endpoint = f'{API_URL}/projects/{repo_name}/releases/{tag}'
     if test_only:
         log('testing for existence: ' + endpoint)
         return _gitlab_get(endpoint, test_only)
@@ -199,13 +193,10 @@ def gitlab_repo_file(repo, tag_name, filename):
     contents = base64.b64decode(json_dict['content']).decode()
     if not getattr(repo, '_file_contents', {}):
         repo._file_contents = {}
-    # Cache the file contents, so we don't have to get it from GitHub again.
+    # Cache the file contents, so we don't have to get it from GitLab again.
     repo._file_contents[filename] = contents
     log(f'got contents for {filename} (length = {len(contents)} chars)')
     return contents
-
-
-    #https://code.jlab.org/api/v4/projects/31/repository/files/Pipfile/raw?ref=0.1.0
 
 def gitlab_repo_languages(repo):
     log(f'asking GitHub for list of languages for repo {repo.full_name}')
@@ -233,6 +224,19 @@ def gitlab_repo_contributers(repo):
         contributors.append(gitlab_account(user_dict['login']))
     log(f'repo has {len(contributors)} contributors')
     return contributors
+
+def gitlab_asset_contents(asset_url):
+    '''Return the raw contents of a release asset file.'''
+    try:
+        response = _gitlab_get(asset_url)
+        return response.content
+    except KeyboardInterrupt:
+        raise
+    except commonpy.exceptions.CommonPyException:
+        raise GitHubError(f'Failed to download GitHub asset at {asset_url}'
+                          ' – either it does not exist or it is inaccessible.')
+    except Exception:
+        raise
 
 def valid_gitlab_release_url(url):
     '''Check if the provided URL is a valid GitLab release endpoint.'''

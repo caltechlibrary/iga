@@ -46,8 +46,6 @@ from   sidetrack import log
 import sys
 import validators
 import yaml
-
-
 from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
 from iga.exceptions import MissingData
 from iga.githublab import (
@@ -72,6 +70,9 @@ from iga.name_utils import split_name, flattened_name
 from iga.reference import reference, RECOGNIZED_REFERENCE_SCHEMES
 from iga.text_utils import cleaned_text
 
+import rich_click as click
+ctx = click.get_current_context()
+GITLAB = ctx.obj.get('gitlab', False)
 
 FIELDS = [
     "additional_descriptions",
@@ -306,8 +307,9 @@ def additional_titles(repo, include_all):
                        'lang': {'id': 'eng'},
                        })
     if add_repo_name:
+        title = repo.name if GITLAB else repo.full_name
         log('adding GitHub repo "full_name" as additional title')
-        titles.append({'title': cleaned_text(repo.full_name),   #AP: gitlab repo.name
+        titles.append({'title': cleaned_text(title),
                        'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
@@ -451,7 +453,7 @@ def dates(repo, release, include_all):
     # If we used a different date for the publication_date value than the
     # release date in GitHub, we add release date as another type of date.
     pub_date = publication_date(repo, release, include_all)
-    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')  #AP: gitlab release.released_at
+    github_date = arrow.get(release.released_at if GITLAB else release.published_at).format('YYYY-MM-DD')
     if pub_date != github_date:
         log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
@@ -734,7 +736,7 @@ def publication_date(repo, release):
     elif date := repo.cff.get('date-released', ''):
         log('adding CFF "date-released" as "publication_date"')
     else:
-        date = release.published_at   #AP: gitlab released_at
+        date = release.released_at if GITLAB else release.published_at
         log('adding GitHub repo "published_at" as "publication_date"')
     return arrow.get(date).format('YYYY-MM-DD')
 
@@ -801,7 +803,7 @@ def related_identifiers(repo, release, include_all):
                 'scheme': 'url'}
 
     log('adding GitHub release "html_url" to "related_identifiers"')
-    identifiers = [id_dict(release.html_url, 'isidenticalto', 'software')]   #AP: gitlab release._links["self"]
+    identifiers = [id_dict(release._links["self"] if GITLAB else release.html_url, 'isidenticalto', 'software')]
 
     # The GitHub repo is what this release is derived from. Note: you would
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
@@ -832,7 +834,7 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "url" to "related_identifiers"')
     elif homepage_url := repo.cff.get('url', ''):
         log('adding CFF "url" to "related_identifiers"')
-    elif include_all and (homepage_url := repo.homepage): #AP: web_url
+    elif include_all and (homepage_url := repo.web_url if GITLAB else repo.homepage):
         log('adding GitHub repo "homepage" to "related_identifiers"')
     if homepage_url:
         identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
@@ -888,9 +890,9 @@ def related_identifiers(repo, release, include_all):
     # The issues URL is kind of a supplemental resource.
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
-    elif include_all and repo.issues_url:   #AP: repo._links["issues"]
+    elif include_all and (if GITLAB repo._links["issues"] else repo.issues_url):
         log('adding GitHub repo "issues_url" to "related_identifiers"')
-        issues_url = f'https://github.com/{repo.full_name}/issues'   # AP: repo.name
+        issues_url = f'https://github.com/{repo.name if GITLAB else repo.full_name}/issues'
     if issues_url:
         identifiers.append(id_dict(issues_url, 'issupplementedby', 'other'))
 
@@ -1109,7 +1111,7 @@ def subjects(repo, include_all):
 
     if include_all:
         log('adding GitHub topics to "subjects"')
-        subjects.update(repo.topics)  #AP: ?
+        subjects.update(repo.topics)
 
         # Add repo languages as topics too.
         if languages := github_repo_languages(repo):
@@ -1139,7 +1141,7 @@ def title(repo, release):
         title += text
         field = 'CFF "title"'
     else:
-        title += repo.full_name  #AP: repo.name
+        title += repo.name if GITLAB else repo.full_name
         field = 'GitHub repo "full_name"'
 
     # Note: better not to use a colon here. A lot of CodeMeta files use a name
