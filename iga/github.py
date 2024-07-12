@@ -98,7 +98,7 @@ class GitHubFile(SimpleNamespace):
     def __init__(self, file_dict):
         super().__init__(**file_dict)
 
-
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -45,9 +45,16 @@ import os
 from   sidetrack import log
 import sys
 import validators
+import yaml
+
 
 from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
 from iga.exceptions import MissingData
+from iga.githublab import (
+    git_repo,
+    git_repo_file,
+    git_release,
+)
 from iga.github import (
     github_account,
     github_file_url,
@@ -65,34 +72,6 @@ from iga.name_utils import split_name, flattened_name
 from iga.reference import reference, RECOGNIZED_REFERENCE_SCHEMES
 from iga.text_utils import cleaned_text
 
-
-# Constants.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# It's useful to understand the context of what's going on. The record stored
-# in InvenioRDM may have these top-level fields (but might not contain all):
-#
-# {
-#    "$schema": "local://records/record-vX.Y.Z.json",
-#    "id": "q5jr8-hny72",
-#    "pid": { ... },
-#    "pids" : { ... },
-#    "parent": { ... },
-#    "access" : { ... },
-#    "metadata" : { ... },
-#    "files" : { ... },
-#    "tombstone" : { ... },
-#    "created": "...",
-#    "updated": "...",
-# }
-#
-# However, what is uploaded to an InvenioRDM server should only contain the
-# 'metadata' field, because of the other fields above are added by the system.
-# Consequently, IGA only needs to construct the 'metadata' field value. I.e.,
-# referring to https://inveniordm.docs.cern.ch/reference/metadata, we are only
-# concerned with https://inveniordm.docs.cern.ch/reference/metadata/#metadata
-#
-# The following is the full set of possible subfields in "metadata".
 
 FIELDS = [
     "additional_descriptions",
@@ -117,26 +96,6 @@ FIELDS = [
     "title",
     "version",
 ]
-
-# Not all of these need to be provided.  Based on the test cases in
-# https://github.com/inveniosoftware/invenio-rdm-records, the minimum set of
-# fields that needs to be provided seems to be this:
-#
-# {
-#    "metadata": {
-#        "resource_type": { "id": "XYZ", ... },          # note below
-#        "title": "ABC",
-#        "creators": [
-#              {
-#                  "person_or_org": {
-#                      "family_name": "A",
-#                      "given_name": "B",
-#                      "type": "C",
-#                  }
-#              },
-#            ],
-#        "publication_date": "...date...",
-#    }
 
 REQUIRED_FIELDS = [
     "creators",
@@ -168,7 +127,7 @@ INVENIO_LICENSES = CaseFoldDict()
 # allowed but we don't want to allow some types such as 'data' URLs.
 ALLOWED_URL_SCHEMES = ['http', 'https', 'git', 'ftp', 'gopher', 's3', 'svn']
 
-
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -178,8 +137,8 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     Data is gathered from the GitHub release identified by "tag" in the
     repository "repo_name" of the given GitHub "account_name".
     '''
-    repo = github_repo(account_name, repo_name)
-    release = github_release(account_name, repo_name, tag)
+    repo = git_repo(repo_name, account_name)
+    release = git_release(repo_name, tag, account_name)
 
     # We use codemeta.json & CITATION.cff often. Get them now & augment the
     # repo object with them so that field extraction functions can access them.
@@ -187,7 +146,7 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     repo.cff = {}
     filenames = github_repo_filenames(repo, tag)
     if 'codemeta.json' in filenames:
-        codemeta_file = github_repo_file(repo, tag, 'codemeta.json')
+        codemeta_file = git_repo_file(repo, tag, 'codemeta.json')
         try:
             repo.codemeta = json5.loads(codemeta_file)
         except KeyboardInterrupt:
@@ -199,8 +158,8 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
         except Exception as ex:         # noqa PIE786
             log('ignoring codemeta.json file because of error: ' + str(ex))
     for name in ['CITATION.cff', 'CITATION.CFF', 'citation.cff']:
+        # https://github.com/citation-file-format/citation-file-format/blob/main/schema.json
         if name in filenames:
-            import yaml
             try:
                 repo.cff = yaml.safe_load(github_repo_file(repo, tag, name))
             except KeyboardInterrupt:
@@ -240,11 +199,11 @@ def metadata_from_file(file):
         log(f'reading metadata provided in file {str(file)}')
         content = file.read().strip()
         metadata = json5.loads(content)
-    except KeyboardInterrupt:
-        raise
     except Exception as ex:             # noqa PIE786
         log(f'problem trying to read metadata from {str(file)}: ' + str(ex))
         return False
+    except KeyboardInterrupt:
+        raise
 
     if 'metadata' not in metadata:
         log('record lacks a "metadata" field')
@@ -324,7 +283,7 @@ def additional_descriptions(repo, release, include_all):
     return deduplicated(descriptions)
 
 
-def additional_titles(repo, release, include_all):
+def additional_titles(repo, include_all):
     '''Return InvenioRDM "additional titles".
     https://inveniordm.docs.cern.ch/reference/metadata/#additional-titles-0-n
     '''
@@ -348,7 +307,7 @@ def additional_titles(repo, release, include_all):
                        })
     if add_repo_name:
         log('adding GitHub repo "full_name" as additional title')
-        titles.append({'title': cleaned_text(repo.full_name),
+        titles.append({'title': cleaned_text(repo.full_name),   #AP: gitlab repo.name
                        'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
@@ -452,7 +411,7 @@ def contributors(repo, release, include_all):
     return result
 
 
-def creators(repo, release, include_all, internal_call=False):
+def creators(repo, release, internal_call=False):
     '''Return InvenioRDM "creators".
     https://inveniordm.docs.cern.ch/reference/metadata/#creators-1-n
     '''
@@ -492,7 +451,7 @@ def dates(repo, release, include_all):
     # If we used a different date for the publication_date value than the
     # release date in GitHub, we add release date as another type of date.
     pub_date = publication_date(repo, release, include_all)
-    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
+    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')  #AP: gitlab release.released_at
     if pub_date != github_date:
         log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
@@ -512,7 +471,7 @@ def dates(repo, release, include_all):
     # to the GitHub repo "updated_at" date.
     if mod_date := repo.codemeta.get('dateModified', ''):
         log('adding the CodeMeta "dateModified" as the "updated" date')
-    elif include_all and (mod_date := repo.updated_at):
+    elif include_all and (mod_date := repo.updated_at):      #AP: gitlab what
         log('adding the GitHub repo "updated_at" date as the "updated" date')
     if mod_date:
         dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
@@ -526,7 +485,7 @@ def dates(repo, release, include_all):
     return dates
 
 
-def description(repo, release, include_all, internal_call=False):
+def description(repo, release, internal_call=False):
     '''Return InvenioRDM "description".
     https://inveniordm.docs.cern.ch/reference/metadata/#description-0-1
     '''
@@ -538,6 +497,8 @@ def description(repo, release, include_all, internal_call=False):
     # commit messages. In those cases, the value of release.body that we get
     # through the API is empty. There doesn't seem to be a way to get the text
     # shown by GitHub in those cases, so we try other alternatives after this.
+
+    # AP: gitlab release body no.
     if release.body:
         if internal_call:
             return release.body.strip()
@@ -583,7 +544,7 @@ def description(repo, release, include_all, internal_call=False):
     return '(No description provided.)'
 
 
-def formats(repo, release, include_all):
+def formats(release):
     '''Return InvenioRDM "formats".
     https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
     '''
@@ -597,7 +558,7 @@ def formats(repo, release, include_all):
     return formats
 
 
-def funding(repo, release, include_all):
+def funding(repo):
     '''Return InvenioRDM "funding references".
     https://inveniordm.docs.cern.ch/reference/metadata/#funding-references-0-n
     '''
@@ -700,7 +661,7 @@ def funding(repo, release, include_all):
     return deduplicated(results)
 
 
-def identifiers(repo, release, include_all):
+def identifiers(repo):
     '''Return InvenioRDM "alternate identifiers".
     https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
 
@@ -743,7 +704,7 @@ def identifiers(repo, release, include_all):
     return deduplicated(identifiers)
 
 
-def languages(repo, release, include_all):
+def languages():
     '''Return InvenioRDM "languages".
     https://inveniordm.docs.cern.ch/reference/metadata/#languages-0-n
     '''
@@ -752,7 +713,7 @@ def languages(repo, release, include_all):
     return [{"id": "eng"}]
 
 
-def locations(repo, release, include_all):
+def locations():
     '''Return InvenioRDM "locations".
     https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
     '''
@@ -760,7 +721,7 @@ def locations(repo, release, include_all):
     return {}
 
 
-def publication_date(repo, release, include_all):
+def publication_date(repo, release):
     '''Return InvenioRDM "publication date".
     https://inveniordm.docs.cern.ch/reference/metadata/#publication-date-1
     '''
@@ -773,12 +734,12 @@ def publication_date(repo, release, include_all):
     elif date := repo.cff.get('date-released', ''):
         log('adding CFF "date-released" as "publication_date"')
     else:
-        date = release.published_at
+        date = release.published_at   #AP: gitlab released_at
         log('adding GitHub repo "published_at" as "publication_date"')
     return arrow.get(date).format('YYYY-MM-DD')
 
 
-def publisher(repo, release, include_all):
+def publisher():
     '''Return InvenioRDM "publisher".
     https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
     '''
@@ -840,7 +801,7 @@ def related_identifiers(repo, release, include_all):
                 'scheme': 'url'}
 
     log('adding GitHub release "html_url" to "related_identifiers"')
-    identifiers = [id_dict(release.html_url, 'isidenticalto', 'software')]
+    identifiers = [id_dict(release.html_url, 'isidenticalto', 'software')]   #AP: gitlab release._links["self"]
 
     # The GitHub repo is what this release is derived from. Note: you would
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
@@ -871,7 +832,7 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "url" to "related_identifiers"')
     elif homepage_url := repo.cff.get('url', ''):
         log('adding CFF "url" to "related_identifiers"')
-    elif include_all and (homepage_url := repo.homepage):
+    elif include_all and (homepage_url := repo.homepage): #AP: web_url
         log('adding GitHub repo "homepage" to "related_identifiers"')
     if homepage_url:
         identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
@@ -918,7 +879,7 @@ def related_identifiers(repo, release, include_all):
     # The GitHub Pages URL for a repo usually points to documentation or info
     # about the softare, though we can't tell if it's for THIS release.
     if include_all and repo.has_pages:
-        url = f'https://{repo.owner.login}.github.io/{repo.name}'
+        url = f'https://{repo.owner.login}.github.io/{repo.name}'   # AP: ?
         if not any(url == item['identifier'] for item in identifiers):
             log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
             identifiers.append(id_dict(url, 'isdocumentedby',
@@ -927,9 +888,9 @@ def related_identifiers(repo, release, include_all):
     # The issues URL is kind of a supplemental resource.
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
-    elif include_all and repo.issues_url:
+    elif include_all and repo.issues_url:   #AP: repo._links["issues"]
         log('adding GitHub repo "issues_url" to "related_identifiers"')
-        issues_url = f'https://github.com/{repo.full_name}/issues'
+        issues_url = f'https://github.com/{repo.full_name}/issues'   # AP: repo.name
     if issues_url:
         identifiers.append(id_dict(issues_url, 'issupplementedby', 'other'))
 
@@ -980,7 +941,7 @@ def related_identifiers(repo, release, include_all):
     return filtered_identifiers
 
 
-def resource_type(repo, release, include_all):
+def resource_type(repo):
     '''Return InvenioRDM "resource type".
     https://inveniordm.docs.cern.ch/reference/metadata/#resource-type-1
     '''
@@ -994,7 +955,7 @@ def resource_type(repo, release, include_all):
         return {'id': 'software'}
 
 
-def rights(repo, release, include_all):
+def rights(repo, release):
     '''Return InvenioRDM "rights (licenses)".
     https://inveniordm.docs.cern.ch/reference/metadata/#rights-licenses-0-n
     '''
@@ -1043,6 +1004,16 @@ def rights(repo, release, include_all):
 
     # We didn't recognize license info in the CodeMeta or cff files.
     # Look into the GitHub repo data to see if GitHub identified a license.
+    """
+    license_url": "https://code.jlab.org/panta/hcana_container_doc/-/blob/main/LICENSE",
+    "license": {
+        "key": "apache-2.0",
+        "name": "Apache License 2.0",
+        "nickname": null,
+        "html_url": "https://www.apache.org/licenses/LICENSE-2.0",
+        "source_url": null
+    }
+    """
     if repo.license and repo.license.name != 'Other':
         from iga.licenses import LICENSES
         log('GitHub has provided license info for the repo – using those values')
@@ -1079,14 +1050,14 @@ def rights(repo, release, include_all):
     return rights
 
 
-def sizes(repo, release, include_all):
+def sizes():
     '''Return InvenioRDM "sizes".
     https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
     '''
     return []
 
 
-def subjects(repo, release, include_all):
+def subjects(repo, include_all):
     '''Return InvenioRDM "subjects".
     https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
     '''
@@ -1138,7 +1109,7 @@ def subjects(repo, release, include_all):
 
     if include_all:
         log('adding GitHub topics to "subjects"')
-        subjects.update(repo.topics)
+        subjects.update(repo.topics)  #AP: ?
 
         # Add repo languages as topics too.
         if languages := github_repo_languages(repo):
@@ -1156,7 +1127,7 @@ def subjects(repo, release, include_all):
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
 
-def title(repo, release, include_all):
+def title(repo, release):
     '''Return InvenioRDM "title".
     https://inveniordm.docs.cern.ch/reference/metadata/#title-1
     '''
@@ -1168,7 +1139,7 @@ def title(repo, release, include_all):
         title += text
         field = 'CFF "title"'
     else:
-        title += repo.full_name
+        title += repo.full_name  #AP: repo.name
         field = 'GitHub repo "full_name"'
 
     # Note: better not to use a colon here. A lot of CodeMeta files use a name
@@ -1183,7 +1154,7 @@ def title(repo, release, include_all):
     return cleaned_text(title)
 
 
-def version(repo, release, include_all):
+def version(release):
     '''Return InvenioRDM "version".
     https://inveniordm.docs.cern.ch/reference/metadata/#version-0-1
     '''
@@ -1558,6 +1529,7 @@ def _cff_reference_ids(repo):
 
 
 def _load_vocabularies():
+    # https://inveniordm.jlab.org/api/vocabularies/licenses
     from caltechdata_api.customize_schema import get_vocabularies
     from iga.invenio import invenio_vocabulary
     log('loading controlled vocabularies using caltechdata_api module')

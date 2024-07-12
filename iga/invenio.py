@@ -17,16 +17,18 @@ import json
 from   sidetrack import log
 import socket
 import os
-from   os import path
+from os import path
+import humanize
+
 
 import iga
-from   iga.exceptions import (
+from iga.exceptions import (
     InternalError,
     InvenioRDMError,
     RecordNotFound,
 )
-from   iga.github import github_asset_contents
-from   iga.id_utils import normalize_invenio_rdm
+from iga.github import github_asset_contents
+from  iga.id_utils import normalize_invenio_rdm
 
 
 # Exported data structures.
@@ -86,7 +88,6 @@ class InvenioCommunity():
     def __ge__(self, other):
         return not self.__lt__(self, other)
 
-
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -231,7 +232,6 @@ def invenio_upload(record, asset, print_status):
     '''
     # Start by reading the assets to be sure we can actually get them, *before*
     # trying to upload them to InvenioRDM.
-    import humanize
     size = ''
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
@@ -363,7 +363,6 @@ def invenio_communities():
     log(f'we got {pluralized("community", communities, True)}')
     return communities
 
-
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

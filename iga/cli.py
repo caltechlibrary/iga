@@ -21,12 +21,12 @@ from   sidetrack import set_debug, log
 from iga import __version__
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
-from iga.github import (
-    github_account_repo_tag,
-    github_release,
-    github_release_assets,
-    valid_github_release_url,
+
+from iga.githublab import (
+    valid_release_url,
+    git_release_assets,
 )
+
 from iga.id_utils import is_inveniordm_id
 from iga.invenio import (
     invenio_api_available,
@@ -39,7 +39,6 @@ from iga.invenio import (
     invenio_upload,
 )
 
-
 # Main command-line interface.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -383,16 +382,14 @@ def _list_communities(ctx, param, value):
               help="GitHub acccess token (**avoid – use variable**)")
 
 #
+@click.option('--gitlab', is_flag=True, help='Use GitLab mode')
+#
+@click.option('--gitlab-url', '-gu', metavar='STR',
+              help='GiLab base url (like https://gitlab.com or https://code.jlab.org)')
+#
 @click.option('--gitlab-projectid', '-gp', metavar='STR',
-              help='Gilab project ID (The ID or NAMESPACE/PROJECT_PATH)')
+              help='GiLab project ID (The ID or NAMESPACE/PROJECT_PATH)')
 
-#
-@click.option('--gitlab-repo', '-gr', 'grepo', metavar='STR',
-              help='GitLab repository name, if not using release URL')
-
-#
-@click.option('--github-token', '-gt', metavar='STR', callback=_read_gitlab_token,
-              help="GitHub acccess token (**avoid – use variable**)")
 
 #
 @click.help_option('--help', '-h', help='Show this help message and exit')
@@ -438,7 +435,8 @@ def _list_communities(ctx, param, value):
 @click.argument('url_or_tag', required=True)
 @click.pass_context
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
-        files_to_upload=None, account=None, repo=None, github_token=None,
+        files_to_upload=None, account=None, repo=None, github_token=None, 
+        gitlab_projectid=None, gitlab=False, gitlab_url=None,
         print_doi=False, server=None, invenio_token=None, list_communities=False,
         open_in_browser=False, log_dest=None, mode='normal', parent_id=None,
         all_metadata=False, source=None, dest=None, timeout=None,
@@ -650,6 +648,9 @@ possible values:
   7 = an exception or fatal error occurred  
 '''
     # Process arguments & handle early exits ..................................
+    ctx.ensure_object(dict)
+    ctx.obj['gitlab'] = gitlab
+    ctx.obj['gitlab_url'] = gitlab_url
 
     if url_or_tag == 'help':  # Detect if the user typed "help" without dashes.
         _print_help_and_exit(ctx)
@@ -658,21 +659,46 @@ possible values:
             _alert(ctx, 'The use of a URL and the use of options `--account`'
                    " and `--repo` are mutually exclusive; can't use both.")
             sys.exit(int(ExitCode.bad_arg))
-        elif not valid_github_release_url(url_or_tag):
+        elif not valid_release_url(url_or_tag, gitlab):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+
+    elif not gitlab:
+        if not all([account, repo, url_or_tag]):
+            _alert(ctx, 'When not using a release URL, all of the following must be'
+                ' provided: the options `--account`, `--repo`, and a tag name.')
+            sys.exit(int(ExitCode.bad_arg))
+        tag = url_or_tag
+        url_or_tag = f'https://api.github.com/{account}/repos/{repo}/releases/tags/{tag}'
+        if not valid_release_url(url_or_tag, gitlab):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+
+    elif gitlab:
+        if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all(gitlab_url, account, repo, url_or_tag)):
+            _alert(ctx, 'When using GitLab, all of the following must be'
+                ' provided: the options `--gitlab-url` and `--gitlab-projectid`. or `--gitlab-url` and `--gitlab-url , --account , --repo ')
+            sys.exit(int(ExitCode.bad_arg))
+        if all([gitlab_url, gitlab_projectid, url_or_tag]):
+            tag = url_or_tag
+            url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
+            if not valid_release_url(url_or_tag, gitlab):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+        elif all([gitlab_url, account, repo, url_or_tag]):
+            tag = url_or_tag
+            gitlab_projectid = f'{account}%2F{repo}'
+            url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
+            if not valid_release_url(url_or_tag, gitlab):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+        else:
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
-        else:
-            account, repo, tag = github_account_repo_tag(url_or_tag)
-    elif not all([account, repo, url_or_tag]):
-        _alert(ctx, 'When not using a release URL, all of the following must be'
-               ' provided: the options `--account`, `--repo`, and a tag name.')
-        sys.exit(int(ExitCode.bad_arg))
+        
+        repo_name = gitlab_projectid
     else:
-        tag = url_or_tag
-
-    if not github_release(account, repo, tag, test_only=True):
-        _alert(ctx, f'There does not appear to be a release **{tag}** in'
-               f' repository **{repo}** of account **{account}**.')
+        _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
         sys.exit(int(ExitCode.bad_arg))
 
     if files_to_upload and all_assets:
@@ -699,7 +725,7 @@ possible values:
     exit_code = ExitCode.success
     try:
         record = None
-        github_assets = []
+        release_assets = []
         if source:
             _inform(f'Using {source.name} instead of building a record.')
             metadata = metadata_from_file(source)
@@ -709,7 +735,7 @@ possible values:
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
             metadata = metadata_for_release(account, repo, tag, all_metadata)
-            github_assets = github_release_assets(account, repo, tag, all_assets)
+            release_assets = git_release_assets(repo, tag, account, all_assets)
             _inform(' done.')
 
         if dest:
@@ -729,7 +755,7 @@ possible values:
             _inform(' done.')
 
             _inform('Attaching assets:')
-            for item in files_to_upload or github_assets:
+            for item in files_to_upload or release_assets:
                 invenio_upload(record, item, _print_text)
 
             if draft:
