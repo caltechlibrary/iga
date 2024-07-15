@@ -25,6 +25,7 @@ from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
 from iga.githublab import (
     valid_release_url,
     git_release_assets,
+    git_account_repo_tag,
 )
 
 from iga.id_utils import is_inveniordm_id
@@ -129,12 +130,7 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
 def _read_github_token(ctx, param, value):
     '''Read the file and set the environment variable GITHUB_TOKEN.'''
     return _read_param_value(ctx, param, value, 'GITHUB_TOKEN',
-                             'GitHub personal access token', required=False)
-
-def _read_gitlab_token(ctx, param, value):
-    '''Read the file and set the environment variable GITLAB_TOKEN.'''
-    return _read_param_value(ctx, param, value, 'GITLAB_TOKEN',
-                             'GitLab personal access token', required=False)
+                             'GitHub/GitLab personal access token', required=False)
 
 def _read_invenio_token(ctx, param, value):
     '''Read the file and set the environment variable INVENIO_TOKEN.'''
@@ -379,7 +375,7 @@ def _list_communities(ctx, param, value):
               help='GitHub repository name, if not using release URL')
 #
 @click.option('--github-token', '-t', metavar='STR', callback=_read_github_token,
-              help="GitHub acccess token (**avoid – use variable**)")
+              help="GitHub/GitLab acccess token (**avoid – use variable**)")
 
 #
 @click.option('--gitlab', is_flag=True, help='Use GitLab mode')
@@ -659,9 +655,11 @@ possible values:
             _alert(ctx, 'The use of a URL and the use of options `--account`'
                    " and `--repo` are mutually exclusive; can't use both.")
             sys.exit(int(ExitCode.bad_arg))
-        elif not valid_release_url(url_or_tag, gitlab):
+        elif not valid_release_url(url_or_tag):
                 _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
                 sys.exit(int(ExitCode.bad_arg))
+        else:
+            account, repo, tag = git_account_repo_tag(url_or_tag)
 
     elif not gitlab:
         if not all([account, repo, url_or_tag]):
@@ -670,9 +668,9 @@ possible values:
             sys.exit(int(ExitCode.bad_arg))
         tag = url_or_tag
         url_or_tag = f'https://api.github.com/{account}/repos/{repo}/releases/tags/{tag}'
-        if not valid_release_url(url_or_tag, gitlab):
-                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
-                sys.exit(int(ExitCode.bad_arg))
+        if not valid_release_url(url_or_tag):
+            _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+            sys.exit(int(ExitCode.bad_arg))
 
     elif gitlab:
         if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all(gitlab_url, account, repo, url_or_tag)):
@@ -682,21 +680,21 @@ possible values:
         if all([gitlab_url, gitlab_projectid, url_or_tag]):
             tag = url_or_tag
             url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
-            if not valid_release_url(url_or_tag, gitlab):
+            if not valid_release_url(url_or_tag):
                 _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
                 sys.exit(int(ExitCode.bad_arg))
         elif all([gitlab_url, account, repo, url_or_tag]):
             tag = url_or_tag
             gitlab_projectid = f'{account}%2F{repo}'
             url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
-            if not valid_release_url(url_or_tag, gitlab):
+            if not valid_release_url(url_or_tag):
                 _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
                 sys.exit(int(ExitCode.bad_arg))
         else:
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
         
-        repo_name = gitlab_projectid
+        repo = gitlab_projectid
     else:
         _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
         sys.exit(int(ExitCode.bad_arg))

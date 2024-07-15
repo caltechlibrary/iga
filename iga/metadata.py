@@ -52,6 +52,8 @@ from iga.githublab import (
     git_repo,
     git_repo_file,
     git_release,
+    git_repo_filenames,
+    git_repo_languages
 )
 from iga.github import (
     github_account,
@@ -60,7 +62,6 @@ from iga.github import (
     github_repo,
     github_repo_contributors,
     github_repo_file,
-    github_repo_filenames,
     github_repo_languages,
     GitHubError,
     probable_bot,
@@ -72,15 +73,15 @@ from iga.text_utils import cleaned_text
 
 import rich_click as click
 ctx = click.get_current_context()
-GITLAB = ctx.obj.get('gitlab', False)
+GITLAB = True
 
 FIELDS = [
-    "additional_descriptions",
-    "additional_titles",
-    "contributors",
-    "creators",
+#    "additional_descriptions",
+#    "additional_titles",
+#    "contributors",
+#    "creators",
     "dates",
-    "description",
+#    "description",
     # "formats",            # 2023-03-23 not clear we need this. Skip for now.
     "funding",
     "identifiers",
@@ -145,7 +146,7 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     # repo object with them so that field extraction functions can access them.
     repo.codemeta = {}
     repo.cff = {}
-    filenames = github_repo_filenames(repo, tag)
+    filenames = git_repo_filenames(repo, tag)
     if 'codemeta.json' in filenames:
         codemeta_file = git_repo_file(repo, tag, 'codemeta.json')
         try:
@@ -218,7 +219,7 @@ def metadata_from_file(file):
         log(f'metadata in {file} validated to have minimum fields')
         return metadata
 
-
+
 # Field value functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Summary of the approach: the functions for extracting values from GitHub
@@ -560,7 +561,7 @@ def formats(release):
     return formats
 
 
-def funding(repo):
+def funding(repo, release, include_all):
     '''Return InvenioRDM "funding references".
     https://inveniordm.docs.cern.ch/reference/metadata/#funding-references-0-n
     '''
@@ -663,7 +664,7 @@ def funding(repo):
     return deduplicated(results)
 
 
-def identifiers(repo):
+def identifiers(repo, release, include_all):
     '''Return InvenioRDM "alternate identifiers".
     https://inveniordm.docs.cern.ch/reference/metadata/#alternate-identifiers-0-n
 
@@ -706,7 +707,7 @@ def identifiers(repo):
     return deduplicated(identifiers)
 
 
-def languages():
+def languages(repo, release, include_all):
     '''Return InvenioRDM "languages".
     https://inveniordm.docs.cern.ch/reference/metadata/#languages-0-n
     '''
@@ -715,7 +716,7 @@ def languages():
     return [{"id": "eng"}]
 
 
-def locations():
+def locations(repo, release, include_all):
     '''Return InvenioRDM "locations".
     https://inveniordm.docs.cern.ch/reference/metadata/#locations-0-n
     '''
@@ -723,7 +724,7 @@ def locations():
     return {}
 
 
-def publication_date(repo, release):
+def publication_date(repo, release, include_all):
     '''Return InvenioRDM "publication date".
     https://inveniordm.docs.cern.ch/reference/metadata/#publication-date-1
     '''
@@ -741,7 +742,7 @@ def publication_date(repo, release):
     return arrow.get(date).format('YYYY-MM-DD')
 
 
-def publisher():
+def publisher(repo, release, include_all):
     '''Return InvenioRDM "publisher".
     https://inveniordm.docs.cern.ch/reference/metadata/#publisher-0-1
     '''
@@ -809,11 +810,12 @@ def related_identifiers(repo, release, include_all):
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
     # the CFF repository-code all to be the same value, but we can't be sure,
     # so we have to look at them, and use them in the order of priority.
+    repo_html=repo.web_url if GITLAB else release.html_url
     if repo_url := repo.codemeta.get('codeRepository', ''):
         log('adding CodeMeta "codeRepository" to "related_identifiers"')
     elif repo_url := repo.cff.get('repository-code', ''):
         log('adding CFF "repository-code" to "related_identifiers"')
-    elif include_all and (repo_url := repo.html_url):
+    elif include_all and (repo_url := repo_html):
         log('adding GitHub repo "html_url" to "related_identifiers"')
     if repo_url:
         identifiers.append(id_dict(repo_url, 'isderivedfrom', 'software'))
@@ -880,17 +882,18 @@ def related_identifiers(repo, release, include_all):
 
     # The GitHub Pages URL for a repo usually points to documentation or info
     # about the softare, though we can't tell if it's for THIS release.
-    if include_all and repo.has_pages:
-        url = f'https://{repo.owner.login}.github.io/{repo.name}'   # AP: ?
-        if not any(url == item['identifier'] for item in identifiers):
-            log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
-            identifiers.append(id_dict(url, 'isdocumentedby',
-                                       'publication-softwaredocumentation'))
+    #if include_all and repo.has_pages:
+    #    url = f'https://{repo.owner.login}.github.io/{repo.name}'   # AP: ?
+    #    if not any(url == item['identifier'] for item in identifiers):
+    #        log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
+    #        identifiers.append(id_dict(url, 'isdocumentedby',
+    #                                   'publication-softwaredocumentation'))
 
     # The issues URL is kind of a supplemental resource.
+    repo_issues = repo._links["issues"]  if GITLAB else repo.issues_url
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
-    elif include_all and (if GITLAB repo._links["issues"] else repo.issues_url):
+    elif include_all and (repo_issues):
         log('adding GitHub repo "issues_url" to "related_identifiers"')
         issues_url = f'https://github.com/{repo.name if GITLAB else repo.full_name}/issues'
     if issues_url:
@@ -943,7 +946,7 @@ def related_identifiers(repo, release, include_all):
     return filtered_identifiers
 
 
-def resource_type(repo):
+def resource_type(repo, release, include_all):
     '''Return InvenioRDM "resource type".
     https://inveniordm.docs.cern.ch/reference/metadata/#resource-type-1
     '''
@@ -957,7 +960,7 @@ def resource_type(repo):
         return {'id': 'software'}
 
 
-def rights(repo, release):
+def rights(repo, release, include_all):
     '''Return InvenioRDM "rights (licenses)".
     https://inveniordm.docs.cern.ch/reference/metadata/#rights-licenses-0-n
     '''
@@ -1034,7 +1037,7 @@ def rights(repo, release):
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
-    filenames = github_repo_filenames(repo, release.tag_name)
+    filenames = git_repo_filenames(repo, release.tag_name)
     for basename in ['LICENSE', 'License', 'license',
                      'LICENCE', 'Licence', 'licence',
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
@@ -1059,7 +1062,7 @@ def sizes():
     return []
 
 
-def subjects(repo, include_all):
+def subjects(repo, release, include_all):
     '''Return InvenioRDM "subjects".
     https://inveniordm.docs.cern.ch/reference/metadata/#subjects-0-n
     '''
@@ -1114,7 +1117,7 @@ def subjects(repo, include_all):
         subjects.update(repo.topics)
 
         # Add repo languages as topics too.
-        if languages := github_repo_languages(repo):
+        if languages := git_repo_languages(repo):
             log('adding GitHub repo languages to "subjects"')
         for lang in languages:
             subjects.add(lang)
@@ -1129,7 +1132,7 @@ def subjects(repo, include_all):
     return [{'subject': x} for x in sorted(subjects, key=str.lower)]
 
 
-def title(repo, release):
+def title(repo, release, include_all):
     '''Return InvenioRDM "title".
     https://inveniordm.docs.cern.ch/reference/metadata/#title-1
     '''
@@ -1156,7 +1159,7 @@ def title(repo, release):
     return cleaned_text(title)
 
 
-def version(release):
+def version(repo, release, include_all):
     '''Return InvenioRDM "version".
     https://inveniordm.docs.cern.ch/reference/metadata/#version-0-1
     '''
@@ -1171,7 +1174,6 @@ def version(release):
         tag = re.sub(r'v(er|version)?[ .]? ?', '', tag)
     return tag.strip()
 
-
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1381,12 +1383,12 @@ def _release_author(release):
     # We can call GitHub's user data API, but it returns very little info
     # about a user (e.g.,, it gives a name but that name is not broken out
     # into family & given name), plus sometimes fields are empty.
-    account = github_account(release.author.login)
+    account = github_account(release.author.login) #AP: release.author.username
     return _identity_from_github(account) if account.name else None
 
 
 def _repo_owner(repo):
-    account = github_account(repo.owner.login)
+    account = github_account(repo.owner.login) #AP: repo.owner.username or maybe deal with namespace.kind.group?
     return _identity_from_github(account)
 
 

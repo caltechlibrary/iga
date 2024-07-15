@@ -27,10 +27,10 @@ from iga.exceptions import (
     InvenioRDMError,
     RecordNotFound,
 )
-from iga.github import github_asset_contents
+from iga.githublab import git_asset_contents
 from  iga.id_utils import normalize_invenio_rdm
 
-
+
 # Exported data structures.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -236,7 +236,7 @@ def invenio_upload(record, asset, print_status):
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
-        content = github_asset_contents(asset)
+        content = git_asset_contents(asset)
         print_status('done')
         size = humanize.naturalsize(len(content))
         log(f'downloaded {size} bytes of {asset}')

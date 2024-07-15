@@ -8,6 +8,7 @@ from   sidetrack import log
 from   types import SimpleNamespace
 import requests
 import rich_click as click
+from urllib.parse import quote
 
 
 from iga.exceptions import GitHubError, InternalError
@@ -17,24 +18,30 @@ _BOT_NAME_WORDS = ['daemon', 'dependabot', 'dependabot[bot]']
 name, mean the account will be assumed to be a software bot of some kind.'''
 
 API_PATH = '/api/v4/'
-ctx = click.get_current_context()
-GITLAB = ctx.obj.get('gitlab', False)
-GITLAB_URL = ctx.obj.get('gitlab_url', None)
-API_URL = f'{GITLAB_URL}/api/v4'
+try:
+    ctx = click.get_current_context()
+    GITLAB = ctx.obj.get('gitlab', False)
+    GITLAB_URL = ctx.obj.get('gitlab_url', None)
+    API_URL = f'{GITLAB_URL}/api/v4'
+except Exception as e:
+    log.error(f"Error getting GitLab API URL: {e}")
+
 class GitLabAPIError(Exception):
     pass
 
 def _gitlab_get(endpoint, test_only=False):
     headers = {'Accept': 'application/json'}
-    using_token = 'GITLAB_TOKEN' in os.environ
+    using_token = True#'GITLAB_TOKEN' in os.environ
     if using_token:
-        headers['Authorization'] = f'token {os.environ["GITLAB_TOKEN"]}'
+        headers['Authorization'] = f'Bearer glpat-3z9T1F3zNa7WNAaireqi'
     method = 'head' if test_only else 'get'
     try:
         if method == 'HEAD':
             response = requests.head(endpoint, headers=headers)
         else:
             response = requests.get(endpoint, headers=headers)
+        print(response.request.url)
+        print("reponse URL",response.status_code)
 
         if response.status_code == 401:
             raise GitLabAPIError(f"Unauthorized: Check your GitLab token or permissions. Endpoint: {endpoint}")
@@ -54,11 +61,11 @@ def _object_for_gitlab(api_url, cls):
         response = _gitlab_get(api_url)
         if not response:
             return None
-
         log(f'unpacking JSON into object structure from {api_url}')
 
         # Create the desired object & add the api url in case it's needed later.
         obj = cls(response.json())
+        print(response.json())
         obj.api_url = api_url
         return obj
 
@@ -93,12 +100,13 @@ class GitLabRelease(SimpleNamespace):
         super().__init__(**release_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub release data: ' + json.dumps(release_dict, indent=2))
-        self.author = GitLabAccount(release_dict['author'])
+        #self.author = GitLabAccount(release_dict['author'])
 
         # ... then convert the dict of the asset (which contains uploader).
-        self.assets = [GitLabAsset(asset) for asset in self.assets]
+        #self.assets = [GitLabAsset(asset) for asset in self.assets]
         # Save the original data for debugging purposes.
         self._json_dict = release_dict
+
 class GitLabRepo(SimpleNamespace):
     '''Simple data structure corresponding to a GitHub repository JSON object.
     This object is enhanced with a "files" property that contains a list of
@@ -108,9 +116,10 @@ class GitLabRepo(SimpleNamespace):
         super().__init__(**repo_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
-        self.owner = GitLabAccount(repo_dict['owner'])
-        if repo_dict.get('organization'):
-            self.organization = GitLabAccount(repo_dict['organization'])
+        if repo_dict.get('owner',{}):
+            self.owner = GitLabAccount(repo_dict['owner'])
+        #if repo_dict.get('organization'):
+        #    self.organization = GitLabAccount(repo_dict['organization'])
         if repo_dict.get('license'):
             self.license = GitLabLicense(repo_dict['license'])
         # Save the original data for debugging purposes.
@@ -141,7 +150,8 @@ def gitlab_release(repo_name, tag, test_only=False):
 
 def gitlab_repo(repo_name, test_only=False):
     '''Return a Repo object corresponding to the named repo in GitLab.'''
-    endpoint = f'{API_URL}/{repo_name}?license=true'
+    endpoint = f'{API_URL}/projects/{repo_name}?license=true'
+    print(endpoint)
     if test_only:
         log('testing for existence: ' + endpoint)
         return _gitlab_get(endpoint, test_only)
@@ -164,10 +174,14 @@ def gitlab_release_assets(repo_name, tag, all_assets):
             assets.append(source.url)
     return assets
 
-def gitlab_repo_filenames(repo_name, tag_name):
+def gitlab_repo_filenames(repo, tag_name):
     '''Return a list of filenames in the repo corresponding to the specified tag.'''
-    release = gitlab_release(repo_name, tag_name)
-    files = [file.name for file in release.assets]
+    endpoint = f'{API_URL}/projects/{repo.id}/repository/tree'
+    response =  _gitlab_get(endpoint)
+    if not response:
+        log(f'got no tree or it does not exist')
+        return ''
+    files = [res["path"] for res in response.json()]
     return files
 
 def gitlab_repo_file(repo, tag_name, filename):
@@ -199,8 +213,8 @@ def gitlab_repo_file(repo, tag_name, filename):
     return contents
 
 def gitlab_repo_languages(repo):
-    log(f'asking GitHub for list of languages for repo {repo.full_name}')
-    repolink = repo._links.self 
+    log(f'asking GitHub for list of languages for repo {repo.name}')
+    repolink = repo._links["self"]
     endpoint = f'{repolink}/languages'
     response = _gitlab_get(endpoint)
     if not response:
@@ -240,4 +254,34 @@ def gitlab_asset_contents(asset_url):
 
 def valid_gitlab_release_url(url):
     '''Check if the provided URL is a valid GitLab release endpoint.'''
-    return _gitlab_get(url, test_only=True)
+    print("HERE")
+    #return _gitlab_get(url, test_only=True)
+    return True
+
+def gitlab_account_repo_tag(release_url):
+    '''{gitlab_projectid}/releases/{tag}'''
+    from urllib.parse import urlparse
+    parsed = urlparse(release_url)
+    ctx = click.get_current_context()
+    ctx.ensure_object(dict)
+    ctx.obj['gitlab_url'] = parsed.hostname
+    path = parsed.path
+    path = path.rstrip('/')
+    tag = path.split('/')[-1]
+    y='/'.join(path.split('/')[:-1])
+    project_id = y.rstrip("-/releases").lstrip('/')
+    from urllib.parse import quote
+    project_id = quote(project_id,safe='')
+    return ( None, project_id, tag)
+
+def gitlab_account(account_name):
+    endpoint = f'{API_URL}/users/{account_name}'
+    result = _object_for_gitlab(endpoint, GitLabAccount)
+    if not result:
+        raise GitLabAPIError(f'Failed to get GitHub account data for {account_name}.'
+                          ' This could be due to a number of causes. Please'
+                          ' check that the account exists, and that the GitHub'
+                          ' access token (if one is being used) is configured'
+                          ' with appropriate permissions to grant access to'
+                          ' user account data.')
+    return result
