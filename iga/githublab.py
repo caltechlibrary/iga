@@ -13,7 +13,9 @@ from iga.github import (
     github_repo_languages,
     github_asset_contents,
     github_account,
-    github_repo_contributors
+    github_repo_contributors,
+    identity_from_github,
+    github_probable_bot
 )
 from iga.gitlab import (
     valid_gitlab_release_url,
@@ -26,18 +28,24 @@ from iga.gitlab import (
     gitlab_repo_languages,
     gitlab_asset_contents,
     gitlab_account,
-    gitlab_repo_contributors
+    gitlab_repo_contributors,
+    identity_from_gitlab,
+    gitlab_probable_bot
 )
-try:
-    if os.environ["GITLAB"]:
-        GITLAB = True
-except Exception as e:
-    log(f"Error getting GitLab API URL: {e}")
+class LazyEnvBool:
+    def __init__(self, var_name):
+        self.var_name = var_name
 
-GITLAB = True
+    def __bool__(self):
+        return os.getenv(self.var_name, '').lower() == 'true'
+
+    __nonzero__ = __bool__  # For Python 2 compatibility
+
+GITLAB = LazyEnvBool('GITLAB')
 
 def valid_release_url(release_url):
-    if not GITLAB:
+    if not os.getenv('GITLAB'):
+        print("I am here")
         return valid_github_release_url(release_url)
     else:
         return valid_gitlab_release_url(release_url)
@@ -106,3 +114,15 @@ def git_repo_contributors(repo):
         return github_repo_contributors(repo)
     else:
         return gitlab_repo_contributors(repo)
+
+def identity_from_git(account, role=None):
+    if GITLAB:
+        return identity_from_gitlab(account, role=None)
+    else:
+        return identity_from_github(account, role=role)
+    
+def git_probable_bot(account):
+    if GITLAB:
+        return gitlab_probable_bot(account)
+    else:
+        return github_probable_bot(account)
