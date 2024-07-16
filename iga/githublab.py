@@ -1,5 +1,6 @@
 import rich_click as click
 from   sidetrack import log
+import os
 
 from iga.github import (
     github_account_repo_tag,
@@ -10,7 +11,9 @@ from iga.github import (
     github_repo_file,
     github_repo_filenames,
     github_repo_languages,
-    github_asset_contents
+    github_asset_contents,
+    github_account,
+    github_repo_contributors
 )
 from iga.gitlab import (
     valid_gitlab_release_url,
@@ -21,13 +24,17 @@ from iga.gitlab import (
     gitlab_account_repo_tag,
     gitlab_repo_filenames,
     gitlab_repo_languages,
-    gitlab_asset_contents
+    gitlab_asset_contents,
+    gitlab_account,
+    gitlab_repo_contributors
 )
 try:
-    ctx = click.get_current_context()
-    GITLAB = ctx.obj.get('gitlab', False)
+    if os.environ["GITLAB"]:
+        GITLAB = True
 except Exception as e:
     log(f"Error getting GitLab API URL: {e}")
+
+GITLAB = True
 
 def valid_release_url(release_url):
     if not GITLAB:
@@ -67,6 +74,7 @@ def git_repo_file(repo, tag, filename):
     if not GITLAB:
         return github_repo_file(repo, tag, filename)
     else:
+        print("here")
         return gitlab_repo_file(repo, tag, filename)
     
 def git_release_assets(repo, tag, account_name=None, all_assets=False):
@@ -75,11 +83,11 @@ def git_release_assets(repo, tag, account_name=None, all_assets=False):
     else:
         return gitlab_release_assets(repo, tag, all_assets)
 
-def git_repo_filenames(repo, tag):
+def git_account(repo):
     if not GITLAB:
-        return github_repo_filenames(repo, tag)
+        return github_account(repo)
     else:
-        return gitlab_repo_filenames(repo, tag)
+        return gitlab_account(repo)
 
 def git_repo_languages(repo):
     if not GITLAB:
@@ -92,3 +100,9 @@ def git_asset_contents(asset):
         return github_asset_contents(asset)
     else:
         return gitlab_asset_contents(asset)
+    
+def git_repo_contributors(repo):
+    if not GITLAB:
+        return github_repo_contributors(repo)
+    else:
+        return gitlab_repo_contributors(repo)

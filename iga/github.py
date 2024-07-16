@@ -18,8 +18,9 @@ from   sidetrack import log
 from   types import SimpleNamespace
 
 from iga.exceptions import GitHubError, InternalError
+from iga.name_utils import split_name
 
-
+
 # Constants.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -33,7 +34,7 @@ _BOT_NAME_WORDS = ['daemon', 'dependabot', 'dependabot[bot]']
 '''List of words such that, if one of the words is the last word in an account
 name, mean the account will be assumed to be a software bot of some kind.'''
 
-
+
 # Classes.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -331,7 +332,7 @@ def valid_github_release_url(url):
             and split_url[6] == 'tag')
 
 
-def probable_bot(account):
+def github_probable_bot(account):
     '''Return True if this account is probably a bot.
 
     Bot accounts on GitHub are supposed to have an explicit type value of "bot"
@@ -349,7 +350,48 @@ def probable_bot(account):
     log(f'account {account.login} looks like it {"is" if is_bot else "is NOT"} a bot')
     return is_bot
 
-
+def identity_from_github(account, role=None):
+    if account.type == 'User':
+        if account.name:
+            (given, family) = split_name(account.name)
+            person_or_org = {'given_name': given,
+                             'family_name': family,
+                             'type': 'personal'}
+        else:
+            # The GitHub account record has no name, and InvenioRDM won't pass
+            # a record without a family name. All we have is the login name.
+            person_or_org = {'given_name': '',
+                             'family_name': account.login,
+                             'type': 'personal'}
+
+    else:
+        name = account.name.strip() if account.name else ''
+        person_or_org = {'name': name,
+                         'type': 'organizational'}
+    result = {'person_or_org': person_or_org}
+    if account.company and account.type == 'User':
+        account.company = account.company.strip()
+        if account.company.startswith('@'):
+            # Some people write @foo to indicate org account "foo" in GitHub.
+            # Grab only the first token after the '@'.
+            log(f'company for {account.login} account starts with @')
+            try:
+                import re
+                candidate = re.search(r'\w+', account.company).group()
+                org_account = github_account(candidate)
+            except GitHubError:
+                # No luck. Take it as-is.
+                log(f'failed to find {account.company[1:]} as a GitHub account')
+                result['affiliations'] = [{'name': account.company}]
+            else:
+                log(f'using org {candidate} as affiliation for {account.name}')
+                result['affiliations'] = [{'name': org_account.name}]
+        else:
+            result['affiliations'] = [{'name': account.company}]
+    if role:
+        result['role'] = {'id': role}
+    return result
+
 # Helper functions
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
