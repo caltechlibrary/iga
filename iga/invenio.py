@@ -17,18 +17,18 @@ import json
 from   sidetrack import log
 import socket
 import os
-from os import path
+from   os import path
 import humanize
 
-
 import iga
-from iga.exceptions import (
+from   iga.exceptions import (
     InternalError,
     InvenioRDMError,
     RecordNotFound,
 )
-from iga.githublab import git_asset_contents
-from  iga.id_utils import normalize_invenio_rdm
+from   iga.githublab import git_asset_contents
+from   iga.id_utils import normalize_invenio_rdm
+
 
 
 # Exported data structures.
@@ -87,6 +87,7 @@ class InvenioCommunity():
 
     def __ge__(self, other):
         return not self.__lt__(self, other)
+
 
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,6 +363,7 @@ def invenio_communities():
                                              title=title)
     log(f'we got {pluralized("community", communities, True)}')
     return communities
+
 
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
