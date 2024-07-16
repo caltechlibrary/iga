@@ -1,36 +1,44 @@
 import commonpy.exceptions
-from   commonpy.network_utils import net
-import contextlib
-from   functools import cache
+from functools import cache
 import json
 import os
-from   sidetrack import log
-from   types import SimpleNamespace
+from sidetrack import log
+from types import SimpleNamespace
 import requests
-import rich_click as click
-from urllib.parse import quote
-
+from urllib.parse import quote, urlparse
 
 from iga.exceptions import GitHubError, InternalError
 from iga.name_utils import split_name
 
 
-_BOT_NAME_WORDS = ['daemon', 'dependabot', 'dependabot[bot]']
-'''List of words such that, if one of the words is the last word in an account
-name, mean the account will be assumed to be a software bot of some kind.'''
+class LazyEnvStr:
+    def __init__(self, var_name):
+        self.var_name = var_name
+        self._value = None
 
-API_PATH = '/api/v4/'
-GITLAB_URL = 'https://code.jlab.org'
-API_URL = f'{GITLAB_URL}/api/v4'
+    @property
+    def value(self):
+        if self._value is None:
+            val = os.getenv(self.var_name, '')
+            self._value = f'{val}/api/v4'
+        return self._value
+
+    def __str__(self):
+        return self.value
+
+
+API_URL = LazyEnvStr('GITLAB_URL')
+
 
 class GitLabAPIError(Exception):
     pass
 
+
 def _gitlab_get(endpoint, test_only=False):
     headers = {'Accept': 'application/json'}
-    using_token = True#'GITLAB_TOKEN' in os.environ
+    using_token = 'glpat-3z9T1F3zNa7WNAaireqi'  #'GITLAB_TOKEN' in os.environ
     if using_token:
-        headers['Authorization'] = f'Bearer glpat-3z9T1F3zNa7WNAaireqi'
+        headers['Authorization'] = f'Bearer {using_token}'
     method = 'head' if test_only else 'get'
     try:
         if method == 'HEAD':
@@ -39,19 +47,24 @@ def _gitlab_get(endpoint, test_only=False):
             response = requests.get(endpoint, headers=headers)
 
         if response.status_code == 401:
-            raise GitLabAPIError(f"Unauthorized: Check your GitLab token or permissions. Endpoint: {endpoint}")
+            raise GitLabAPIError(
+                f'Unauthorized: Check your GitLab token or permissions. Endpoint: {endpoint}'
+            )
         elif response.status_code == 429:
             # Too Many Requests error
-            raise GitLabAPIError(f"Too Many Requests: Rate limit exceeded. Try again later. Endpoint: {endpoint}")
+            raise GitLabAPIError(
+                f'Too Many Requests: Rate limit exceeded. Try again later. Endpoint: {endpoint}'
+            )
         return response
 
     except requests.exceptions.RequestException as e:
         # Handle connection errors or timeouts
-        raise GitLabAPIError(f"Request failed: {e}") from e
+        raise GitLabAPIError(f'Request failed: {e}') from e
+
 
 @cache
 def _object_for_gitlab(api_url, cls):
-    '''Return object of class cls made from the data obtained from the API url.'''
+    """Return object of class cls made from the data obtained from the API url."""
     try:
         response = _gitlab_get(api_url)
         if not response:
@@ -72,11 +85,14 @@ def _object_for_gitlab(api_url, cls):
     except Exception as ex:
         # Handle other unexpected errors
         log(f'Error: {ex}')
-        raise InternalError('Encountered unexpected error trying to unpack GitLab data.') from ex
+        raise InternalError(
+            'Encountered unexpected error trying to unpack GitLab data.'
+        ) from ex
 
 
 class GitLabAccount(SimpleNamespace):
-    '''Simple data structure corresponding to a GitHub user or org account.'''
+    """Simple data structure corresponding to a GitHub user or org account."""
+
     def __init__(self, user_dict):
         super().__init__(**user_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
@@ -84,38 +100,43 @@ class GitLabAccount(SimpleNamespace):
         # Save the original data for debugging purposes.
         self._json_dict = user_dict
 
+
 class GitLabAsset(SimpleNamespace):
-    '''Simple data structure corresponding to a GitHub file asset JSON object.'''
+    """Simple data structure corresponding to a GitHub file asset JSON object."""
+
     def __init__(self, asset_dict):
         super().__init__(**asset_dict)
 
+
 class GitLabRelease(SimpleNamespace):
-    '''Simple data structure corresponding to a GitHub release JSON object.'''
+    """Simple data structure corresponding to a GitHub release JSON object."""
+
     def __init__(self, release_dict):
         super().__init__(**release_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub release data: ' + json.dumps(release_dict, indent=2))
         print(release_dict)
-        if release_dict.get('owner',{}):
+        if release_dict.get('owner', {}):
             self.author = GitLabAccount(release_dict['owner'])
 
         # ... then convert the dict of the asset (which contains uploader).
-        #self.assets = [GitLabAsset(asset) for asset in self.assets]
+        # self.assets = [GitLabAsset(asset) for asset in self.assets]
         # Save the original data for debugging purposes.
         self._json_dict = release_dict
 
+
 class GitLabRepo(SimpleNamespace):
-    '''Simple data structure corresponding to a GitHub repository JSON object.
+    """Simple data structure corresponding to a GitHub repository JSON object.
     This object is enhanced with a "files" property that contains a list of
-    the files in the default branch of the repository.'''
+    the files in the default branch of the repository."""
 
     def __init__(self, repo_dict):
         super().__init__(**repo_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub repo data: ' + json.dumps(repo_dict, indent=2))
-        if repo_dict.get('owner',{}):
+        if repo_dict.get('owner', {}):
             self.author = GitLabAccount(repo_dict['owner'])
-        #if repo_dict.get('organization'):
+        # if repo_dict.get('organization'):
         #    self.organization = GitLabAccount(repo_dict['organization'])
         print(repo_dict)
         if repo_dict.get('license'):
@@ -123,21 +144,26 @@ class GitLabRepo(SimpleNamespace):
         # Save the original data for debugging purposes.
         self._json_dict = repo_dict
 
+
 class GitLabLicense(SimpleNamespace):
-    '''Simple data structure corresponding to a license object.'''
+    """Simple data structure corresponding to a license object."""
+
     def __init__(self, license_dict):
         super().__init__(**license_dict)
 
+
 class GitLabFile(SimpleNamespace):
-    '''Simple data structure corresponding to a file in a repo.'''
+    """Simple data structure corresponding to a file in a repo."""
+
     def __init__(self, file_dict):
         super().__init__(**file_dict)
 
+
 def gitlab_release(repo_name, tag, test_only=False):
-    '''Return a Release object corresponding to the tagged release in GitHub.
+    """Return a Release object corresponding to the tagged release in GitHub.
 
     If test_only is True, only check existence; don't create a Release object.
-    '''
+    """
     endpoint = f'{API_URL}/projects/{repo_name}/releases/{tag}'
     if test_only:
         log('testing for existence: ' + endpoint)
@@ -146,8 +172,9 @@ def gitlab_release(repo_name, tag, test_only=False):
     log('getting GitLab release data from ' + endpoint)
     return _object_for_gitlab(endpoint, GitLabRelease)
 
+
 def gitlab_repo(repo_name, test_only=False):
-    '''Return a Repo object corresponding to the named repo in GitLab.'''
+    """Return a Repo object corresponding to the named repo in GitLab."""
     endpoint = f'{API_URL}/projects/{repo_name}?license=true'
     if test_only:
         log('testing for existence: ' + endpoint)
@@ -156,44 +183,49 @@ def gitlab_repo(repo_name, test_only=False):
     log('getting GitLab release data from ' + endpoint)
     return _object_for_gitlab(endpoint, GitLabRelease)
 
+
 def gitlab_release_assets(repo_name, tag, all_assets):
-    '''Return a list of URLs for all the assets associated with the release.'''
+    """Return a list of URLs for all the assets associated with the release."""
 
     release = gitlab_release(repo_name, tag)
-    sources = release.assets["sources"]
+    sources = release.assets['sources']
     assets = []
     for source in sources:
         if not all_assets:
-            if source["format"] in ['zip']:
-                assets.append(source["url"])
+            if source['format'] in ['zip']:
+                assets.append(source['url'])
         else:
             log('option to get all assets is in effect')
-            assets.append(source["url"])
+            assets.append(source['url'])
     return assets
 
+
 def gitlab_repo_filenames(repo, tag_name):
-    '''Return a list of filenames in the repo corresponding to the specified tag.'''
+    """Return a list of filenames in the repo corresponding to the specified tag."""
     endpoint = f'{API_URL}/projects/{repo.id}/repository/tree'
-    response =  _gitlab_get(endpoint)
+    response = _gitlab_get(endpoint)
     if not response:
-        log(f'got no tree or it does not exist')
+        log('got no tree or it does not exist')
         return ''
-    files = [res["path"] for res in response.json()]
+    files = [res['path'] for res in response.json()]
     return files
 
+
 def gitlab_repo_file(repo, tag_name, filename):
-    '''Return the text contents of the named file in the repo object.
+    """Return the text contents of the named file in the repo object.
 
     The tag_name must be a release tag, and is used to find the version of
     the repository corresponding to that tag.
-    '''
+    """
     if filename in getattr(repo, '_files_contents', {}):
         log(f'{filename} found in the files of {repo}')
         return repo._files_contents[filename]
 
-    endpoint = f'{API_URL}/projects/{repo.id}/repository/files/{filename}?ref={tag_name}'
+    endpoint = (
+        f'{API_URL}/projects/{repo.id}/repository/files/{filename}?ref={tag_name}'
+    )
     print(endpoint)
-    response =  _gitlab_get(endpoint)
+    response = _gitlab_get(endpoint)
     if not response:
         log(f'got no content for file {filename} or it does not exist')
         return ''
@@ -202,6 +234,7 @@ def gitlab_repo_file(repo, tag_name, filename):
         log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
         raise InternalError('Unimplemented file encoding ' + json_dict['encoding'])
     import base64
+
     contents = base64.b64decode(json_dict['content']).decode()
     if not getattr(repo, '_file_contents', {}):
         repo._file_contents = {}
@@ -210,9 +243,10 @@ def gitlab_repo_file(repo, tag_name, filename):
     log(f'got contents for {filename} (length = {len(contents)} chars)')
     return contents
 
+
 def gitlab_repo_languages(repo):
     log(f'asking GitHub for list of languages for repo {repo.name}')
-    repolink = repo._links["self"]
+    repolink = repo._links['self']
     endpoint = f'{repolink}/languages'
     response = _gitlab_get(endpoint)
     if not response:
@@ -223,42 +257,44 @@ def gitlab_repo_languages(repo):
     log(f'GitLab lists {len(languages)} languages for the repo')
     return languages
 
+
 def gitlab_asset_contents(asset_url):
-    '''Return the raw contents of a release asset file.'''
+    """Return the raw contents of a release asset file."""
     try:
         response = _gitlab_get(asset_url)
         return response.content
     except KeyboardInterrupt:
         raise
     except commonpy.exceptions.CommonPyException:
-        raise GitHubError(f'Failed to download GitHub asset at {asset_url}'
-                          ' – either it does not exist or it is inaccessible.')
+        raise GitHubError(
+            f'Failed to download GitHub asset at {asset_url}'
+            ' – either it does not exist or it is inaccessible.'
+        )
     except Exception:
         raise
 
+
 def valid_gitlab_release_url(url):
-    '''Check if the provided URL is a valid GitLab release endpoint.'''
-    #return _gitlab_get(url, test_only=True)
+    """Check if the provided URL is a valid GitLab release endpoint."""
+    # return _gitlab_get(url, test_only=True)
     return True
 
+
 def gitlab_account_repo_tag(release_url):
-    '''{gitlab_projectid}/releases/{tag}'''
-    from urllib.parse import urlparse
+    """{gitlab_projectid}/releases/{tag}"""
     parsed = urlparse(release_url)
-    ctx = click.get_current_context()
-    ctx.ensure_object(dict)
-    ctx.obj['gitlab_url'] = parsed.hostname
+    os.environ['GITLAB_URL'] = f'{parsed.scheme}://{parsed.netloc}'
     path = parsed.path
     path = path.rstrip('/')
     tag = path.split('/')[-1]
-    y='/'.join(path.split('/')[:-1])
-    project_id = y.rstrip("-/releases").lstrip('/')
-    from urllib.parse import quote
-    project_id = quote(project_id,safe='')
-    return ( None, project_id, tag)
+    y = '/'.join(path.split('/')[:-1])
+    project_id = y.rstrip('-/releases').lstrip('/')
+    project_id = quote(project_id, safe='')
+    return (None, project_id, tag)
+
 
 def gitlab_account(account_name):
-    endpoint = f'{API_URL}/users?username={account_name}' #without_project_bots=true
+    endpoint = f'{API_URL}/users?username={account_name}'  # without_project_bots=true
     try:
         response = _gitlab_get(endpoint)
         if not response:
@@ -266,9 +302,9 @@ def gitlab_account(account_name):
         log(f'unpacking JSON into object structure from {endpoint}')
 
         # Create the desired object & add the api url in case it's needed later.
-        jsn_response= response.json()
+        jsn_response = response.json()
         obj = GitLabAccount(jsn_response[0])
-        
+
         obj.api_url = endpoint
         return obj
 
@@ -280,10 +316,13 @@ def gitlab_account(account_name):
     except Exception as ex:
         # Handle other unexpected errors
         log(f'Error: {ex}')
-        raise InternalError('Encountered unexpected error trying to unpack GitLab data.') from ex
-    
+        raise InternalError(
+            'Encountered unexpected error trying to unpack GitLab data.'
+        ) from ex
+
+
 def gitlab_repo_contributors(repo):
-    repolink = repo._links["self"]
+    repolink = repo._links['self']
     endpoint = f'{repolink}/repository/contributors'
     response = _gitlab_get(endpoint)
     if not response:
@@ -292,32 +331,25 @@ def gitlab_repo_contributors(repo):
     # The JSON data is a list containing a kind of minimal user info dict.
     contributors = []
     for user_dict in response.json():
-        new_contributor_name = user_dict["name"]
+        new_contributor_name = user_dict['name']
         (given, family) = split_name(new_contributor_name)
-        person_or_org = {'given_name': given,
-                             'family_name': family,
-                             'type': 'personal'}
+        person_or_org = {'given_name': given, 'family_name': family, 'type': 'personal'}
         contributors.append(person_or_org)
     log(f'repo has {len(contributors)} contributors')
     return contributors
 
+
 def identity_from_gitlab(account, role=None):
     if account.name:
         (given, family) = split_name(account.name)
-        person_or_org = {'given_name': given,
-                             'family_name': family,
-                             'type': 'personal'}
+        person_or_org = {'given_name': given, 'family_name': family, 'type': 'personal'}
     else:
         # The GitHub account record has no name, and InvenioRDM won't pass
         # a record without a family name. All we have is the login name.
-        person_or_org = {'given_name': '',
-                            'family_name': account.username,
-                            'type': 'personal'}
+        person_or_org = {
+            'given_name': '',
+            'family_name': account.username,
+            'type': 'personal',
+        }
     result = {'person_or_org': person_or_org}
     return result
-
-def gitlab_probable_bot(account):
-    #users?username=panta  #res[0]["id"]
-    #users/res[0]["id"]
-    is_bot = False
-    return is_bot

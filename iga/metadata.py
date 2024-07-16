@@ -78,6 +78,31 @@ class LazyEnvBool:
 
 GITLAB = LazyEnvBool('GITLAB')
 
+# It's useful to understand the context of what's going on. The record stored
+# in InvenioRDM may have these top-level fields (but might not contain all):
+#
+# {
+#    "$schema": "local://records/record-vX.Y.Z.json",
+#    "id": "q5jr8-hny72",
+#    "pid": { ... },
+#    "pids" : { ... },
+#    "parent": { ... },
+#    "access" : { ... },
+#    "metadata" : { ... },
+#    "files" : { ... },
+#    "tombstone" : { ... },
+#    "created": "...",
+#    "updated": "...",
+# }
+#
+# However, what is uploaded to an InvenioRDM server should only contain the
+# 'metadata' field, because of the other fields above are added by the system.
+# Consequently, IGA only needs to construct the 'metadata' field value. I.e.,
+# referring to https://inveniordm.docs.cern.ch/reference/metadata, we are only
+# concerned with https://inveniordm.docs.cern.ch/reference/metadata/#metadata
+#
+# The following is the full set of possible subfields in "metadata".
+
 FIELDS = [
     "additional_descriptions",
     "additional_titles",
@@ -101,6 +126,26 @@ FIELDS = [
     "title",
     "version",
 ]
+
+# Not all of these need to be provided.  Based on the test cases in
+# https://github.com/inveniosoftware/invenio-rdm-records, the minimum set of
+# fields that needs to be provided seems to be this:
+#
+# {
+#    "metadata": {
+#        "resource_type": { "id": "XYZ", ... },          # note below
+#        "title": "ABC",
+#        "creators": [
+#              {
+#                  "person_or_org": {
+#                      "family_name": "A",
+#                      "given_name": "B",
+#                      "type": "C",
+#                  }
+#              },
+#            ],
+#        "publication_date": "...date...",
+#    }
 
 REQUIRED_FIELDS = [
     "creators",

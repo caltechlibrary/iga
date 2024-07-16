@@ -1,5 +1,3 @@
-import rich_click as click
-from   sidetrack import log
 import os
 
 from iga.github import (
@@ -15,7 +13,7 @@ from iga.github import (
     github_account,
     github_repo_contributors,
     identity_from_github,
-    github_probable_bot
+    github_probable_bot,
 )
 from iga.gitlab import (
     valid_gitlab_release_url,
@@ -30,35 +28,39 @@ from iga.gitlab import (
     gitlab_account,
     gitlab_repo_contributors,
     identity_from_gitlab,
-    gitlab_probable_bot
 )
+
+
 class LazyEnvBool:
     def __init__(self, var_name):
         self.var_name = var_name
 
     def __bool__(self):
-        return os.getenv(self.var_name, '').lower() == 'true'
+        return os.getenv(self.var_name, "").lower() == "true"
 
     __nonzero__ = __bool__  # For Python 2 compatibility
 
-GITLAB = LazyEnvBool('GITLAB')
+
+GITLAB = LazyEnvBool("GITLAB")
+
 
 def valid_release_url(release_url):
-    if not os.getenv('GITLAB'):
+    if not os.getenv("GITLAB"):
         print("I am here")
         return valid_github_release_url(release_url)
     else:
         return valid_gitlab_release_url(release_url)
 
+
 def git_account_repo_tag(release_url):
-    '''Return tuple (account, repo name, tag) based on the given web URL.'''
+    """Return tuple (account, repo name, tag) based on the given web URL."""
     # Example URL: https://code.jlab.org/physdiv/jrdb/inveniordm_jlab/-/releases/0.1.0
     # Note this is not the same as the "release url" below.
     if not GITLAB:
         return github_account_repo_tag(release_url)
     else:
         return gitlab_account_repo_tag(release_url)
-    
+
 
 def git_release(repo_name, tag, account_name=None):
     if not GITLAB:
@@ -66,11 +68,13 @@ def git_release(repo_name, tag, account_name=None):
     else:
         return gitlab_release(repo_name, tag)
 
+
 def git_repo(repo_name, account_name=None):
     if not GITLAB:
         return github_repo(account_name, repo_name)
     else:
         return gitlab_repo(repo_name)
+
 
 def git_repo_filenames(repo, tag):
     if not GITLAB:
@@ -78,18 +82,21 @@ def git_repo_filenames(repo, tag):
     else:
         return gitlab_repo_filenames(repo, tag)
 
+
 def git_repo_file(repo, tag, filename):
     if not GITLAB:
         return github_repo_file(repo, tag, filename)
     else:
         print("here")
         return gitlab_repo_file(repo, tag, filename)
-    
+
+
 def git_release_assets(repo, tag, account_name=None, all_assets=False):
     if not GITLAB:
-        return github_release_assets(account_name,repo, tag,  all_assets)
+        return github_release_assets(account_name, repo, tag, all_assets)
     else:
         return gitlab_release_assets(repo, tag, all_assets)
+
 
 def git_account(repo):
     if not GITLAB:
@@ -97,32 +104,34 @@ def git_account(repo):
     else:
         return gitlab_account(repo)
 
+
 def git_repo_languages(repo):
     if not GITLAB:
         return github_repo_languages(repo)
     else:
         return gitlab_repo_languages(repo)
 
+
 def git_asset_contents(asset):
     if not GITLAB:
         return github_asset_contents(asset)
     else:
         return gitlab_asset_contents(asset)
-    
+
+
 def git_repo_contributors(repo):
     if not GITLAB:
         return github_repo_contributors(repo)
     else:
         return gitlab_repo_contributors(repo)
 
+
 def identity_from_git(account, role=None):
     if GITLAB:
         return identity_from_gitlab(account, role=None)
     else:
         return identity_from_github(account, role=role)
-    
+
+
 def git_probable_bot(account):
-    if GITLAB:
-        return gitlab_probable_bot(account)
-    else:
-        return github_probable_bot(account)
+    return github_probable_bot(account)
