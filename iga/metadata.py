@@ -57,11 +57,10 @@ from iga.githublab import (
     git_account,
     git_repo_contributors,
     identity_from_git,
-    git_probable_bot
+    git_probable_bot,
+    git_file_url
 )
-from iga.github import (
-    github_file_url,
-)
+
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
 from iga.reference import reference, RECOGNIZED_REFERENCE_SCHEMES
@@ -1116,7 +1115,7 @@ def rights(repo, release, include_all):
                 # There's no safe way to summarize arbitrary license text,
                 # so we can't provide a 'description' field value.
                 rights = [{'title': {'en': 'License'},
-                           'link': github_file_url(repo, basename + ext)}]
+                           'link': git_file_url(repo, basename + ext, release.tag_name)}]
                 break
         else:
             continue

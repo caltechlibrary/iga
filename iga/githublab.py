@@ -14,6 +14,7 @@ from iga.github import (
     github_repo_contributors,
     identity_from_github,
     github_probable_bot,
+    github_file_url,
 )
 from iga.gitlab import (
     valid_gitlab_release_url,
@@ -28,6 +29,7 @@ from iga.gitlab import (
     gitlab_account,
     gitlab_repo_contributors,
     identity_from_gitlab,
+    gitlab_file_url,
 )
 
 
@@ -36,17 +38,16 @@ class LazyEnvBool:
         self.var_name = var_name
 
     def __bool__(self):
-        return os.getenv(self.var_name, "").lower() == "true"
+        return os.getenv(self.var_name, '').lower() == 'true'
 
     __nonzero__ = __bool__  # For Python 2 compatibility
 
 
-GITLAB = LazyEnvBool("GITLAB")
+GITLAB = LazyEnvBool('GITLAB')
 
 
 def valid_release_url(release_url):
-    if not os.getenv("GITLAB"):
-        print("I am here")
+    if not GITLAB:
         return valid_github_release_url(release_url)
     else:
         return valid_gitlab_release_url(release_url)
@@ -87,7 +88,6 @@ def git_repo_file(repo, tag, filename):
     if not GITLAB:
         return github_repo_file(repo, tag, filename)
     else:
-        print("here")
         return gitlab_repo_file(repo, tag, filename)
 
 
@@ -135,3 +135,10 @@ def identity_from_git(account, role=None):
 
 def git_probable_bot(account):
     return github_probable_bot(account)
+
+
+def git_file_url(repo, filename, tag):
+    if not GITLAB:
+        return github_file_url(repo, filename)
+    else:
+        return gitlab_file_url(repo, filename, tag)

@@ -36,7 +36,7 @@ class GitLabAPIError(Exception):
 
 def _gitlab_get(endpoint, test_only=False):
     headers = {'Accept': 'application/json'}
-    using_token = 'glpat-3z9T1F3zNa7WNAaireqi'  #'GITLAB_TOKEN' in os.environ
+    using_token = 'GITLAB_TOKEN' in os.environ
     if using_token:
         headers['Authorization'] = f'Bearer {using_token}'
     method = 'head' if test_only else 'get'
@@ -242,6 +242,12 @@ def gitlab_repo_file(repo, tag_name, filename):
     repo._file_contents[filename] = contents
     log(f'got contents for {filename} (length = {len(contents)} chars)')
     return contents
+
+
+def gitlab_file_url(repo, filename, tag):
+    """Return the URL of the named file in the repo."""
+    endpoint = f'{API_URL}/projects/{repo.id}/repository/blobs/{filename}?ref={tag}'
+    return endpoint
 
 
 def gitlab_repo_languages(repo):
