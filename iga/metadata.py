@@ -1454,7 +1454,7 @@ def _release_author(release):
     # about a user (e.g.,, it gives a name but that name is not broken out
     # into family & given name), plus sometimes fields are empty.
     account_name = release.author["username"] if GITLAB else release.author.login
-    account = git_account(account_name) #AP: release.author.username
+    account = git_account(account_name)
     return identity_from_git(account) if account.name else None
 
 def _repo_owner(repo):
@@ -1462,7 +1462,7 @@ def _repo_owner(repo):
             account_name =  repo.owner["username"]
     else:
         account_name = repo.owner.login
-    account = git_account(account_name) #AP: repo.owner.username or maybe deal with namespace.kind.group?
+    account = git_account(account_name)
     return identity_from_git(account)
 
 def _parsed_github_account(data):
