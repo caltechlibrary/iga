@@ -434,7 +434,6 @@ def contributors(repo, release, include_all):
                 contributors.append(entity)
             else:
                 log(f'skipping CodeMeta "contributor" {entity} who is in "authors"')
-    
     elif include_all:
         if not GITLAB:
             if (repo_contributors := git_repo_contributors(repo)):
@@ -532,7 +531,7 @@ def dates(repo, release, include_all):
     # to the GitHub repo "updated_at" date.
     if mod_date := repo.codemeta.get('dateModified', ''):
         log('adding the CodeMeta "dateModified" as the "updated" date')
-    elif include_all and (mod_date := repo.updated_at):      #AP: gitlab what
+    elif include_all and (mod_date := repo.updated_at):
         log('adding the GitHub repo "updated_at" date as the "updated" date')
     if mod_date:
         dates.append({'date': arrow.get(mod_date).format('YYYY-MM-DD'),
@@ -862,7 +861,7 @@ def related_identifiers(repo, release, include_all):
                 'resource_type': {'id': res_type},
                 'scheme': 'url'}
 
-    log('adding GitHub release "html_url" to "related_identifiers"')
+    log('adding GitHub/GitLab release "html_url" to "related_identifiers"')
     identifiers = [id_dict(release._links["self"] if GITLAB else release.html_url, 'isidenticalto', 'software')]
 
     # The GitHub repo is what this release is derived from. Note: you would
@@ -875,7 +874,7 @@ def related_identifiers(repo, release, include_all):
     elif repo_url := repo.cff.get('repository-code', ''):
         log('adding CFF "repository-code" to "related_identifiers"')
     elif include_all and (repo_url := repo_html):
-        log('adding GitHub repo "html_url" to "related_identifiers"')
+        log('adding GitHub/GitLab repo "html_url" to "related_identifiers"')
     if repo_url:
         identifiers.append(id_dict(repo_url, 'isderivedfrom', 'software'))
 
@@ -896,7 +895,7 @@ def related_identifiers(repo, release, include_all):
     elif homepage_url := repo.cff.get('url', ''):
         log('adding CFF "url" to "related_identifiers"')
     elif include_all and (homepage_url := repo.web_url if GITLAB else repo.homepage):
-        log('adding GitHub repo "homepage" to "related_identifiers"')
+        log('adding GitHub/GitLab repo "homepage" to "related_identifiers"')
     if homepage_url:
         identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
 
@@ -939,22 +938,25 @@ def related_identifiers(repo, release, include_all):
             identifiers.append(id_dict(url, 'isdocumentedby',
                                        'publication-softwaredocumentation'))
 
-    # The GitHub Pages URL for a repo usually points to documentation or info
-    # about the softare, though we can't tell if it's for THIS release.
-    #if include_all and repo.has_pages:
-    #    url = f'https://{repo.owner.login}.github.io/{repo.name}'   # AP: ?
-    #    if not any(url == item['identifier'] for item in identifiers):
-    #        log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
-    #        identifiers.append(id_dict(url, 'isdocumentedby',
-    #                                   'publication-softwaredocumentation'))
+    if not GITLAB:
+        # The GitHub Pages URL for a repo usually points to documentation or info
+        # about the softare, though we can't tell if it's for THIS release.
+        if include_all and repo.has_pages:
+            url = f'https://{repo.owner.login}.github.io/{repo.name}'
+            if not any(url == item['identifier'] for item in identifiers):
+                log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
+                identifiers.append(id_dict(url, 'isdocumentedby',
+                                           'publication-softwaredocumentation'))
+    
+    # todo: check gitlab pages
 
     # The issues URL is kind of a supplemental resource.
     repo_issues = repo._links["issues"]  if GITLAB else repo.issues_url
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
     elif include_all and (repo_issues):
-        log('adding GitHub repo "issues_url" to "related_identifiers"')
-        issues_url = f'https://github.com/{repo.name if GITLAB else repo.full_name}/issues'
+        log('adding GitHub/GitLab repo "issues_url" to "related_identifiers"')
+        issues_url = repo_issues
     if issues_url:
         identifiers.append(id_dict(issues_url, 'issupplementedby', 'other'))
 
@@ -1459,10 +1461,10 @@ def _release_author(release):
 
 def _repo_owner(repo):
     if GITLAB:
-            account_name =  repo.owner["username"]
+        account_name =  repo.owner["username"]
     else:
         account_name = repo.owner.login
-    account = git_account(account_name)
+    account = git_account(account_name) 
     return identity_from_git(account)
 
 def _parsed_github_account(data):
