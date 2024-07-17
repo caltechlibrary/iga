@@ -274,8 +274,16 @@ def _alert(ctx, msg, print_usage=True):
         STYLE_OPTION,
         STYLE_ARGUMENT,
         STYLE_SWITCH,
-        OptionHighlighter,
     )
+    from rich.highlighter import RegexHighlighter
+    class OptionHighlighter(RegexHighlighter):
+            """Highlights our special options."""
+
+            highlights = [
+                r"(^|[^\w\-])(?P<switch>-([^\W0-9][\w\-]*\w|[^\W0-9]))",
+                r"(^|[^\w\-])(?P<option>--([^\W0-9][\w\-]*\w|[^\W0-9]))",
+                r"(?P<metavar><[^>]+>)",
+            ]
     highlighter = OptionHighlighter()
     console = Console(theme=Theme({
         "option": STYLE_OPTION,
@@ -643,11 +651,11 @@ possible values:
   6 = the personal access token was rejected  
   7 = an exception or fatal error occurred  
 '''
+    if gitlab:
+            os.environ['GITLAB'] = 'True'
+    if gitlab_url:
+        os.environ['GITLAB_URL'] = gitlab_url
     # Process arguments & handle early exits ..................................
-    ctx.ensure_object(dict)
-    ctx.obj['gitlab'] = gitlab
-    ctx.obj['gitlab_url'] = gitlab_url
-
     if url_or_tag == 'help':  # Detect if the user typed "help" without dashes.
         _print_help_and_exit(ctx)
     elif url_or_tag.startswith('http'):
@@ -667,15 +675,16 @@ possible values:
                 ' provided: the options `--account`, `--repo`, and a tag name.')
             sys.exit(int(ExitCode.bad_arg))
         tag = url_or_tag
-        url_or_tag = f'https://api.github.com/{account}/repos/{repo}/releases/tags/{tag}'
+        url_or_tag = f'https://github.com/{account}/{repo}/releases/tag/{tag}'
         if not valid_release_url(url_or_tag):
+            print("I am here")
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
 
     elif gitlab:
-        if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all(gitlab_url, account, repo, url_or_tag)):
+        if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all([gitlab_url, account, repo, url_or_tag])):
             _alert(ctx, 'When using GitLab, all of the following must be'
-                ' provided: the options `--gitlab-url` and `--gitlab-projectid`. or `--gitlab-url` and `--gitlab-url , --account , --repo ')
+                ' provided: the options `--gitlab-url` and `--gitlab-projectid`. or  `--gitlab-url , --account , --repo ')
             sys.exit(int(ExitCode.bad_arg))
         if all([gitlab_url, gitlab_projectid, url_or_tag]):
             tag = url_or_tag
@@ -693,7 +702,6 @@ possible values:
         else:
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
-        
         repo = gitlab_projectid
     else:
         _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
