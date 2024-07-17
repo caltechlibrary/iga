@@ -448,9 +448,12 @@ def contributors(repo, release, include_all):
                         log(f'skipping GitHub repo contributor {entity} who is in "authors"')
         else:
             if (repo_contributors := git_repo_contributors(repo)):
-                if repo_contributors:
-                    for author in authors:
-                        print("author", author)
+                for entity in repo_contributors:
+                    if not any(_entity_match(entity, author) for author in authors):
+                        log(f'adding GITLAB repo contributor {entity} as contributor(s)')
+                        contributors.append(entity)
+                    else:
+                        log(f'skipping GITLAB repo contributor {entity} who is in "authors"')
 
 
     # We're getting data from multiple sources & we might have duplicates.

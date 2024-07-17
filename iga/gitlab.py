@@ -336,11 +336,17 @@ def gitlab_repo_contributors(repo):
         return []
     # The JSON data is a list containing a kind of minimal user info dict.
     contributors = []
+    seen_names = set()
     for user_dict in response.json():
         new_contributor_name = user_dict['name']
         (given, family) = split_name(new_contributor_name)
+        # this is done so that when a repo is imported from github to gitlab
+        # it creates the same name but different order contributors. 
+        sorted_names = tuple(sorted([family, given]))
         person_or_org = {'given_name': given, 'family_name': family, 'type': 'personal'}
-        contributors.append(person_or_org)
+        if sorted_names not in seen_names:
+            seen_names.add(sorted_names)
+            contributors.append({'person_or_org': person_or_org, 'role': {'id': 'other'}})
     log(f'repo has {len(contributors)} contributors')
     return contributors
 
@@ -359,3 +365,4 @@ def identity_from_gitlab(account, role=None):
         }
     result = {'person_or_org': person_or_org}
     return result
+
