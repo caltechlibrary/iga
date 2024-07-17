@@ -10,6 +10,7 @@ file "LICENSE" for more information.
 
 import bdb
 import os
+import urllib.parse
 import rich
 from   rich.console import Console
 from   rich.style import Style
@@ -447,9 +448,9 @@ def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
         help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
-IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
-release archive to the record. The GitHub release can be specified using
-_either_ a full release URL, _or_ a combination of GitHub account + repository
+IGA creates a metadata record in an InvenioRDM server and attaches a GitHub/GitLab
+release archive to the record. The GitHub/GitLab release can be specified using
+_either_ a full release URL, _or_ a combination of  account + repository
 \\+ tag. Different command-line options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
@@ -470,7 +471,9 @@ to create a token.
 \r
 _**Specification of a GitHub release**_
 \r
-A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
+A GitHub/GitLab release can be specified to IGA in one of two mutually-exclusive ways:
+\r
+For GitHub:
  1. The full URL of the web page on GitHub of a tagged release. In this case,
     the URL must be the final argument on the command line invocation of IGA
     and the options `--account` and `--repo` must be omitted.
@@ -478,22 +481,48 @@ A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
     case, the final argument on the command line must be the _tag_, and in
     addition, values for the options `--account` and `--repo` must be provided.
 \r
+For GitLab:
+ 1. The full URL of the web page on GitLab of a tagged release with `--gitlab`. In this case,
+    the URL must be the final argument on the command line invocation of IGA
+ 2. A combination of (`--gitlab`, `--github-account`, `--github-repo` and _tag_ ) or 
+    a combination of (`--gitlab`, `--gitlab-projectid` and __tag_ ) must be provided.
+    The `--gitlab-projectid` can be a id of the project. specified in,
+    (https://docs.gitlab.com/ee/user/project/working_with_projects.html#access-a-project-by-using-the-project-id)
+    or a full path of the project NAMESPACE/PROJECT_PATH .
+\r
 Here's an example using approach #1 (assuming environment variables
 INVENIO_SERVER, INVENIO_TOKEN, and GITHUB_TOKEN have all been set):
+\r
+Using GitHub:
 ```shell
   iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
+\r
+Using GitLab:
+```shell
+  iga --gitlab https://code.jlab.org/panta/hcana_container_doc/-/releases/0.0.2  
+```
 and here's the equivalent using approach #2:
+\r
+Using GitHub:
 ```shell
   iga --github-account mhucka --github-repo taupe v1.2.0
+  ```
+\r
+Using GitLab:
+```shell
+  iga --gitlab-url https://code.jlab.org --gitlab --github-account panta --github-repo  hcana_container_doc  0.0.2
+  iga --gitlab-url https://code.jlab.org --gitlab --gitlab-projectid 31 0.1.0
+  iga --gitlab-url https://code.jlab.org --gitlab --gitlab-projectid physdiv/jrdb/inveniordm_jlab  0.1.0
 ```
-Note that when using this form of the command, the release tag ("v1.2.0" above)
+Note that when using this form of the command, the release tag ("v1.2.0"/"0.1.0"/"0.0.2" above)
 must be the last item given on the command line.
 \r
-_**Use of a GitHub access token**_
+_**Use of a GitHub/GitLab access token**_
 \r
 It is possible to run IGA without providing a GitHub access token. GitHub
-allows up to 60 API calls per minute when running without credentials, and
+allows up to 60 API calls per minute (and for GITLAB dpends upon configuration)
+when running without credentials, and
 though IGA makes several API calls to GitHub each time it runs, for many
 repositories, IGA will not hit the limit. However, if you run IGA multiple
 times in a row or your repository has many contributors, then you may need to
@@ -503,6 +532,8 @@ the option `--github-token` to pass the token on the command line, but **you
 are strongly advised to avoid this practice because it is insecure**.
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
 and follow the instructions for creating a "classic" personal access token.
+Or to obtain PAT from GitLab , visit 
+https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html .
 \r
 _**Construction of an InvenioRDM record**_
 \r
@@ -511,10 +542,10 @@ using GitHub's API as well as several other APIs as needed. The information
 includes the following:
  * (if one exists) a `codemeta.json` file in the GitHub repository
  * (if one exists) a `CITATION.cff` file in the GitHub repository
- * data available from GitHub for the release
- * data available from GitHub for the repository
- * data available from GitHub for the account of the owner
- * data available from GitHub for the accounts of repository contributors
+ * data available from GitHub/GitLab for the release
+ * data available from GitHub/GitLab for the repository
+ * data available from GitHub/GitLab for the account of the owner
+ * data available from GitHub/GitLab for the accounts of repository contributors
  * file assets associated with the GitHub release
  * data available from ORCID.org for ORCID identifiers
  * data available from ROR.org for Research Organization Registry identifiers
@@ -523,7 +554,7 @@ includes the following:
 \r
 IGA tries to use `CodeMeta.json` first and `CITATION.cff` second to fill out
 the fields of the InvenioRDM record. If neither of those files are present, IGA
-uses values from the GitHub repository instead. You can make it always use all
+uses values from the GitHub/GitLab repository instead. You can make it always use all
 sources of info with the option `--all-metadata`. Depending on how complete and
 up-to-date your `CodeMeta.json` and `CITATION.cff` are, this may or may not
 make the record more comprehensive and may or may not introduce redundancies or
@@ -532,18 +563,18 @@ unwanted values.
 To override the auto-created record, use the option `--read-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
 by the destination server. When `--read-record` is provided, IGA does _not_
-extract the data above, but still obtains the file assets from GitHub.
+extract the data above, but still obtains the file assets from GitHub/GitLab.
 \r
-_**Specification of GitHub file assets**_
+_**Specification of GitHub/GitLab file assets**_
 \r
 By default, IGA attaches to the InvenioRDM record _only_ the ZIP file asset
-created by GitHub for the release. To make IGA attach all assets associated
-with the GitHub release, use the option `--all-assets`.
+created by GitHub/GitLab for the release. To make IGA attach all assets associated
+with the GitHub/GitLab release, use the option `--all-assets`.
 \r
 To upload specific file assets and override the default selections made by IGA,
 you can use the option `--file` followed by a path to a file to be uploaded.
 You can repeat the option `--file` to upload multiple file assets. Note that if
-`--file` is provided, then IGA _does not use any file assets from GitHub_; it
+`--file` is provided, then IGA _does not use any file assets from GitHub_ / GitLab_; it
 is the user's responsibility to supply all the files that should be uploaded.
 \r
 If both `--read-record` and `--file` are used, then IGA does not actually
@@ -646,7 +677,7 @@ possible values:
   1 = interrupted  
   2 = encountered a bad or missing value for an option  
   3 = encountered a problem with a file or directory  
-  4 = encountered a problem interacting with GitHub  
+  4 = encountered a problem interacting with GitHub/GitLab 
   5 = encountered a problem interacting with InvenioRDM  
   6 = the personal access token was rejected  
   7 = an exception or fatal error occurred  
@@ -677,7 +708,6 @@ possible values:
         tag = url_or_tag
         url_or_tag = f'https://github.com/{account}/{repo}/releases/tag/{tag}'
         if not valid_release_url(url_or_tag):
-            print("I am here")
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
 
@@ -688,6 +718,7 @@ possible values:
             sys.exit(int(ExitCode.bad_arg))
         if all([gitlab_url, gitlab_projectid, url_or_tag]):
             tag = url_or_tag
+            gitlab_projectid = urllib.parse.quote_plus(gitlab_projectid)
             url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
             if not valid_release_url(url_or_tag):
                 _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
