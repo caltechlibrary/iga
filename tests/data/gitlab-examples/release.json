@@ -1,0 +1,80 @@
+{
+    "name": "This is the test release",
+    "tag_name": "v0.0.1",
+    "description": "Added citation and lisence",
+    "created_at": "2024-08-26T15:40:54.099Z",
+    "released_at": "2024-08-26T15:40:54.099Z",
+    "upcoming_release": false,
+    "author": {
+      "id": 14699208,
+      "username": "panta-123",
+      "name": "anil panta",
+      "state": "active",
+      "locked": false,
+      "avatar_url": "https://secure.gravatar.com/avatar/f7ecdfd6bf7abb12bcc280c2d7fb532fc190ac87ffd087147eb101bb93c73498?s=80&d=identicon",
+      "web_url": "https://gitlab.com/panta-123"
+    },
+    "commit": {
+      "id": "dcf073309667090b871ab6a667818a3bfde8d924",
+      "short_id": "dcf07330",
+      "created_at": "2024-08-26T15:35:41.000+00:00",
+      "parent_ids": [
+        "26c092cfc7fbb92b88ffa5bdb3c714b1241a45a7"
+      ],
+      "title": "Update 3 files",
+      "message": "Update 3 files\n\n- /CITATION.cff\n- /LICENSE\n- /README.md",
+      "author_name": "anil panta",
+      "author_email": "anilpanta2@gmail.com",
+      "authored_date": "2024-08-26T15:35:41.000+00:00",
+      "committer_name": "anil panta",
+      "committer_email": "anilpanta2@gmail.com",
+      "committed_date": "2024-08-26T15:35:41.000+00:00",
+      "trailers": {
+  
+      },
+      "extended_trailers": {
+  
+      },
+      "web_url": "https://gitlab.com/panta-123/test/-/commit/dcf073309667090b871ab6a667818a3bfde8d924"
+    },
+    "commit_path": "/panta-123/test/-/commit/dcf073309667090b871ab6a667818a3bfde8d924",
+    "tag_path": "/panta-123/test/-/tags/v0.0.1",
+    "assets": {
+      "count": 4,
+      "sources": [
+        {
+          "format": "zip",
+          "url": "https://gitlab.com/panta-123/test/-/archive/v0.0.1/test-v0.0.1.zip"
+        },
+        {
+          "format": "tar.gz",
+          "url": "https://gitlab.com/panta-123/test/-/archive/v0.0.1/test-v0.0.1.tar.gz"
+        },
+        {
+          "format": "tar.bz2",
+          "url": "https://gitlab.com/panta-123/test/-/archive/v0.0.1/test-v0.0.1.tar.bz2"
+        },
+        {
+          "format": "tar",
+          "url": "https://gitlab.com/panta-123/test/-/archive/v0.0.1/test-v0.0.1.tar"
+        }
+      ],
+      "links": []
+    },
+    "evidences": [
+      {
+        "sha": "f7f2232b33bad046a4fcf9717bbfbae5eb00f331e04d",
+        "filepath": "https://gitlab.com/panta-123/test/-/releases/v0.0.1/evidences/9539534.json",
+        "collected_at": "2024-08-26T15:40:54.281Z"
+      }
+    ],
+    "_links": {
+      "closed_issues_url": "https://gitlab.com/panta-123/test/-/issues?release_tag=v0.0.1&scope=all&state=closed",
+      "closed_merge_requests_url": "https://gitlab.com/panta-123/test/-/merge_requests?release_tag=v0.0.1&scope=all&state=closed",
+      "edit_url": "https://gitlab.com/panta-123/test/-/releases/v0.0.1/edit",
+      "merged_merge_requests_url": "https://gitlab.com/panta-123/test/-/merge_requests?release_tag=v0.0.1&scope=all&state=merged",
+      "opened_issues_url": "https://gitlab.com/panta-123/test/-/issues?release_tag=v0.0.1&scope=all&state=opened",
+      "opened_merge_requests_url": "https://gitlab.com/panta-123/test/-/merge_requests?release_tag=v0.0.1&scope=all&state=opened",
+      "self": "https://gitlab.com/panta-123/test/-/releases/v0.0.1"
+    }
+  }

@@ -131,7 +131,14 @@ def _read_param_value(ctx, param, value, env_var, thing, required=True):
 def _read_github_token(ctx, param, value):
     '''Read the file and set the environment variable GITHUB_TOKEN.'''
     return _read_param_value(ctx, param, value, 'GITHUB_TOKEN',
-                             'GitHub/GitLab personal access token', required=False)
+                             'GitHub personal access token', required=False)
+
+
+def _read_gitlab_token(ctx, param, value):
+    '''Read the file and set the environment variable GITLAB_TOKEN.'''
+    return _read_param_value(ctx, param, value, 'GITLAB_TOKEN',
+                             'GitLab personal access token', required=False)
+
 
 def _read_invenio_token(ctx, param, value):
     '''Read the file and set the environment variable INVENIO_TOKEN.'''
@@ -384,7 +391,10 @@ def _list_communities(ctx, param, value):
               help='GitHub repository name, if not using release URL')
 #
 @click.option('--github-token', '-t', metavar='STR', callback=_read_github_token,
-              help="GitHub/GitLab acccess token (**avoid – use variable**)")
+              help="GitHub acccess token (**avoid – use variable**)")
+#
+@click.option('--gitlab-token', '-t', metavar='STR', callback=_read_gitlab_token,
+              help="GitLab acccess token (**avoid – use variable**)")
 
 #
 @click.option('--gitlab', is_flag=True, help='Use GitLab mode')
@@ -441,7 +451,7 @@ def _list_communities(ctx, param, value):
 @click.pass_context
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
         files_to_upload=None, account=None, repo=None, github_token=None, 
-        gitlab_projectid=None, gitlab=False, gitlab_url=None,
+        gitlab_token=None, gitlab_projectid=None, gitlab=False, gitlab_url=None,
         print_doi=False, server=None, invenio_token=None, list_communities=False,
         open_in_browser=False, log_dest=None, mode='normal', parent_id=None,
         all_metadata=False, source=None, dest=None, timeout=None,
@@ -498,7 +508,7 @@ Using GitHub:
   iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
 \r
-Using GitLab:
+Using GitLab (assuming environment variables GITLAB_TOKEN has been set):
 ```shell
   iga --gitlab https://code.jlab.org/panta/hcana_container_doc/-/releases/0.0.2  
 ```
@@ -526,9 +536,9 @@ when running without credentials, and
 though IGA makes several API calls to GitHub each time it runs, for many
 repositories, IGA will not hit the limit. However, if you run IGA multiple
 times in a row or your repository has many contributors, then you may need to
-supply a GitHub access token. The preferred way of doing that is to set the
-value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use
-the option `--github-token` to pass the token on the command line, but **you
+supply a GitHub/GITLAB access token. The preferred way of doing that is to set the
+value of the environment variable `GITHUB_TOKEN`/`GITLAB_TOKEN`. Alternatively, you can use
+the option `--github-token`/`--gitlab_token` to pass the token on the command line, but **you
 are strongly advised to avoid this practice because it is insecure**.
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
 and follow the instructions for creating a "classic" personal access token.
@@ -683,7 +693,7 @@ possible values:
   7 = an exception or fatal error occurred  
 '''
     if gitlab:
-            os.environ['GITLAB'] = 'True'
+        os.environ['GITLAB'] = 'True'
     if gitlab_url:
         os.environ['GITLAB_URL'] = gitlab_url
     # Process arguments & handle early exits ..................................
@@ -712,6 +722,9 @@ possible values:
             sys.exit(int(ExitCode.bad_arg))
 
     elif gitlab:
+        if gitlab_projectid and (account or repo):
+            _alert(ctx, 'Cannot use --gitlab-projectid with --github-account or --github-repo')
+            sys.exit(int(ExitCode.bad_arg))
         if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all([gitlab_url, account, repo, url_or_tag])):
             _alert(ctx, 'When using GitLab, all of the following must be'
                 ' provided: the options `--gitlab-url` and `--gitlab-projectid`. or  `--gitlab-url , --account , --repo ')

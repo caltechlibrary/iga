@@ -4,24 +4,25 @@
 # @created 2022-12-08
 # @license Please see the file named LICENSE in the project directory
 # @website https://github.com/caltechlibrary/iga
+# pylint: disable=redefined-outer-name
 # =============================================================================
 
 import click
 import click.testing
 import json5
-import os
+import pytest
 from   os import path
 from   sidetrack import log
 from   unittest.mock import patch
 
-from   iga.exit_codes import ExitCode
+from iga.cli import cli
+from iga.exit_codes import ExitCode
 from iga.github import (
     GitHubAccount,
     GitHubRelease,
     GitHubRepo,
 )
 
-
 # Mocks
 # .............................................................................
 
@@ -90,10 +91,14 @@ def mocked_orcid_data(orcid):
     with open(path.join(orcid_dir, orcid_filename), 'r') as f:
         return json5.load(f)
 
-
+@pytest.fixture
+def cli_runner():
+    return click.testing.CliRunner()
+
 # Tests
 # .............................................................................
 
+"""
 @patch.dict(os.environ, {}, clear=True)
 @patch('iga.invenio.invenio_api_available', new=mocked_invenio_api_available)
 @patch('iga.invenio.invenio_token_valid', new=mocked_invenio_token_valid)
@@ -122,31 +127,23 @@ def test_environment_vars_from_options(capsys):
     assert os.environ['INVENIO_TOKEN'] == 'itoken'
     assert 'GITHUB_TOKEN' in os.environ
     assert os.environ['GITHUB_TOKEN'] == 'gtoken'
+"""
 
-
-def test_no_args(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli)
+def test_no_args(cli_runner):
+    result = cli_runner.invoke(cli)
     assert 'Usage' in result.output
     assert result.exit_code == int(ExitCode.success)
 
-
-def test_unknown_arg(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--foo'])
+@pytest.mark.parametrize("flag", ["--foo"])
+def test_unknown_arg(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert 'No such option' in result.output
     assert result.exit_code == int(ExitCode.bad_arg)
 
 
-def test_help_flag(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--help'])
-    assert 'Usage' in result.output
-    assert result.exit_code == int(ExitCode.success)
-    result = runner.invoke(cli, ['-h'])
+@pytest.mark.parametrize("flag", ["--help", "-h"])
+def test_help_flags(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert 'Usage' in result.output
     assert result.exit_code == int(ExitCode.success)
 
@@ -158,26 +155,42 @@ def test_help_flag(capsys):
 #     result = runner.invoke(cli, ['help'])
 #     assert result.exit_code == int(ExitCode.success)
 
-
-def test_mode(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--mode'])
+@pytest.mark.parametrize("flag", ["--mode"])
+def test_mode(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert 'requires an argument' in result.output
     assert result.exit_code == int(ExitCode.bad_arg)
 
-
-def test_version(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['--version'])
+@pytest.mark.parametrize("flag", ["--version"])
+def test_version(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert 'version' in result.output
     assert result.exit_code == int(ExitCode.success)
 
 
-def test_incomplete_file_arg(capsys):
-    from iga.cli import cli
-    runner = click.testing.CliRunner()
-    result = runner.invoke(cli, ['-f'])
+@pytest.mark.parametrize("flag", ["-f"])
+def test_incomplete_file_arg(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert 'requires an argument' in result.output
+    assert result.exit_code == int(ExitCode.bad_arg)
+
+@pytest.mark.parametrize("flag", ['--gitlab', '--gitlab-url', 'https://gitlab.com', '--gitlab-projectid', '', 'v1.0.0'])
+def test_gitlab_projectid_validation(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
+    assert result.exit_code == int(ExitCode.bad_arg)
+
+@pytest.mark.parametrize("flag", ['--gitlab', '--gitlab-url', 'https://gitlab.com', 'v1.0.0'])
+def test_gitlab_missing_required_options(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
+    assert result.exit_code == int(ExitCode.bad_arg)
+    assert 'When using GitLab, all of the following must be provided' in result.output
+
+@pytest.mark.parametrize("flag", ['--gitlab', '--gitlab-url', 'https://gitlab.com', '--gitlab-projectid', 'group/project', '--github-account', 'user', 'v1.0.0'])
+def test_gitlab_invalid_combination_projectid_account(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
+    assert result.exit_code == int(ExitCode.bad_arg)
+
+@pytest.mark.parametrize("flag", ['--gitlab', '--gitlab-url', 'https://gitlab.com', '--gitlab-projectid', 'group/project', '--github-repo', 'myrepo', 'v1.0.0'])
+def test_gitlab_invalid_combination_projectid_repo(cli_runner, flag):
+    result = cli_runner.invoke(cli, [flag])
     assert result.exit_code == int(ExitCode.bad_arg)

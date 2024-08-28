@@ -2,10 +2,12 @@ import commonpy.exceptions
 from functools import cache
 import json
 import os
+import re
+import base64
 from sidetrack import log
 from types import SimpleNamespace
 import requests
-from urllib.parse import quote, urlparse
+from urllib.parse import quote, urlparse, urljoin
 
 from iga.exceptions import GitHubError, InternalError
 from iga.name_utils import split_name
@@ -36,7 +38,7 @@ class GitLabAPIError(Exception):
 
 def _gitlab_get(endpoint, test_only=False):
     headers = {'Accept': 'application/json'}
-    using_token = 'GITLAB_TOKEN' in os.environ
+    using_token = os.environ.get('GITLAB_TOKEN')
     if using_token:
         headers['Authorization'] = f'Bearer {using_token}'
     method = 'head' if test_only else 'get'
@@ -73,7 +75,6 @@ def _object_for_gitlab(api_url, cls):
 
         # Create the desired object & add the api url in case it's needed later.
         obj = cls(response.json())
-        print(response.json())
         obj.api_url = api_url
         return obj
 
@@ -115,12 +116,8 @@ class GitLabRelease(SimpleNamespace):
         super().__init__(**release_dict)
         if os.environ.get('IGA_RUN_MODE') == 'debug':
             log('GitHub release data: ' + json.dumps(release_dict, indent=2))
-        print(release_dict)
         if release_dict.get('owner', {}):
             self.author = GitLabAccount(release_dict['owner'])
-
-        # ... then convert the dict of the asset (which contains uploader).
-        # self.assets = [GitLabAsset(asset) for asset in self.assets]
         # Save the original data for debugging purposes.
         self._json_dict = release_dict
 
@@ -138,7 +135,6 @@ class GitLabRepo(SimpleNamespace):
             self.author = GitLabAccount(repo_dict['owner'])
         # if repo_dict.get('organization'):
         #    self.organization = GitLabAccount(repo_dict['organization'])
-        print(repo_dict)
         if repo_dict.get('license'):
             self.license = GitLabLicense(repo_dict['license'])
         # Save the original data for debugging purposes.
@@ -224,7 +220,6 @@ def gitlab_repo_file(repo, tag_name, filename):
     endpoint = (
         f'{API_URL}/projects/{repo.id}/repository/files/{filename}?ref={tag_name}'
     )
-    print(endpoint)
     response = _gitlab_get(endpoint)
     if not response:
         log(f'got no content for file {filename} or it does not exist')
@@ -233,7 +228,6 @@ def gitlab_repo_file(repo, tag_name, filename):
     if json_dict['encoding'] != 'base64':
         log(f'GitHub file encoding for {filename} is ' + json_dict['encoding'])
         raise InternalError('Unimplemented file encoding ' + json_dict['encoding'])
-    import base64
 
     contents = base64.b64decode(json_dict['content']).decode()
     if not getattr(repo, '_file_contents', {}):
@@ -282,7 +276,11 @@ def gitlab_asset_contents(asset_url):
 
 def valid_gitlab_release_url(url):
     """Check if the provided URL is a valid GitLab release endpoint."""
-    # return _gitlab_get(url, test_only=True)
+    gitlab_api_pattern = r'^https?://[^/]+/api/v4/projects/[^/]+/releases/[^/]+$'
+    gitlab_web_pattern = r'^https?://[^/]+/[^/]+/[^/]+/-/releases/[^/]+$'
+    if not (re.match(gitlab_api_pattern, url) or re.match(gitlab_web_pattern, url)):
+        log(f"URL does not match GitLab release URL pattern: {url}")
+        return False
     return True
 
 

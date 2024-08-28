@@ -35,15 +35,15 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+import os
+import sys
+from   itertools import filterfalse
 import arrow
 from   commonpy.data_structures import CaseFoldSet, CaseFoldDict
 from   commonpy.data_utils import pluralized
 from   commonpy.network_utils import scheme as url_scheme
-from   itertools import filterfalse
 import json5
-import os
 from   sidetrack import log
-import sys
 import validators
 import yaml
 from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
@@ -1091,20 +1091,19 @@ def rights(repo, release, include_all):
             log('GitHub did not provide license info for this repo')
     else:
         if repo.license and repo.license["name"] != 'Other':
-            from iga.licenses import LICENSES
-            log('GitHub has provided license info for the repo – using those values')
+            log('GitLab has provided license info for the repo – using those values')
             key = repo.license['key']
             if key.upper() in INVENIO_LICENSES:
                 rights = {'id': key.lower()}
             else:
-                rights = {'link': repo.license.url,
+                rights = {'link': repo.license.html_url,
                         'title': {'en': repo.license["name"]}}
                 if key in LICENSES and LICENSES[key].description:
                     log(f'adding our own description for license type {key}')
                     rights['description'] = {'en': LICENSES[key].description}
             return [rights]
         else:
-            log('GitHub did not provide license info for this repo')
+            log('GitLab did not provide license info for this repo')
 
 
 
