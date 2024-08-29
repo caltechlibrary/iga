@@ -7,13 +7,14 @@
 # pylint: disable=redefined-outer-name
 # =============================================================================
 
+import os
+from os import path
+from unittest.mock import patch
 import click
 import click.testing
 import json5
 import pytest
-from   os import path
 from   sidetrack import log
-from   unittest.mock import patch
 
 from iga.cli import cli
 from iga.exit_codes import ExitCode
@@ -98,7 +99,6 @@ def cli_runner():
 # Tests
 # .............................................................................
 
-"""
 @patch.dict(os.environ, {}, clear=True)
 @patch('iga.invenio.invenio_api_available', new=mocked_invenio_api_available)
 @patch('iga.invenio.invenio_token_valid', new=mocked_invenio_token_valid)
@@ -127,7 +127,6 @@ def test_environment_vars_from_options(capsys):
     assert os.environ['INVENIO_TOKEN'] == 'itoken'
     assert 'GITHUB_TOKEN' in os.environ
     assert os.environ['GITHUB_TOKEN'] == 'gtoken'
-"""
 
 def test_no_args(cli_runner):
     result = cli_runner.invoke(cli)
