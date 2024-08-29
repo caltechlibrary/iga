@@ -10,6 +10,7 @@ file "LICENSE" for more information.
 
 import bdb
 import os
+import urllib.parse
 import rich
 from   rich.console import Console
 from   rich.style import Style
@@ -21,12 +22,13 @@ from   sidetrack import set_debug, log
 from iga import __version__
 from iga.exit_codes import ExitCode
 from iga.exceptions import GitHubError, InvenioRDMError, RecordNotFound
-from iga.github import (
-    github_account_repo_tag,
-    github_release,
-    github_release_assets,
-    valid_github_release_url,
+
+from iga.githublab import (
+    valid_release_url,
+    git_release_assets,
+    git_account_repo_tag,
 )
+
 from iga.id_utils import is_inveniordm_id
 from iga.invenio import (
     invenio_api_available,
@@ -39,7 +41,6 @@ from iga.invenio import (
     invenio_upload,
 )
 
-
 # Main command-line interface.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -131,6 +132,12 @@ def _read_github_token(ctx, param, value):
     '''Read the file and set the environment variable GITHUB_TOKEN.'''
     return _read_param_value(ctx, param, value, 'GITHUB_TOKEN',
                              'GitHub personal access token', required=False)
+
+
+def _read_gitlab_token(ctx, param, value):
+    '''Read the file and set the environment variable GITLAB_TOKEN.'''
+    return _read_param_value(ctx, param, value, 'GITLAB_TOKEN',
+                             'GitLab personal access token', required=False)
 
 
 def _read_invenio_token(ctx, param, value):
@@ -275,8 +282,16 @@ def _alert(ctx, msg, print_usage=True):
         STYLE_OPTION,
         STYLE_ARGUMENT,
         STYLE_SWITCH,
-        OptionHighlighter,
     )
+    from rich.highlighter import RegexHighlighter
+    class OptionHighlighter(RegexHighlighter):
+            """Highlights our special options."""
+
+            highlights = [
+                r"(^|[^\w\-])(?P<switch>-([^\W0-9][\w\-]*\w|[^\W0-9]))",
+                r"(^|[^\w\-])(?P<option>--([^\W0-9][\w\-]*\w|[^\W0-9]))",
+                r"(?P<metavar><[^>]+>)",
+            ]
     highlighter = OptionHighlighter()
     console = Console(theme=Theme({
         "option": STYLE_OPTION,
@@ -378,6 +393,20 @@ def _list_communities(ctx, param, value):
 @click.option('--github-token', '-t', metavar='STR', callback=_read_github_token,
               help="GitHub acccess token (**avoid – use variable**)")
 #
+@click.option('--gitlab-token', '-t', metavar='STR', callback=_read_gitlab_token,
+              help="GitLab acccess token (**avoid – use variable**)")
+
+#
+@click.option('--gitlab', is_flag=True, help='Use GitLab mode')
+#
+@click.option('--gitlab-url', '-gu', metavar='STR',
+              help='GiLab base url (like https://gitlab.com or https://code.jlab.org)')
+#
+@click.option('--gitlab-projectid', '-gp', metavar='STR',
+              help='GiLab project ID (The ID or NAMESPACE/PROJECT_PATH)')
+
+
+#
 @click.help_option('--help', '-h', help='Show this help message and exit')
 #
 @click.option('--invenio-server', '-s', 'server', metavar='STR', callback=_read_server,
@@ -421,16 +450,17 @@ def _list_communities(ctx, param, value):
 @click.argument('url_or_tag', required=True)
 @click.pass_context
 def cli(ctx, url_or_tag, all_assets=False, community=None, draft=False,
-        files_to_upload=None, account=None, repo=None, github_token=None,
+        files_to_upload=None, account=None, repo=None, github_token=None, 
+        gitlab_token=None, gitlab_projectid=None, gitlab=False, gitlab_url=None,
         print_doi=False, server=None, invenio_token=None, list_communities=False,
         open_in_browser=False, log_dest=None, mode='normal', parent_id=None,
         all_metadata=False, source=None, dest=None, timeout=None,
         help=False, version=False):  # noqa A002
     '''InvenioRDM GitHub Archiver (IGA) command-line interface.
 \r
-IGA creates a metadata record in an InvenioRDM server and attaches a GitHub
-release archive to the record. The GitHub release can be specified using
-_either_ a full release URL, _or_ a combination of GitHub account + repository
+IGA creates a metadata record in an InvenioRDM server and attaches a GitHub/GitLab
+release archive to the record. The GitHub/GitLab release can be specified using
+_either_ a full release URL, _or_ a combination of  account + repository
 \\+ tag. Different command-line options can be used to adjust this behavior.
 \r
 _**Specification of the InvenioRDM server and access token**_
@@ -451,7 +481,9 @@ to create a token.
 \r
 _**Specification of a GitHub release**_
 \r
-A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
+A GitHub/GitLab release can be specified to IGA in one of two mutually-exclusive ways:
+\r
+For GitHub:
  1. The full URL of the web page on GitHub of a tagged release. In this case,
     the URL must be the final argument on the command line invocation of IGA
     and the options `--account` and `--repo` must be omitted.
@@ -459,31 +491,59 @@ A GitHub release can be specified to IGA in one of two mutually-exclusive ways:
     case, the final argument on the command line must be the _tag_, and in
     addition, values for the options `--account` and `--repo` must be provided.
 \r
+For GitLab:
+ 1. The full URL of the web page on GitLab of a tagged release with `--gitlab`. In this case,
+    the URL must be the final argument on the command line invocation of IGA
+ 2. A combination of (`--gitlab`, `--github-account`, `--github-repo` and _tag_ ) or 
+    a combination of (`--gitlab`, `--gitlab-projectid` and __tag_ ) must be provided.
+    The `--gitlab-projectid` can be a id of the project. specified in,
+    (https://docs.gitlab.com/ee/user/project/working_with_projects.html#access-a-project-by-using-the-project-id)
+    or a full path of the project NAMESPACE/PROJECT_PATH .
+\r
 Here's an example using approach #1 (assuming environment variables
 INVENIO_SERVER, INVENIO_TOKEN, and GITHUB_TOKEN have all been set):
+\r
+Using GitHub:
 ```shell
   iga https://github.com/mhucka/taupe/releases/tag/v1.2.0
 ```
+\r
+Using GitLab (assuming environment variables GITLAB_TOKEN has been set):
+```shell
+  iga --gitlab https://code.jlab.org/panta/hcana_container_doc/-/releases/0.0.2  
+```
 and here's the equivalent using approach #2:
+\r
+Using GitHub:
 ```shell
   iga --github-account mhucka --github-repo taupe v1.2.0
+  ```
+\r
+Using GitLab:
+```shell
+  iga --gitlab-url https://code.jlab.org --gitlab --github-account panta --github-repo  hcana_container_doc  0.0.2
+  iga --gitlab-url https://code.jlab.org --gitlab --gitlab-projectid 31 0.1.0
+  iga --gitlab-url https://code.jlab.org --gitlab --gitlab-projectid physdiv/jrdb/inveniordm_jlab  0.1.0
 ```
-Note that when using this form of the command, the release tag ("v1.2.0" above)
+Note that when using this form of the command, the release tag ("v1.2.0"/"0.1.0"/"0.0.2" above)
 must be the last item given on the command line.
 \r
-_**Use of a GitHub access token**_
+_**Use of a GitHub/GitLab access token**_
 \r
 It is possible to run IGA without providing a GitHub access token. GitHub
-allows up to 60 API calls per minute when running without credentials, and
+allows up to 60 API calls per minute (and for GITLAB dpends upon configuration)
+when running without credentials, and
 though IGA makes several API calls to GitHub each time it runs, for many
 repositories, IGA will not hit the limit. However, if you run IGA multiple
 times in a row or your repository has many contributors, then you may need to
-supply a GitHub access token. The preferred way of doing that is to set the
-value of the environment variable `GITHUB_TOKEN`. Alternatively, you can use
-the option `--github-token` to pass the token on the command line, but **you
+supply a GitHub/GITLAB access token. The preferred way of doing that is to set the
+value of the environment variable `GITHUB_TOKEN`/`GITLAB_TOKEN`. Alternatively, you can use
+the option `--github-token`/`--gitlab_token` to pass the token on the command line, but **you
 are strongly advised to avoid this practice because it is insecure**.
 To obtain a PAT from GitHub, visit https://docs.github.com/en/authentication
 and follow the instructions for creating a "classic" personal access token.
+Or to obtain PAT from GitLab , visit 
+https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html .
 \r
 _**Construction of an InvenioRDM record**_
 \r
@@ -492,10 +552,10 @@ using GitHub's API as well as several other APIs as needed. The information
 includes the following:
  * (if one exists) a `codemeta.json` file in the GitHub repository
  * (if one exists) a `CITATION.cff` file in the GitHub repository
- * data available from GitHub for the release
- * data available from GitHub for the repository
- * data available from GitHub for the account of the owner
- * data available from GitHub for the accounts of repository contributors
+ * data available from GitHub/GitLab for the release
+ * data available from GitHub/GitLab for the repository
+ * data available from GitHub/GitLab for the account of the owner
+ * data available from GitHub/GitLab for the accounts of repository contributors
  * file assets associated with the GitHub release
  * data available from ORCID.org for ORCID identifiers
  * data available from ROR.org for Research Organization Registry identifiers
@@ -504,7 +564,7 @@ includes the following:
 \r
 IGA tries to use `CodeMeta.json` first and `CITATION.cff` second to fill out
 the fields of the InvenioRDM record. If neither of those files are present, IGA
-uses values from the GitHub repository instead. You can make it always use all
+uses values from the GitHub/GitLab repository instead. You can make it always use all
 sources of info with the option `--all-metadata`. Depending on how complete and
 up-to-date your `CodeMeta.json` and `CITATION.cff` are, this may or may not
 make the record more comprehensive and may or may not introduce redundancies or
@@ -513,18 +573,18 @@ unwanted values.
 To override the auto-created record, use the option `--read-record` followed
 by the path to a JSON file structured according to the InvenioRDM schema used
 by the destination server. When `--read-record` is provided, IGA does _not_
-extract the data above, but still obtains the file assets from GitHub.
+extract the data above, but still obtains the file assets from GitHub/GitLab.
 \r
-_**Specification of GitHub file assets**_
+_**Specification of GitHub/GitLab file assets**_
 \r
 By default, IGA attaches to the InvenioRDM record _only_ the ZIP file asset
-created by GitHub for the release. To make IGA attach all assets associated
-with the GitHub release, use the option `--all-assets`.
+created by GitHub/GitLab for the release. To make IGA attach all assets associated
+with the GitHub/GitLab release, use the option `--all-assets`.
 \r
 To upload specific file assets and override the default selections made by IGA,
 you can use the option `--file` followed by a path to a file to be uploaded.
 You can repeat the option `--file` to upload multiple file assets. Note that if
-`--file` is provided, then IGA _does not use any file assets from GitHub_; it
+`--file` is provided, then IGA _does not use any file assets from GitHub_ / GitLab_; it
 is the user's responsibility to supply all the files that should be uploaded.
 \r
 If both `--read-record` and `--file` are used, then IGA does not actually
@@ -627,13 +687,16 @@ possible values:
   1 = interrupted  
   2 = encountered a bad or missing value for an option  
   3 = encountered a problem with a file or directory  
-  4 = encountered a problem interacting with GitHub  
+  4 = encountered a problem interacting with GitHub/GitLab 
   5 = encountered a problem interacting with InvenioRDM  
   6 = the personal access token was rejected  
   7 = an exception or fatal error occurred  
 '''
+    if gitlab:
+        os.environ['GITLAB'] = 'True'
+    if gitlab_url:
+        os.environ['GITLAB_URL'] = gitlab_url
     # Process arguments & handle early exits ..................................
-
     if url_or_tag == 'help':  # Detect if the user typed "help" without dashes.
         _print_help_and_exit(ctx)
     elif url_or_tag.startswith('http'):
@@ -641,21 +704,51 @@ possible values:
             _alert(ctx, 'The use of a URL and the use of options `--account`'
                    " and `--repo` are mutually exclusive; can't use both.")
             sys.exit(int(ExitCode.bad_arg))
-        elif not valid_github_release_url(url_or_tag):
+        elif not valid_release_url(url_or_tag):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+        else:
+            account, repo, tag = git_account_repo_tag(url_or_tag)
+
+    elif not gitlab:
+        if not all([account, repo, url_or_tag]):
+            _alert(ctx, 'When not using a release URL, all of the following must be'
+                ' provided: the options `--account`, `--repo`, and a tag name.')
+            sys.exit(int(ExitCode.bad_arg))
+        tag = url_or_tag
+        url_or_tag = f'https://github.com/{account}/{repo}/releases/tag/{tag}'
+        if not valid_release_url(url_or_tag):
             _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
             sys.exit(int(ExitCode.bad_arg))
-        else:
-            account, repo, tag = github_account_repo_tag(url_or_tag)
-    elif not all([account, repo, url_or_tag]):
-        _alert(ctx, 'When not using a release URL, all of the following must be'
-               ' provided: the options `--account`, `--repo`, and a tag name.')
-        sys.exit(int(ExitCode.bad_arg))
-    else:
-        tag = url_or_tag
 
-    if not github_release(account, repo, tag, test_only=True):
-        _alert(ctx, f'There does not appear to be a release **{tag}** in'
-               f' repository **{repo}** of account **{account}**.')
+    elif gitlab:
+        if gitlab_projectid and (account or repo):
+            _alert(ctx, 'Cannot use --gitlab-projectid with --github-account or --github-repo')
+            sys.exit(int(ExitCode.bad_arg))
+        if not (all([gitlab_url, gitlab_projectid, url_or_tag]) or all([gitlab_url, account, repo, url_or_tag])):
+            _alert(ctx, 'When using GitLab, all of the following must be'
+                ' provided: the options `--gitlab-url` and `--gitlab-projectid`. or  `--gitlab-url , --account , --repo ')
+            sys.exit(int(ExitCode.bad_arg))
+        if all([gitlab_url, gitlab_projectid, url_or_tag]):
+            tag = url_or_tag
+            gitlab_projectid = urllib.parse.quote_plus(gitlab_projectid)
+            url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
+            if not valid_release_url(url_or_tag):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+        elif all([gitlab_url, account, repo, url_or_tag]):
+            tag = url_or_tag
+            gitlab_projectid = f'{account}%2F{repo}'
+            url_or_tag = f'{gitlab_url}/api/v4/projects/{gitlab_projectid}/releases/{tag}'
+            if not valid_release_url(url_or_tag):
+                _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+                sys.exit(int(ExitCode.bad_arg))
+        else:
+            _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
+            sys.exit(int(ExitCode.bad_arg))
+        repo = gitlab_projectid
+    else:
+        _alert(ctx, 'Malformed release URL: ' + str(url_or_tag))
         sys.exit(int(ExitCode.bad_arg))
 
     if files_to_upload and all_assets:
@@ -682,7 +775,7 @@ possible values:
     exit_code = ExitCode.success
     try:
         record = None
-        github_assets = []
+        release_assets = []
         if source:
             _inform(f'Using {source.name} instead of building a record.')
             metadata = metadata_from_file(source)
@@ -692,7 +785,7 @@ possible values:
         else:
             _inform(f'Building record for {account}/{repo} release "{tag}"', end='...')
             metadata = metadata_for_release(account, repo, tag, all_metadata)
-            github_assets = github_release_assets(account, repo, tag, all_assets)
+            release_assets = git_release_assets(repo, tag, account, all_assets)
             _inform(' done.')
 
         if dest:
@@ -712,7 +805,7 @@ possible values:
             _inform(' done.')
 
             _inform('Attaching assets:')
-            for item in files_to_upload or github_assets:
+            for item in files_to_upload or release_assets:
                 invenio_upload(record, item, _print_text)
 
             if draft:

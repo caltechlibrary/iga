@@ -35,7 +35,7 @@ __pycache__/
 tests/*.log
 
 # Project-specific things to ignore ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+venv
 build
 dist
 docs/_build
