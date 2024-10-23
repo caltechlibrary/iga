@@ -121,21 +121,19 @@ def invenio_server_name(server_url):
     server_host = netloc(server_url)
     endpoint = '/api/records?size=1'
     try:
-        log(f'testing if we can reach {server_url} in 5 sec or less')
-        socket.setdefaulttimeout(5)
-        # If the next one can't reach the host, it'll throw an exception.
-        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((server_host, 443))
-        # If we can reach the host, check that it responds to the API endpoint.
         if response := network('get', server_url + endpoint):
             log(f'we can reach {server_url} and it responds to {endpoint}')
             data = response.json()
-            record = data.get('hits', {}).get('hits', {})[0]
-            if publisher := record.get('metadata', {}).get('publisher'):
-                return publisher
+            records = data.get('hits', {}).get('hits', {})
+            if records:
+                if publisher := records[0].get('metadata', {}).get('publisher'):
+                    return publisher
+                else:
+                    # Fall back to the host name
+                    return server_host
             else:
                 # Fall back to the host name.
                 return server_host
-            return record['metadata']['publisher']
     except KeyboardInterrupt:
         raise
     except socket.error:
