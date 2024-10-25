@@ -7,7 +7,7 @@
 aenum                      >= 3.1.15
 arrow                      >= 1.3.0
 boltons                    >= 21.0.0
-caltechdata-api            >= 1.6.1
+caltechdata-api            >= 1.8.1
 commonpy                   >= 1.13.0
 dirtyjson                  >= 1.0.8
 ginza                      >= 5.2.0
