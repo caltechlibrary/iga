@@ -104,7 +104,7 @@ def invenio_token_valid(server_url):
     # programs (and especially ones that run as GHAs) we don't want to get far
     # into the work before discovering we won't be able to upload the result.
     try:
-        return bool(_invenio('get', endpoint='/api/users?size=1',
+        return bool(_invenio('get', url=f'{server_url}/api/users?size=1',
                              msg='confirm InvenioRDM token is valid'))
     except KeyboardInterrupt:
         raise
