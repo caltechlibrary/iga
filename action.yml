@@ -101,7 +101,7 @@ runs:
     - name: Create .git/iga-requirements.txt in the working directory.
       shell: bash
       run: |
-        wget -q -O .git/iga-requirements.txt "https://raw.githubusercontent.com/caltechlibrary/iga/${{ github.action_ref || 'main' }}/requirements.txt"
+        wget -q -O .git/iga-requirements.txt "https://raw.githubusercontent.com/caltechlibrary/iga/${{ github.action_ref || 'v1' }}/requirements.txt"
 
     - name: Install Python.
       uses: actions/setup-python@v5
