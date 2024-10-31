@@ -199,8 +199,8 @@ runs:
       run: |
         echo "Running IGA …"
         if results=($(iga --log-dest ${{github.workspace}}/iga.out --mode ${{env.mode}} --github-account ${{github.repository_owner}} --github-repo ${{github.event.repository.name}} --print-doi ${{env.draft}} ${{env.all_assets}} ${{env.all_metadata}} ${{env.use_community}} ${{env.community}} ${{env.use_parent}} ${{env.parent}} ${{env.tag}})); then
-          echo record_url=${results[0]} >> $GITHUB_ENV
-          echo record_doi=${results[1]} >> $GITHUB_ENV
+          echo record_url=${results[0]} >> $GITHUB_OUTPUT
+          echo record_doi=${results[1]} >> $GITHUB_OUTPUT
         else
           export exit_code=$?
           case $exit_code in
