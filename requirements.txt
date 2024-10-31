@@ -33,7 +33,7 @@ pybtex-apa7-style          >= 0.1.3
 pymdown-extensions         >= 10.8.1
 PyYAML                     >= 6.0.1
 regex                      >= 2022.3.2
-rich-click                 >= 1.8.2
+rich-click                 == 1.8.2
 sidetrack                  >= 2.0.1
 spacy                      >= 3.7.4
 spacy-alignments           >= 0.9.1
