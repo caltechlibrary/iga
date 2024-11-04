@@ -47,6 +47,7 @@ GitHub by itself only records relatively sparse metadata about software releases
 
 IGA looks for `codemeta.json` and `CITATION.cff` files in a repository and uses the information in them as the primary bases for constructing InvenioRDM metadata records. If a repository contains neither file, IGA resorts to using only the metadata provided by GitHub for the release and the associated repository.
 
+The IGA GitHub actions workflow automatically will add the archived DOI to a CodeMeta file. We encourage use of the [CodeMeta2CFF workflow](https://github.com/caltechlibrary/codemeta2cff) to automatically update CITATION.cff files.
 
 ## Using IGA
 
