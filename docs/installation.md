@@ -50,12 +50,13 @@ python3 setup.py install
 A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated process that runs on GitHub's servers under control of a file in your repository. Follow these steps to create the IGA workflow file:
 
 1. In the main branch of your GitHub repository, create a `.github/workflows` directory
-2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following content (which is also available as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/main/sample-workflow.yml) in the GitHub repository for IGA):
+2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the following content (which is also available as file [`sample-workflow.yml`](https://github.com/caltechlibrary/iga/blob/v1/sample-workflow.yml) in the GitHub repository for IGA):
     ```{literalinclude} ../sample-workflow.yml
     :language: yaml
     ```
 3. **Edit the value of the `INVENIO_SERVER` variable near the top of the file above** ↑. For CaltechDATA the value should be `https://data.caltech.edu`.
 4. Optionally, change the [values of other options (`parent_record`, `community`, etc.)](https://caltechlibrary.github.io/iga/gha-usage.html#input-parameters)
-5. Save the file, commit the changes to git, and push your changes to GitHub
+5. If you have a [CodeMeta](https://caltechlibrary.github.io/iga/introduction.html#codemeta-citation-cff) file, the GitHub action workflow can automatically add the DOI after IGA has run. The "ref" value is the branch where the CodeMeta file will be updated. If you don't use a CodeMeta file, you can delete the `add_doi_codemeta` part of the workflow.
+6. Save the file, commit the changes to git, and push your changes to GitHub
 
 Once you have installed the GitHub Action workflow for IGA, the next steps are (1) [get an InvenioRDM token](quick-start.md#getting-an-inveniordm-token) and (2) [configure the GitHub Action workflow](quick-start.md#configuring-a-github-action).
