@@ -11,7 +11,7 @@ name: GitHub Pages builder & deployer
 
 on:
   push:
-    branches: [main]
+    branches: [v1]
     paths: [docs/**]
 
 jobs:
