@@ -36,6 +36,11 @@ env:
   all_metadata:  false
   debug:         true
 
+  # This variable is a setting for post-archiving CodeMeta file updates.
+  # If you don't have a CodeMeta file, you can remove the add_doi_codemeta
+  # job at the bottom of this file.
+  ref: main
+
 name: InvenioRDM GitHub Archiver
 on:
   release:
@@ -89,3 +94,22 @@ jobs:
       - name: Extract name from INVENIO_SERVER
         id: parse
         run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
+  add_doi_codemeta:
+    name: "Add ${{needs.run_iga.outputs.record_doi}} to codemeta.json"
+    needs: run_iga
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ref }}
+      - name: Install sde
+        run: pip install sde
+      - name: Add DOI to CodeMeta File
+        run: sde identifier ${{needs.run_iga.outputs.record_doi}} codemeta.json
+      - name: Commit CFF
+        uses: EndBug/add-and-commit@v9
+        with:
+          message: 'Add DOI to codemeta.json file'
+          add: 'codemeta.json'
+
