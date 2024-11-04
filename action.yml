@@ -70,10 +70,10 @@ inputs:
 outputs:
   record_url:
     value: ${{ steps.run_iga.outputs.record_url }}
-    description: 'InvenioRDM record created by iga`
+    description: InvenioRDM record created by iga
   record_doi:
     value: ${{ steps.run_iga.outputs.record_doi }}
-    description: 'DOI of InvenioRDM record created by iga'
+    description: DOI of InvenioRDM record created by iga
 
 runs:
   using: composite
