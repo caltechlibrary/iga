@@ -137,7 +137,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 2. In the `.github/workflows` directory, create a file named (e.g.) `iga.yml` and copy the [following contents](https://raw.githubusercontent.com/caltechlibrary/iga/v1/sample-workflow.yml) into it:
 
     ```yaml
-    # GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.3.2
+    # GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.3.4
     # This is available as the file "sample-workflow.yml" from the open-
     # source repository for IGA at https://github.com/caltechlibrary/iga/.
 
