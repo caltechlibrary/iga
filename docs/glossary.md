@@ -85,9 +85,9 @@ RDM
     InvenioRDM.
 
 ROR
-    ROR stands for the _Research Organization Registry_. As of the
-    year 2023, ROR includes identifiers and metadata for over 100,000
-    organizations. Data is licensed according to the Creative Commons
+    ROR stands for the _Research Organization Registry_. ROR includes
+    identifiers and metadata for over 100,000 organizations.
+    Data is licensed according to the Creative Commons
     [CC0](https://creativecommons.org/share-your-work/public-domain/cc0/)
     license and available via API and other methods.
 
