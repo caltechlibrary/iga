@@ -4,7 +4,7 @@
   "name": "InvenioRDM GitHub Archiver (IGA)",
   "identifier": "iga",
   "description": "The InvenioRDM GitHub Archiver (IGA) automatically archives GitHub releases in an InvenioRDM repository.",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "dateCreated": "2022-12-07",
   "author": [
     {
@@ -15,11 +15,8 @@
       "@type": "Organization",
       "name": "California Institute of Technology Library"
     },
-    "email": "mhucka@caltech.edu",
     "@id": "https://orcid.org/0000-0001-9105-5960"
-  }
-  ],
-  "contributor": [
+  },
     {
     "@type": "Person",
     "givenName": "Thomas E",
@@ -31,18 +28,18 @@
     "email": "tmorrell@caltech.edu",
     "@id": "https://orcid.org/0000-0001-9266-5146"
   }
-  ],        
+  ],  
   "maintainer": [
     {
     "@type": "Person",
-    "givenName": "Michael",
-    "familyName": "Hucka",
+    "givenName": "Thomas E",
+    "familyName": "Morrell",
     "affiliation": {
       "@type": "Organization",
       "name": "California Institute of Technology Library"
     },
-    "email": "mhucka@caltech.edu",
-    "@id": "https://orcid.org/0000-0001-9105-5960"
+    "email": "tmorrell@caltech.edu",
+    "@id": "https://orcid.org/0000-0001-9266-5146"
   }
   ],
   "funder": { 
