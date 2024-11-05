@@ -199,7 +199,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
         name: Send to ${{needs.get_repository.outputs.server}}
         runs-on: ubuntu-latest
         needs: get_repository
-         outputs:
+        outputs:
           record_doi: ${{steps.iga.outputs.record_doi}}
         steps:
           - uses: caltechlibrary/iga@v1
