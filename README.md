@@ -138,108 +138,108 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 
     ```yaml
     # GitHub Actions workflow for InvenioRDM GitHub Archiver version 1.3.2
-# This is available as the file "sample-workflow.yml" from the open-
-# source repository for IGA at https://github.com/caltechlibrary/iga/.
+    # This is available as the file "sample-workflow.yml" from the open-
+    # source repository for IGA at https://github.com/caltechlibrary/iga/.
 
-# ╭────────────────────────────────────────────╮
-# │ Configure this section                     │
-# ╰────────────────────────────────────────────╯
+    # ╭────────────────────────────────────────────╮
+    # │ Configure this section                     │
+    # ╰────────────────────────────────────────────╯
 
-env:
-  # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
-  INVENIO_SERVER: https://your-invenio-server.org
+    env:
+      # 👋🏻 Set the next variable to your InvenioRDM server address 👋🏻
+      INVENIO_SERVER: https://your-invenio-server.org
 
-  # Set to an InvenioRDM record ID to mark release as a new version.
-  parent_record: none
+      # Set to an InvenioRDM record ID to mark release as a new version.
+      parent_record: none
 
-  # The variables below are other IGA options. Please see the docs.
-  community:     none
-  draft:         false
-  all_assets:    false
-  all_metadata:  false
-  debug:         false
+      # The variables below are other IGA options. Please see the docs.
+      community:     none
+      draft:         false
+      all_assets:    false
+      all_metadata:  false
+      debug:         false
 
-  # This variable is a setting for post-archiving CodeMeta file updates.
-  # If you don't have a CodeMeta file, you can remove the add_doi_codemeta
-  # job at the bottom of this file.
-  ref: main
+      # This variable is a setting for post-archiving CodeMeta file updates.
+      # If you don't have a CodeMeta file, you can remove the add_doi_codemeta
+      # job at the bottom of this file.
+      ref: main
 
-# ╭────────────────────────────────────────────╮
-# │ The rest of this file should be left as-is │
-# ╰────────────────────────────────────────────╯
+    # ╭────────────────────────────────────────────╮
+    # │ The rest of this file should be left as-is │
+    # ╰────────────────────────────────────────────╯
 
-name: InvenioRDM GitHub Archiver
-on:
-  release:
-    types: [published]
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: The release tag (empty = latest)
-      parent_record:
-        description: ID of parent record (for versioning)
-      community:
-        description: Name of InvenioRDM community (if any)
-      draft:
-        description: Mark the record as a draft
-        type: boolean
-      all_assets:
-        description: Attach all GitHub assets
-        type: boolean
-      all_metadata:
-        description: Include additional GitHub metadata
-        type: boolean
-      debug:
-        description: Print debug info in the GitHub log
-        type: boolean
+    name: InvenioRDM GitHub Archiver
+    on:
+      release:
+        types: [published]
+      workflow_dispatch:
+        inputs:
+          release_tag:
+            description: The release tag (empty = latest)
+          parent_record:
+            description: ID of parent record (for versioning)
+          community:
+            description: Name of InvenioRDM community (if any)
+          draft:
+            description: Mark the record as a draft
+            type: boolean
+          all_assets:
+            description: Attach all GitHub assets
+            type: boolean
+          all_metadata:
+            description: Include additional GitHub metadata
+            type: boolean
+          debug:
+            description: Print debug info in the GitHub log
+            type: boolean
 
-run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
-jobs:
-  run_iga:
-    name: Send to ${{needs.get_repository.outputs.server}}
-    runs-on: ubuntu-latest
-    needs: get_repository
-     outputs:
-      record_doi: ${{steps.iga.outputs.record_doi}}
-    steps:
-      - uses: caltechlibrary/iga@v1
-        with:
-          INVENIO_SERVER: ${{env.INVENIO_SERVER}}
-          INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
-          all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
-          all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
-          debug:          ${{github.event.inputs.debug || env.debug}}
-          draft:          ${{github.event.inputs.draft || env.draft}}
-          community:      ${{github.event.inputs.community || env.community}}
-          parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
-          release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
-  get_repository:
-    name: Get repository name
-    runs-on: ubuntu-latest
-    outputs:
-      server: ${{steps.parse.outputs.host}}
-    steps:
-      - name: Extract name from INVENIO_SERVER
-        id: parse
-        run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
-  add_doi_codemeta:
-    name: "Add ${{needs.run_iga.outputs.record_doi}} to codemeta.json"
-    needs: run_iga
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ env.ref }}
-      - name: Install sde
-        run: pip install sde
-      - name: Add DOI to CodeMeta File
-        run: sde identifier ${{needs.run_iga.outputs.record_doi}} codemeta.json
-      - name: Commit CFF
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: 'Add DOI to codemeta.json file'
-          add: 'codemeta.json'
+    run-name: Archive ${{inputs.release_tag || 'latest release'}} in InvenioRDM
+    jobs:
+      run_iga:
+        name: Send to ${{needs.get_repository.outputs.server}}
+        runs-on: ubuntu-latest
+        needs: get_repository
+         outputs:
+          record_doi: ${{steps.iga.outputs.record_doi}}
+        steps:
+          - uses: caltechlibrary/iga@v1
+            with:
+              INVENIO_SERVER: ${{env.INVENIO_SERVER}}
+              INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
+              all_assets:     ${{github.event.inputs.all_assets || env.all_assets}}
+              all_metadata:   ${{github.event.inputs.all_metadata || env.all_metadata}}
+              debug:          ${{github.event.inputs.debug || env.debug}}
+              draft:          ${{github.event.inputs.draft || env.draft}}
+              community:      ${{github.event.inputs.community || env.community}}
+              parent_record:  ${{github.event.inputs.parent_record || env.parent_record}}
+              release_tag:    ${{github.event.inputs.release_tag || 'latest'}}
+      get_repository:
+        name: Get repository name
+        runs-on: ubuntu-latest
+        outputs:
+          server: ${{steps.parse.outputs.host}}
+        steps:
+          - name: Extract name from INVENIO_SERVER
+            id: parse
+            run: echo "host=$(cut -d'/' -f3 <<< ${{env.INVENIO_SERVER}} | cut -d':' -f1)" >> $GITHUB_OUTPUT
+      add_doi_codemeta:
+        name: "Add ${{needs.run_iga.outputs.record_doi}} to codemeta.json"
+        needs: run_iga
+        runs-on: ubuntu-latest
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              ref: ${{ env.ref }}
+          - name: Install sde
+            run: pip install sde
+          - name: Add DOI to CodeMeta File
+            run: sde identifier ${{needs.run_iga.outputs.record_doi}} codemeta.json
+          - name: Commit CFF
+            uses: EndBug/add-and-commit@v9
+            with:
+              message: 'Add DOI to codemeta.json file'
+              add: 'codemeta.json'
     ```
 
 3. **Edit the value of the `INVENIO_SERVER` variable (line 7 above)** ↑
