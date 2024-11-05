@@ -10,7 +10,7 @@
 # =============================================================================
 
 project = 'IGA'
-copyright = '2023, Caltech Library'
+copyright = '2023-2024, Caltech Library'
 author = 'Caltech Library'
 
 
