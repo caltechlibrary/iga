@@ -203,6 +203,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
           record_doi: ${{steps.iga.outputs.record_doi}}
         steps:
           - uses: caltechlibrary/iga@v1
+            id: iga
             with:
               INVENIO_SERVER: ${{env.INVENIO_SERVER}}
               INVENIO_TOKEN:  ${{secrets.INVENIO_TOKEN}}
