@@ -51,7 +51,8 @@ jobs:
           make html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-        path: './docs/_build/html'
+        with:
+          path: './docs/_build/html'
 
   # Deployment job
   deploy:
