@@ -1,4 +1,4 @@
-# InvenioRDM GitHub Archiver<img width="50em" align="right" style="display: block; margin: auto auto 2em 2em"  src="_static/media/cloud-upload.svg">
+# InvenioRDM GitHub Archiver<img width="10%" align="right" style="display: block; margin: auto auto 2em 2em"  src="_static/media/cloud-upload.svg">
 
 [InvenioRDM](https://inveniosoftware.org/products/rdm/) is used by many institutional repositories such as [CaltechDATA](https://data.caltech.edu) to let users preserve software and data in a long-term archive managed by their institution. Depositing software and/or data into these repositories requires the creation of detailed metadata records &ndash; a tedious and error-prone process if done manually. This is where the [_InvenioRDM GitHub Archiver_](https://github.com/caltechlibrary/iga) (IGA) comes in.
 
