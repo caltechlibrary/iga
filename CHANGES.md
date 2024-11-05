@@ -1,5 +1,9 @@
 # Change log for IGA
 
+## Version 1.3.2
+
+Bug fix release for automatic CodeMeta updating workflow
+
 ## Version 1.3.1
 
 Changes in this release
