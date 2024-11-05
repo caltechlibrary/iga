@@ -1,5 +1,15 @@
 # Change log for IGA
 
+## Version 1.3.1
+
+Changes in this release
+
+* Adds support for automatically updating a CodeMeta.json file when used on GitHub actions
+* Fixes bug https://github.com/caltechlibrary/iga/issues/39 that impacted RDM repositories with no records
+* Un-pins dependencies so iga will work better with other python installs, and pins rich-click to avoid bug #40
+* Switches to the v1 branch instead of master
+* Simplifies release workflow
+
 ## Version 1.3.0
 
 Changes in this release:
