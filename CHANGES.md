@@ -1,5 +1,9 @@
 # Change log for IGA
 
+## Version 1.3.5
+
+This release adds CFF updating as part of the example workflow.
+
 ## Version 1.3.4
 
 Bug fix release for automatic CodeMeta updating workflow. Also updates the documentation build process.
