@@ -161,7 +161,7 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
 
       # This variable is a setting for post-archiving CodeMeta file updates.
       # If you don't have a CodeMeta file, you can remove the add_doi_codemeta
-      # job at the bottom of this file.
+      # and Codemeta2CFF jobs at the bottom of this file.
       ref: main
 
     # ╭────────────────────────────────────────────╮
@@ -241,6 +241,21 @@ A [GitHub Actions](https://docs.github.com/en/actions) workflow is an automated 
             with:
               message: 'Add DOI to codemeta.json file'
               add: 'codemeta.json'
+      CodeMeta2CFF:
+        runs-on: ubuntu-latest
+        needs: add_doi_codemeta
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              ref: ${{ env.ref }}
+          - name: Convert CFF
+            uses: caltechlibrary/codemeta2cff@main
+          - name: Commit CFF
+            uses: EndBug/add-and-commit@v9
+            with:
+              message: 'Add updated CITATION.cff from codemeta.json file'
+              add: 'CITATION.cff'
     ```
 
 3. **Edit the value of the `INVENIO_SERVER` variable (line 7 above)** ↑
