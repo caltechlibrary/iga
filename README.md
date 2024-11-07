@@ -59,7 +59,7 @@ IGA offers many notable features:
 * Support for using the GitHub API without a [GitHub access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) in simple cases
 * Extensive use of logging so you can see what's going on under the hood
 
-The IGA GitHub action workflow automatically will add the archived DOI to a CodeMeta file. We encourage use of the [CodeMeta2CFF workflow](https://github.com/caltechlibrary/codemeta2cff) to automatically update CITATION.cff files.
+The IGA GitHub action workflow automatically will add the archived DOI to a CodeMeta file and create/update a CFF file using the [CodeMeta2CFF workflow](https://github.com/caltechlibrary/codemeta2cff).
 
 ## Installation
 
