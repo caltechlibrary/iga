@@ -18,6 +18,7 @@ from   sidetrack import log
 import socket
 import os
 from   os import path
+import humanize
 
 import iga
 from   iga.exceptions import (
@@ -25,10 +26,11 @@ from   iga.exceptions import (
     InvenioRDMError,
     RecordNotFound,
 )
-from   iga.github import github_asset_contents
+from   iga.githublab import git_asset_contents
 from   iga.id_utils import normalize_invenio_rdm
 
-
+
+
 # Exported data structures.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -86,7 +88,7 @@ class InvenioCommunity():
     def __ge__(self, other):
         return not self.__lt__(self, other)
 
-
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -229,12 +231,11 @@ def invenio_upload(record, asset, print_status):
     '''
     # Start by reading the assets to be sure we can actually get them, *before*
     # trying to upload them to InvenioRDM.
-    import humanize
     size = ''
     if asset.startswith('http'):
         filename = _filename_from_asset_url(asset)
         print_status(f' - Downloading [bold]{filename}[/] from GitHub', end='...')
-        content = github_asset_contents(asset)
+        content = git_asset_contents(asset)
         print_status('done')
         size = humanize.naturalsize(len(content))
         log(f'downloaded {size} bytes of {asset}')
@@ -287,7 +288,7 @@ def invenio_community_send(record, community):
     }
     result = _invenio('put', url=record.review_url, data=data,
                       msg='get community submission link from InvenioRDM')
-    submit_url = record.get('review_url', '').replace('/review', '/actions/submit-review')
+    submit_url = record.review_url.replace('/review', '/actions/submit-review')
     data = {
         'payload': {
             'format': 'html',
@@ -361,7 +362,7 @@ def invenio_communities():
     log(f'we got {pluralized("community", communities, True)}')
     return communities
 
-
+
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
