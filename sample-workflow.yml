@@ -88,6 +88,8 @@ jobs:
     name: "Add ${{needs.run_iga.outputs.record_doi}} to codemeta.json"
     needs: run_iga
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -104,6 +106,8 @@ jobs:
           add: 'codemeta.json'
   CodeMeta2CFF:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     needs: add_doi_codemeta
     steps:
       - name: Checkout
