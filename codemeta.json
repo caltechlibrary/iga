@@ -12,6 +12,7 @@
             "givenName": "Michael",
             "familyName": "Hucka",
             "affiliation": {
+                "@id": "https://ror.org/05dxps055",
                 "@type": "Organization",
                 "name": "California Institute of Technology Library"
             },
@@ -22,6 +23,7 @@
             "givenName": "Thomas E",
             "familyName": "Morrell",
             "affiliation": {
+                "@id": "https://ror.org/05dxps055",
                 "@type": "Organization",
                 "name": "California Institute of Technology Library"
             },
@@ -35,6 +37,7 @@
             "givenName": "Thomas E",
             "familyName": "Morrell",
             "affiliation": {
+                "@id": "https://ror.org/05dxps055",
                 "@type": "Organization",
                 "name": "California Institute of Technology Library"
             },
