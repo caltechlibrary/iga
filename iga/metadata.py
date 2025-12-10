@@ -35,39 +35,47 @@ is open-source software released under a BSD-type license.  Please see the
 file "LICENSE" for more information.
 '''
 
+import os
+import sys
+from   itertools import filterfalse
 import arrow
 from   commonpy.data_structures import CaseFoldSet, CaseFoldDict
 from   commonpy.data_utils import pluralized
 from   commonpy.network_utils import scheme as url_scheme
-from   itertools import filterfalse
 import json5
-import os
 from   sidetrack import log
-import sys
 import validators
-
+import yaml
 from iga.data_utils import deduplicated, listified, normalized_url, similar_urls
 from iga.exceptions import MissingData
-from iga.github import (
-    github_account,
-    github_file_url,
-    github_release,
-    github_repo,
-    github_repo_contributors,
-    github_repo_file,
-    github_repo_filenames,
-    github_repo_languages,
-    GitHubError,
-    probable_bot,
+from iga.githublab import (
+    git_repo,
+    git_repo_file,
+    git_release,
+    git_repo_filenames,
+    git_repo_languages,
+    git_account,
+    git_repo_contributors,
+    identity_from_git,
+    git_probable_bot,
+    git_file_url
 )
+
 from iga.id_utils import detected_id, recognized_scheme
 from iga.name_utils import split_name, flattened_name
 from iga.reference import reference, RECOGNIZED_REFERENCE_SCHEMES
 from iga.text_utils import cleaned_text
 
-
-# Constants.
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+class LazyEnvBool:
+    def __init__(self, var_name):
+        self.var_name = var_name
+
+    def __bool__(self):
+        return os.getenv(self.var_name, '').lower() == 'true'
+
+    __nonzero__ = __bool__  # For Python 2 compatibility
+
+GITLAB = LazyEnvBool('GITLAB')
 
 # It's useful to understand the context of what's going on. The record stored
 # in InvenioRDM may have these top-level fields (but might not contain all):
@@ -168,7 +176,7 @@ INVENIO_LICENSES = CaseFoldDict()
 # allowed but we don't want to allow some types such as 'data' URLs.
 ALLOWED_URL_SCHEMES = ['http', 'https', 'git', 'ftp', 'gopher', 's3', 'svn']
 
-
+
 # Exported module functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -178,16 +186,16 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
     Data is gathered from the GitHub release identified by "tag" in the
     repository "repo_name" of the given GitHub "account_name".
     '''
-    repo = github_repo(account_name, repo_name)
-    release = github_release(account_name, repo_name, tag)
+    repo = git_repo(repo_name, account_name)
+    release = git_release(repo_name, tag, account_name)
 
     # We use codemeta.json & CITATION.cff often. Get them now & augment the
     # repo object with them so that field extraction functions can access them.
     repo.codemeta = {}
     repo.cff = {}
-    filenames = github_repo_filenames(repo, tag)
+    filenames = git_repo_filenames(repo, tag)
     if 'codemeta.json' in filenames:
-        codemeta_file = github_repo_file(repo, tag, 'codemeta.json')
+        codemeta_file = git_repo_file(repo, tag, 'codemeta.json')
         try:
             repo.codemeta = json5.loads(codemeta_file)
         except KeyboardInterrupt:
@@ -199,10 +207,10 @@ def metadata_for_release(account_name, repo_name, tag, all_metadata):
         except Exception as ex:         # noqa PIE786
             log('ignoring codemeta.json file because of error: ' + str(ex))
     for name in ['CITATION.cff', 'CITATION.CFF', 'citation.cff']:
+        # https://github.com/citation-file-format/citation-file-format/blob/main/schema.json
         if name in filenames:
-            import yaml
             try:
-                repo.cff = yaml.safe_load(github_repo_file(repo, tag, name))
+                repo.cff = yaml.safe_load(git_repo_file(repo, tag, name))
             except KeyboardInterrupt:
                 raise
             except Exception as ex:     # noqa PIE786
@@ -240,11 +248,11 @@ def metadata_from_file(file):
         log(f'reading metadata provided in file {str(file)}')
         content = file.read().strip()
         metadata = json5.loads(content)
-    except KeyboardInterrupt:
-        raise
     except Exception as ex:             # noqa PIE786
         log(f'problem trying to read metadata from {str(file)}: ' + str(ex))
         return False
+    except KeyboardInterrupt:
+        raise
 
     if 'metadata' not in metadata:
         log('record lacks a "metadata" field')
@@ -258,7 +266,7 @@ def metadata_from_file(file):
         log(f'metadata in {file} validated to have minimum fields')
         return metadata
 
-
+
 # Field value functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Summary of the approach: the functions for extracting values from GitHub
@@ -347,8 +355,9 @@ def additional_titles(repo, release, include_all):
                        'lang': {'id': 'eng'},
                        })
     if add_repo_name:
+        title = repo.name if GITLAB else repo.full_name
         log('adding GitHub repo "full_name" as additional title')
-        titles.append({'title': cleaned_text(repo.full_name),
+        titles.append({'title': cleaned_text(title),
                        'type': {'id': 'alternative-title'},
                        'lang': {'id': 'eng'},
                        })
@@ -425,16 +434,27 @@ def contributors(repo, release, include_all):
                 contributors.append(entity)
             else:
                 log(f'skipping CodeMeta "contributor" {entity} who is in "authors"')
-    elif include_all and (repo_contributors := github_repo_contributors(repo)):
-        # If CodeMeta doesn't contain contributors, use the repo's, if any.
-        # Skip bot accounts.
-        for account in filterfalse(probable_bot, repo_contributors):
-            entity = _identity_from_github(account, 'other')
-            if not any(_entity_match(entity, author) for author in authors):
-                log(f'adding GitHub repo contributor {entity} as contributor(s)')
-                contributors.append(entity)
-            else:
-                log(f'skipping GitHub repo contributor {entity} who is in "authors"')
+    elif include_all:
+        if not GITLAB:
+            if (repo_contributors := git_repo_contributors(repo)):
+                # If CodeMeta doesn't contain contributors, use the repo's, if any.
+                # Skip bot accounts.
+                for account in filterfalse(git_probable_bot, repo_contributors):
+                    entity = identity_from_git(account, 'other')
+                    if not any(_entity_match(entity, author) for author in authors):
+                        log(f'adding GitHub repo contributor {entity} as contributor(s)')
+                        contributors.append(entity)
+                    else:
+                        log(f'skipping GitHub repo contributor {entity} who is in "authors"')
+        else:
+            if (repo_contributors := git_repo_contributors(repo)):
+                for entity in repo_contributors:
+                    if not any(_entity_match(entity, author) for author in authors):
+                        log(f'adding GITLAB repo contributor {entity} as contributor(s)')
+                        contributors.append(entity)
+                    else:
+                        log(f'skipping GITLAB repo contributor {entity} who is in "authors"')
+
 
     # We're getting data from multiple sources & we might have duplicates.
     # Deduplicate based on names & roles only.
@@ -465,7 +485,7 @@ def creators(repo, release, include_all, internal_call=False):
     # release data, so try them 1st.
     if authors := listified(repo.codemeta.get('author', [])):
         log_decision('CodeMeta "author" name(s)')
-    elif authors := repo.cff.get('author', []):
+    elif authors := repo.cff.get('authors', []):
         log_decision('CFF "author" name(s)')
     if authors:
         return deduplicated(_entity(x) for x in authors)
@@ -474,8 +494,10 @@ def creators(repo, release, include_all, internal_call=False):
     # author first, followed by the repo owner.
     if identity := _release_author(release):
         log_decision('GitHub release author')
-    elif identity := _repo_owner(repo):
+    elif (GITLAB and  hasattr(repo, 'owner')) and (identity := _repo_owner(repo)):
         log_decision('GitHub repo owner name')
+    elif not GITLAB and (identity := _repo_owner(repo)):
+        log_decision('GitHub repo owner name')  
     if identity:
         return [identity]
 
@@ -492,7 +514,7 @@ def dates(repo, release, include_all):
     # If we used a different date for the publication_date value than the
     # release date in GitHub, we add release date as another type of date.
     pub_date = publication_date(repo, release, include_all)
-    github_date = arrow.get(release.published_at).format('YYYY-MM-DD')
+    github_date = arrow.get(release.released_at if GITLAB else release.published_at).format('YYYY-MM-DD')
     if pub_date != github_date:
         log('adding the GitHub release "published_at" date as the "available" date')
         dates.append({'date': github_date,
@@ -538,12 +560,15 @@ def description(repo, release, include_all, internal_call=False):
     # commit messages. In those cases, the value of release.body that we get
     # through the API is empty. There doesn't seem to be a way to get the text
     # shown by GitHub in those cases, so we try other alternatives after this.
-    if release.body:
-        if internal_call:
-            return release.body.strip()
-        else:
-            log('adding GitHub release body text as "description"')
-            return html_from_md(release.body.strip())
+
+    # AP: gitlab release body no.
+    if not GITLAB:
+        if release.body:
+            if internal_call:
+                return release.body.strip()
+            else:
+                log('adding GitHub release body text as "description"')
+                return html_from_md(release.body.strip())
 
     # CodeMeta releaseNotes can be either text or a URL. If it's a URL, it
     # often points to a NEWS or ChangeLog or similar file in their repo.
@@ -583,7 +608,7 @@ def description(repo, release, include_all, internal_call=False):
     return '(No description provided.)'
 
 
-def formats(repo, release, include_all):
+def formats(release):
     '''Return InvenioRDM "formats".
     https://inveniordm.docs.cern.ch/reference/metadata/#formats-0-n
     '''
@@ -773,7 +798,7 @@ def publication_date(repo, release, include_all):
     elif date := repo.cff.get('date-released', ''):
         log('adding CFF "date-released" as "publication_date"')
     else:
-        date = release.published_at
+        date = release.released_at if GITLAB else release.published_at
         log('adding GitHub repo "published_at" as "publication_date"')
     return arrow.get(date).format('YYYY-MM-DD')
 
@@ -839,19 +864,20 @@ def related_identifiers(repo, release, include_all):
                 'resource_type': {'id': res_type},
                 'scheme': 'url'}
 
-    log('adding GitHub release "html_url" to "related_identifiers"')
-    identifiers = [id_dict(release.html_url, 'isidenticalto', 'software')]
+    log('adding GitHub/GitLab release "html_url" to "related_identifiers"')
+    identifiers = [id_dict(release._links["self"] if GITLAB else release.html_url, 'isidenticalto', 'software')]
 
     # The GitHub repo is what this release is derived from. Note: you would
     # expect the GitHub repo html_url, the codemeta.json codeRepository, and
     # the CFF repository-code all to be the same value, but we can't be sure,
     # so we have to look at them, and use them in the order of priority.
+    repo_html=repo.web_url if GITLAB else release.html_url
     if repo_url := repo.codemeta.get('codeRepository', ''):
         log('adding CodeMeta "codeRepository" to "related_identifiers"')
     elif repo_url := repo.cff.get('repository-code', ''):
         log('adding CFF "repository-code" to "related_identifiers"')
-    elif include_all and (repo_url := repo.html_url):
-        log('adding GitHub repo "html_url" to "related_identifiers"')
+    elif include_all and (repo_url := repo_html):
+        log('adding GitHub/GitLab repo "html_url" to "related_identifiers"')
     if repo_url:
         identifiers.append(id_dict(repo_url, 'isderivedfrom', 'software'))
 
@@ -871,8 +897,8 @@ def related_identifiers(repo, release, include_all):
         log('adding CodeMeta "url" to "related_identifiers"')
     elif homepage_url := repo.cff.get('url', ''):
         log('adding CFF "url" to "related_identifiers"')
-    elif include_all and (homepage_url := repo.homepage):
-        log('adding GitHub repo "homepage" to "related_identifiers"')
+    elif include_all and (homepage_url := repo.web_url if GITLAB else repo.homepage):
+        log('adding GitHub/GitLab repo "homepage" to "related_identifiers"')
     if homepage_url:
         identifiers.append(id_dict(homepage_url, 'isdescribedby', 'other'))
 
@@ -915,21 +941,25 @@ def related_identifiers(repo, release, include_all):
             identifiers.append(id_dict(url, 'isdocumentedby',
                                        'publication-softwaredocumentation'))
 
-    # The GitHub Pages URL for a repo usually points to documentation or info
-    # about the softare, though we can't tell if it's for THIS release.
-    if include_all and repo.has_pages:
-        url = f'https://{repo.owner.login}.github.io/{repo.name}'
-        if not any(url == item['identifier'] for item in identifiers):
-            log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
-            identifiers.append(id_dict(url, 'isdocumentedby',
-                                       'publication-softwaredocumentation'))
+    if not GITLAB:
+        # The GitHub Pages URL for a repo usually points to documentation or info
+        # about the softare, though we can't tell if it's for THIS release.
+        if include_all and repo.has_pages:
+            url = f'https://{repo.owner.login}.github.io/{repo.name}'
+            if not any(url == item['identifier'] for item in identifiers):
+                log('adding the repo\'s GitHub Pages URL to "related_identifiers"')
+                identifiers.append(id_dict(url, 'isdocumentedby',
+                                           'publication-softwaredocumentation'))
+    
+    # todo: check gitlab pages
 
     # The issues URL is kind of a supplemental resource.
+    repo_issues = repo._links["issues"]  if GITLAB else repo.issues_url
     if issues_url := repo.codemeta.get('issueTracker', ''):
         log('adding CodeMeta "issueTracker" to "related_identifiers"')
-    elif include_all and repo.issues_url:
-        log('adding GitHub repo "issues_url" to "related_identifiers"')
-        issues_url = f'https://github.com/{repo.full_name}/issues'
+    elif include_all and (repo_issues):
+        log('adding GitHub/GitLab repo "issues_url" to "related_identifiers"')
+        issues_url = repo_issues
     if issues_url:
         identifiers.append(id_dict(issues_url, 'issupplementedby', 'other'))
 
@@ -1043,25 +1073,43 @@ def rights(repo, release, include_all):
 
     # We didn't recognize license info in the CodeMeta or cff files.
     # Look into the GitHub repo data to see if GitHub identified a license.
-    if repo.license and repo.license.name != 'Other':
-        from iga.licenses import LICENSES
-        log('GitHub has provided license info for the repo – using those values')
-        spdx_id = repo.license.spdx_id
-        if spdx_id in INVENIO_LICENSES:
-            rights = {'id': spdx_id.lower()}
+    if not GITLAB:
+        if repo.license and repo.license.name != 'Other':
+            from iga.licenses import LICENSES
+            log('GitHub has provided license info for the repo – using those values')
+            spdx_id = repo.license.spdx_id
+            if spdx_id in INVENIO_LICENSES:
+                rights = {'id': spdx_id.lower()}
+            else:
+                rights = {'link': repo.license.url,
+                        'title': {'en': repo.license.name}}
+                if spdx_id in LICENSES and LICENSES[spdx_id].description:
+                    log(f'adding our own description for license type {spdx_id}')
+                    rights['description'] = {'en': LICENSES[spdx_id].description}
+            return [rights]
         else:
-            rights = {'link': repo.license.url,
-                      'title': {'en': repo.license.name}}
-            if spdx_id in LICENSES and LICENSES[spdx_id].description:
-                log(f'adding our own description for license type {spdx_id}')
-                rights['description'] = {'en': LICENSES[spdx_id].description}
-        return [rights]
+            log('GitHub did not provide license info for this repo')
     else:
-        log('GitHub did not provide license info for this repo')
+        if repo.license and repo.license["name"] != 'Other':
+            log('GitLab has provided license info for the repo – using those values')
+            key = repo.license['key']
+            if key.upper() in INVENIO_LICENSES:
+                rights = {'id': key.lower()}
+            else:
+                rights = {'link': repo.license.html_url,
+                        'title': {'en': repo.license["name"]}}
+                if key in LICENSES and LICENSES[key].description:
+                    log(f'adding our own description for license type {key}')
+                    rights['description'] = {'en': LICENSES[key].description}
+            return [rights]
+        else:
+            log('GitLab did not provide license info for this repo')
+
+
 
     # GitHub didn't fill in the license info -- maybe it didn't recognize
     # the license or its format. Try to look for a license file ourselves.
-    filenames = github_repo_filenames(repo, release.tag_name)
+    filenames = git_repo_filenames(repo, release.tag_name)
     for basename in ['LICENSE', 'License', 'license',
                      'LICENCE', 'Licence', 'licence',
                      'COPYING', 'COPYRIGHT', 'Copyright', 'copyright']:
@@ -1071,7 +1119,7 @@ def rights(repo, release, include_all):
                 # There's no safe way to summarize arbitrary license text,
                 # so we can't provide a 'description' field value.
                 rights = [{'title': {'en': 'License'},
-                           'link': github_file_url(repo, basename + ext)}]
+                           'link': git_file_url(repo, basename + ext, release.tag_name)}]
                 break
         else:
             continue
@@ -1079,7 +1127,7 @@ def rights(repo, release, include_all):
     return rights
 
 
-def sizes(repo, release, include_all):
+def sizes():
     '''Return InvenioRDM "sizes".
     https://inveniordm.docs.cern.ch/reference/metadata/#sizes-0-n
     '''
@@ -1141,7 +1189,7 @@ def subjects(repo, release, include_all):
         subjects.update(repo.topics)
 
         # Add repo languages as topics too.
-        if languages := github_repo_languages(repo):
+        if languages := git_repo_languages(repo):
             log('adding GitHub repo languages to "subjects"')
         for lang in languages:
             subjects.add(lang)
@@ -1168,7 +1216,7 @@ def title(repo, release, include_all):
         title += text
         field = 'CFF "title"'
     else:
-        title += repo.full_name
+        title += repo.name if GITLAB else repo.full_name
         field = 'GitHub repo "full_name"'
 
     # Note: better not to use a colon here. A lot of CodeMeta files use a name
@@ -1198,7 +1246,6 @@ def version(repo, release, include_all):
         tag = re.sub(r'v(er|version)?[ .]? ?', '', tag)
     return tag.strip()
 
-
 # Miscellaneous helper functions.
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1270,7 +1317,7 @@ def _entity_from_string(data, role):
                                         'type': 'organizational'}}
     elif account := _parsed_github_account(data):
         # It's the name of an account in GitHub.
-        result = _identity_from_github(account)
+        result = identity_from_git(account)
     else:
         # We have to parse a single string to guess whether it's the name of
         # a person or org, and if a person, to split the string into family
@@ -1298,14 +1345,17 @@ def _entity_from_dict(data, role):
     # subset anyway because there's no place in Invenio records to put the rest.
     person = {}
     org = {}
-
     type_ = data.get('@type', '') or data.get('type', '')
+    if not type_:
+        type_ = 'person'
     if type_.lower().strip() == 'person':
         # Deal with field name differences between CodeMeta & CFF.
         family = data.get('family-names', '') or data.get('familyName', '')
         given  = data.get('given-names', '') or data.get('givenName', '')
 
         id = detected_id(data.get('@id', ''))            # noqa A001
+        if not id:
+            id = data.get("orcid",'')
         id_type = recognized_scheme(id)
 
         if not (family or given) and id_type == 'orcid':
@@ -1403,70 +1453,29 @@ def _entity_match(first, second):
                 and p1.get('given_name', '') == p2.get('given_name', ''))
     return False
 
-
 def _release_author(release):
     # We can call GitHub's user data API, but it returns very little info
     # about a user (e.g.,, it gives a name but that name is not broken out
     # into family & given name), plus sometimes fields are empty.
-    account = github_account(release.author.login)
-    return _identity_from_github(account) if account.name else None
-
+    account_name = release.author["username"] if GITLAB else release.author.login
+    account = git_account(account_name)
+    return identity_from_git(account) if account.name else None
 
 def _repo_owner(repo):
-    account = github_account(repo.owner.login)
-    return _identity_from_github(account)
-
-
-def _identity_from_github(account, role=None):
-    if account.type == 'User':
-        if account.name:
-            (given, family) = split_name(account.name)
-            person_or_org = {'given_name': given,
-                             'family_name': family,
-                             'type': 'personal'}
-        else:
-            # The GitHub account record has no name, and InvenioRDM won't pass
-            # a record without a family name. All we have is the login name.
-            person_or_org = {'given_name': '',
-                             'family_name': account.login,
-                             'type': 'personal'}
-
+    if GITLAB:
+        account_name =  repo.owner["username"]
     else:
-        name = account.name.strip() if account.name else ''
-        person_or_org = {'name': name,
-                         'type': 'organizational'}
-    result = {'person_or_org': person_or_org}
-    if account.company and account.type == 'User':
-        account.company = account.company.strip()
-        if account.company.startswith('@'):
-            # Some people write @foo to indicate org account "foo" in GitHub.
-            # Grab only the first token after the '@'.
-            log(f'company for {account.login} account starts with @')
-            try:
-                import re
-                candidate = re.search(r'\w+', account.company).group()
-                org_account = github_account(candidate)
-            except GitHubError:
-                # No luck. Take it as-is.
-                log(f'failed to find {account.company[1:]} as a GitHub account')
-                result['affiliations'] = [{'name': account.company}]
-            else:
-                log(f'using org {candidate} as affiliation for {account.name}')
-                result['affiliations'] = [{'name': org_account.name}]
-        else:
-            result['affiliations'] = [{'name': account.company}]
-    if role:
-        result['role'] = {'id': role}
-    return result
-
+        account_name = repo.owner.login
+    account = git_account(account_name) 
+    return identity_from_git(account)
 
 def _parsed_github_account(data):
     if data.startswith('https://github.com'):
         # Might be the URL to an account page on GitHub.
         tail = data.replace('https://github.com/', '')
-        if '/' not in tail and (account := github_account(tail)):
+        if '/' not in tail and (account := git_account(tail)):
             return account
-    elif len(data.split()) == 1 and (account := github_account(data)):
+    elif len(data.split()) == 1 and (account := git_account(data)):
         return account
     return None
 
@@ -1558,6 +1567,7 @@ def _cff_reference_ids(repo):
 
 
 def _load_vocabularies():
+    # https://inveniordm.jlab.org/api/vocabularies/licenses
     from caltechdata_api.customize_schema import get_vocabularies
     from iga.invenio import invenio_vocabulary
     log('loading controlled vocabularies using caltechdata_api module')
